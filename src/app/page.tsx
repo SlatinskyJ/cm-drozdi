@@ -1,67 +1,51 @@
-import Link from "next/link";
+import logo from "@public/logo.svg";
+import mainBackgroundImg from "@public/mainBackground.jpg";
+import Text from "antd/es/typography/Text";
+import Title from "antd/es/typography/Title";
 
-import { LatestPost } from "~/app/_components/post";
-import { getServerAuthSession } from "~/server/auth";
-import { api, HydrateClient } from "~/trpc/server";
+import Image from "next/image";
+import { HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  const session = await getServerAuthSession();
+  // const hello = await api.post.hello({ text: "from tRPC" });
+  // const session = await getServerAuthSession();
 
-  void api.post.getLatest.prefetch();
+  // void api.post.getLatest.prefetch();
 
   return (
     <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
+      <div className="min-h-full">
+        <div className="relative">
+          <Image
+            src={mainBackgroundImg}
+            alt="background"
+            priority
+            placeholder="blur"
+          />
+          <div
+            className="absolute z-20 rounded-full bg-slate-200 p-8 shadow-2xl"
+            style={{ right: "23%", top: "23%", width: "16%" }}
+          >
+            {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+            <Image src={logo} alt="logo" className="w-full" priority />
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
-
-            <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-center text-2xl text-white">
-                {session && <span>Logged in as {session.user?.name}</span>}
-              </p>
-              <Link
-                href={session ? "/api/auth/signout" : "/api/auth/signin"}
-                className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-              >
-                {session ? "Sign out" : "Sign in"}
-              </Link>
-            </div>
-          </div>
-
-          {session?.user && <LatestPost />}
         </div>
-      </main>
+        <div
+          className="bg-neutral border-dark absolute z-10 h-[55%] w-full border-t-[4px]"
+          style={{ top: "45%" }}
+        >
+          <div className="ml-8 mt-4 w-1/4 border-b-[1px] border-gray-500 pl-8">
+            <Title>Vítejte!</Title>
+          </div>
+          <div className="p-2">
+            <Text>
+              Jsme cimbálová muzika z okolí Brna. Poprvé jsme se sešli v roce
+              2020 a našim přátelům zahráli v roce 2021. Od té doby trénujeme a
+              hraním obohacujeme akce všeho druhu.
+            </Text>
+          </div>
+        </div>
+      </div>
     </HydrateClient>
   );
 }

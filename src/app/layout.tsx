@@ -1,8 +1,10 @@
 import "~/styles/globals.css";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
+import Text from "antd/es/typography/Text";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
-
+import Login from "~/app/_components/Login";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
@@ -15,9 +17,21 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+    <html lang="en" className={`${GeistSans.variable} h-full`}>
+      <body className="h-full">
+        <AntdRegistry>
+          <div className="min-h-full">
+            <div className="absolute right-4 top-6 z-10">
+              <Login />
+            </div>
+            <div className="mx-auto min-h-full grow">
+              <TRPCReactProvider>{children}</TRPCReactProvider>
+            </div>
+            <div className="bg-dark fixed bottom-0 z-50 flex h-10 w-full flex-col justify-center text-center">
+              <Text strong>Created by @Jakub Slatinsky</Text>
+            </div>
+          </div>
+        </AntdRegistry>
       </body>
     </html>
   );
