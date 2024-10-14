@@ -63,6 +63,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   posts         Post[]
+  role          Int?      @default(0)
 }
 
 model VerificationToken {

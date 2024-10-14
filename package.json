@@ -17,6 +17,9 @@
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.1",
     "@auth/prisma-adapter": "^1.6.0",
+    "@nextui-org/dropdown": "^2.1.31",
+    "@nextui-org/system": "^2.2.6",
+    "@nextui-org/theme": "^2.2.11",
     "@prisma/client": "^5.14.0",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@tanstack/react-query": "^5.50.0",
@@ -24,7 +27,7 @@
     "@trpc/react-query": "^11.0.0-rc.446",
     "@trpc/server": "^11.0.0-rc.446",
     "@vercel/postgres": "^0.10.0",
-    "antd": "^5.21.4",
+    "framer-motion": "^11.11.8",
     "geist": "^1.3.0",
     "next": "^14.2.4",
     "next-auth": "^4.24.7",

@@ -1,7 +1,5 @@
 import logo from "@public/logo.svg";
 import mainBackgroundImg from "@public/mainBackground.jpg";
-import Text from "antd/es/typography/Text";
-import Title from "antd/es/typography/Title";
 
 import Image from "next/image";
 import { HydrateClient } from "~/trpc/server";
@@ -34,15 +32,15 @@ export default async function Home() {
           className="bg-neutral border-dark absolute z-10 h-[55%] w-full border-t-[4px]"
           style={{ top: "45%" }}
         >
-          <div className="ml-8 mt-4 w-1/4 border-b-[1px] border-gray-500 pl-8">
-            <Title>Vítejte!</Title>
+          <div className="ml-8 mt-4 w-1/4 border-b-[1px] border-gray-500 p-2 pl-8">
+            <span className="text-4xl font-medium">Vítejte!</span>
           </div>
-          <div className="p-2">
-            <Text>
-              Jsme cimbálová muzika z okolí Brna. Poprvé jsme se sešli v roce
-              2020 a našim přátelům zahráli v roce 2021. Od té doby trénujeme a
-              hraním obohacujeme akce všeho druhu.
-            </Text>
+          <div className="w-2/5 p-4">
+            <p className="break-normal">
+              Jsme cimbálová muzika z&nbsp;okolí Brna. Poprvé jsme se sešli
+              v&nbsp;roce 2020 a&nbsp;našim přátelům zahráli v&nbsp;roce 2021.
+              Od té doby trénujeme a&nbsp;hraním obohacujeme akce všeho druhu.
+            </p>
           </div>
         </div>
       </div>
