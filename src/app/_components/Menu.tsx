@@ -11,7 +11,10 @@ export default function Menu() {
   return (
     <Dropdown>
       <DropdownTrigger>
-        <Button className="rounded-full bg-black/70 font-bold text-white hover:bg-black">
+        <Button
+          color="primary"
+          className="rounded-full bg-opacity-60 font-bold hover:bg-opacity-100"
+        >
           Menu
         </Button>
       </DropdownTrigger>

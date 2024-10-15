@@ -73,3 +73,15 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model Event {
+  id          String    @id @default(cuid())
+  name        String
+  start       DateTime?
+  end         DateTime?
+  state       Int       @default(0)
+  email       String?
+  phone       String?
+  description String?
+  isPrivate   Boolean
+}
