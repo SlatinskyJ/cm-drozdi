@@ -27,12 +27,13 @@ type Inputs = Omit<TCreateEvent, "start" | "end"> & {
 export default function RequestEvent() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { mutate: createEvent, isPending } = api.event.create.useMutation();
+  const utils = api.useUtils();
 
   const {
     control,
     handleSubmit,
-    formState: { errors },
-  } = useForm<Inputs>({ defaultValues: { isPrivate: true } });
+    formState: { isValid, isDirty },
+  } = useForm<Inputs>({ defaultValues: { isPrivate: true }, mode: "onChange" });
 
   const onSubmit: SubmitHandler<Inputs> = useCallback(
     (data) => {
@@ -48,12 +49,13 @@ export default function RequestEvent() {
       };
       createEvent(req, {
         onSuccess: () => {
+          void utils.event.getForCalendar.invalidate();
           toast.success("Rezervace vytvořena");
           onClose();
         },
       });
     },
-    [createEvent, onClose],
+    [createEvent, onClose, utils.event.getForCalendar],
   );
 
   return (
@@ -66,7 +68,7 @@ export default function RequestEvent() {
       >
         Rezervovat
       </Button>
-      <Modal isOpen={isOpen} size="2xl">
+      <Modal isOpen={isOpen} size="2xl" hideCloseButton backdrop="blur">
         <ModalContent>
           <ModalHeader className="flex justify-center">
             Nová rezervace
@@ -76,6 +78,7 @@ export default function RequestEvent() {
               <Controller
                 name="name"
                 control={control}
+                rules={{ required: true }}
                 render={({ field }) => (
                   <Input {...field} label="Název události" isRequired />
                 )}
@@ -101,12 +104,14 @@ export default function RequestEvent() {
                     minValue={today(getLocalTimeZone())}
                     granularity="minute"
                     label="Datum a čas"
+                    hourCycle={24}
                   />
                 )}
               />
               <Controller
                 name="email"
                 control={control}
+                rules={{ required: true }}
                 render={({ field }) => (
                   <Input {...field} label="Email" isRequired />
                 )}
@@ -131,7 +136,7 @@ export default function RequestEvent() {
               <Button onClick={onClose} isLoading={isPending}>
                 Zrušit
               </Button>
-              <Button type="submit" isLoading={isPending}>
+              <Button type="submit" isLoading={isPending} isDisabled={!isValid}>
                 Potvrdit
               </Button>
             </ModalFooter>

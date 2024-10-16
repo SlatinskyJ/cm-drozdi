@@ -29,15 +29,26 @@ export default async function Home() {
               <EventCalendar />
             </div>
             <div>
-              <div className="ml-8 mt-4 w-2/5 border-b-[1px] border-gray-500 p-2 pl-8">
+              <div className="ml-6 mt-4 w-2/5 border-b-[1px] border-gray-500 p-2 pl-8">
                 <span className="text-4xl font-medium">Vítejte!</span>
               </div>
-              <div className="w-1/2 p-4">
-                <p className="break-normal">
+              <div className="w-1/2 break-normal p-4">
+                <p>
                   Jsme cimbálová muzika z&nbsp;okolí Brna. Poprvé jsme se sešli
                   v&nbsp;roce 2020 a&nbsp;našim přátelům zahráli v&nbsp;roce
                   2021. Od té doby trénujeme a&nbsp;hraním obohacujeme akce
-                  všeho druhu.
+                  všeho druhu zejména lidovou hudbou, ale na&nbsp;přání
+                  zahrajeme téměř cokoliv.
+                </p>
+                <p>
+                  Naši muziku tvoří: Kuba&nbsp;
+                  <span className="text-gray-600/50">(housle)</span>, Adam&nbsp;
+                  <span className="text-gray-600/50">(housle)</span>, Petr&nbsp;
+                  <span className="text-gray-600/50">(flétny)</span>, Aleš&nbsp;
+                  <span className="text-gray-600/50">(viola)</span>, Mário&nbsp;
+                  <span className="text-gray-600/50">(viola)</span>, Míša&nbsp;
+                  <span className="text-gray-600/50">(basa)</span>, Patrik&nbsp;
+                  <span className="text-gray-600/50">(cimbál)</span>
                 </p>
               </div>
             </div>
