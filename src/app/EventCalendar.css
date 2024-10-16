@@ -1,0 +1,5 @@
+span[data-unavailable=true][data-unavailable=true] {
+	background: #a98467;
+	text-decoration-line: none;
+	color: white;
+}

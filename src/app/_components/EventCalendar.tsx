@@ -1,5 +1,7 @@
 "use client";
 
+import "../EventCalendar.css";
+
 import { isSameDay } from "@internationalized/date";
 import { Calendar, type DateValue } from "@nextui-org/calendar";
 import { api } from "~/trpc/react";
@@ -16,5 +18,7 @@ export default function EventCalendar() {
     return !!dates?.find((date) => isSameDay(date, calendarDate));
   };
 
-  return <Calendar isReadOnly={true} isDateUnavailable={isDateUnavailable} />;
+  return (
+    <Calendar isReadOnly isDateUnavailable={isDateUnavailable} showShadow />
+  );
 }
