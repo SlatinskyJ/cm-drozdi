@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import AccessForbiddenPage from "~/app/_components/AccessForbidden";
+import { UserRole } from "~/enums/UserRole";
 import { getServerAuthSession } from "~/server/auth";
-import { UserRole } from "~/server/enums/UserRole";
 
 export default async function EventsLayout({
   children,

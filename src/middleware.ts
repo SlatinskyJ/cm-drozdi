@@ -4,7 +4,6 @@ export default withAuth({
   callbacks: {
     authorized: ({ req }) => {
       const sessionToken = req.cookies.get("next-auth.session-token");
-      console.log(req.cookies);
       return !!sessionToken;
     },
   },
