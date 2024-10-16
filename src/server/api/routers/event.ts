@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EventState } from "~/enums/EventState";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -34,6 +35,23 @@ export const eventRouter = createTRPCRouter({
       },
       orderBy: {
         start: "asc",
+      },
+    });
+  }),
+
+  getForCalendar: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.db.event.findMany({
+      select: {
+        name: true,
+        start: true,
+        isPrivate: true,
+        location: true,
+      },
+      where: {
+        state: {
+          not: EventState.CANCELED,
+        },
+        start: { not: null },
       },
     });
   }),

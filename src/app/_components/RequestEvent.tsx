@@ -59,7 +59,7 @@ export default function RequestEvent() {
   return (
     <>
       <Button
-        className="absolute bottom-24 right-16 p-8 text-xl font-semibold shadow-lg"
+        className="fixed bottom-20 right-16 z-50 p-8 text-xl font-semibold shadow-lg"
         radius="full"
         color="primary"
         onClick={onOpen}
