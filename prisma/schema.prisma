@@ -84,4 +84,5 @@ model Event {
   phone       String?
   description String?
   isPrivate   Boolean
+  location    String?
 }

@@ -3,10 +3,10 @@ import {type DefaultSession, getServerSession, type NextAuthOptions,} from 'next
 import {type Adapter} from 'next-auth/adapters';
 import DiscordProvider from 'next-auth/providers/discord';
 import FacebookProvider from 'next-auth/providers/facebook';
+import {type UserRole} from '~/enums/UserRole';
 
 import {env} from '~/env';
 import {db} from '~/server/db';
-import {type UserRole} from '~/server/enums/UserRole';
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`

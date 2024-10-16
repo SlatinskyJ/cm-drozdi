@@ -14,14 +14,11 @@ import {
 } from "@nextui-org/modal";
 import { Switch } from "@nextui-org/switch";
 import { type RangeValue } from "@react-types/shared";
-import { type inferProcedureInput } from "@trpc/server";
 import React, { useCallback } from "react";
 import { Controller, type SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { type AppRouter } from "~/server/api/root";
+import { type TCreateEvent } from "~/app/_models/event";
 import { api } from "~/trpc/react";
-
-type TCreateEvent = inferProcedureInput<AppRouter["event"]["create"]>;
 
 type Inputs = Omit<TCreateEvent, "start" | "end"> & {
   date: RangeValue<DateInputValue>;
@@ -118,6 +115,11 @@ export default function RequestEvent() {
                 name="phone"
                 control={control}
                 render={({ field }) => <Input {...field} label="Telefon" />}
+              />
+              <Controller
+                name="location"
+                control={control}
+                render={({ field }) => <Input {...field} label="Lokace" />}
               />
               <Controller
                 name="description"

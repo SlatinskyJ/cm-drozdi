@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 
 export const eventRouter = createTRPCRouter({
   create: publicProcedure
@@ -12,6 +16,7 @@ export const eventRouter = createTRPCRouter({
         phone: z.string().optional(),
         description: z.string().optional(),
         isPrivate: z.boolean(),
+        location: z.string().optional(),
       }),
     )
     .mutation(({ ctx, input }) => {
@@ -19,4 +24,17 @@ export const eventRouter = createTRPCRouter({
         data: input,
       });
     }),
+
+  getUpcoming: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.event.findMany({
+      where: {
+        start: {
+          gte: new Date(),
+        },
+      },
+      orderBy: {
+        start: "asc",
+      },
+    });
+  }),
 });
