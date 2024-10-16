@@ -30,7 +30,7 @@ export default async function Home() {
           </div>
         </div>
         <div
-          className="bg-neutral border-dark absolute z-10 flex h-[55%] w-full justify-center border-t-[4px]"
+          className="bg-background border-dark absolute z-10 flex h-[55%] w-full justify-center border-t-[4px]"
           style={{ top: "45%" }}
         >
           <div className="relative min-h-[95%] w-full max-w-[1920px]">

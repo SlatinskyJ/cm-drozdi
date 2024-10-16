@@ -24,12 +24,12 @@ export default async function RootLayout({
       <body className="h-full">
         <Providers>
           <Toaster position="bottom-right" />
-          <div className="min-h-full">
-            <div className="absolute right-4 top-6 z-10 flex gap-2">
+          <div className="h-full">
+            <div className="absolute right-4 top-4 z-10 flex gap-2">
               <Login />
               {session && <Menu />}
             </div>
-            <div className="mx-auto min-h-full grow">{children}</div>
+            <div className="mx-auto h-full grow">{children}</div>
             <div className="bg-dark fixed bottom-0 z-50 flex h-10 w-full flex-col justify-center text-center">
               <span>
                 Created by <b>@SlatinskyJ</b>

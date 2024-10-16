@@ -9,7 +9,7 @@ export default function Providers({ children }: { children: ReactNode }) {
   const { push } = useRouter();
 
   return (
-    <NextUIProvider navigate={push}>
+    <NextUIProvider navigate={push} className="h-full">
       <TRPCReactProvider>{children}</TRPCReactProvider>
     </NextUIProvider>
   );

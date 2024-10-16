@@ -13,8 +13,8 @@ export default {
         primary: "#a98467",
         secondary: "#dde5b6",
         accent: "#adc178",
-        neutral: "#D9D2B4",
         dark: "#6c584c",
+        background: "#D9D2B4",
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],

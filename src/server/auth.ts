@@ -35,11 +35,18 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
+    jwt: ({ token, user }) => ({
+      ...token,
+      user: {
+        ...user,
+      },
+    }),
     session: ({ session, user }) => ({
       ...session,
       user: {
         ...session.user,
         id: user.id,
+        role: user.role,
       },
     }),
   },

@@ -3,7 +3,7 @@ import { getLocalTimeZone, today } from "@internationalized/date";
 import { Button } from "@nextui-org/button";
 import { type DateInputValue } from "@nextui-org/date-input";
 import { DateRangePicker } from "@nextui-org/date-picker";
-import { Input } from "@nextui-org/input";
+import { Input, Textarea } from "@nextui-org/input";
 import {
   Modal,
   ModalBody,
@@ -122,7 +122,7 @@ export default function RequestEvent() {
               <Controller
                 name="description"
                 control={control}
-                render={({ field }) => <Input {...field} label="Popis" />}
+                render={({ field }) => <Textarea {...field} label="Popis" />}
               />
             </ModalBody>
             <ModalFooter>
