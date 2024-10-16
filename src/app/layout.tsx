@@ -20,18 +20,18 @@ export default async function RootLayout({
   const session = await getServerAuthSession();
 
   return (
-    <html lang="en" className={`${GeistSans.variable} h-full`}>
+    <html lang="cs" className={`${GeistSans.variable} h-full bg-background`}>
       <body className="h-full">
         <Providers>
           <Toaster position="bottom-right" />
           <div className="h-full">
-            <div className="absolute right-4 top-4 z-10 flex gap-2">
+            <div className="absolute right-4 top-4 z-10 flex gap-2 align-bottom">
               <Login />
               {session && <Menu />}
             </div>
             <div className="mx-auto h-full grow">{children}</div>
             <div className="fixed bottom-0 z-50 flex h-10 w-full flex-col justify-center bg-dark text-center">
-              <span>
+              <span className="text-stone-400">
                 Created by{" "}
                 <a href="https://github.com/SlatinskyJ" target="_blank">
                   <b>@SlatinskyJ</b>

@@ -8,7 +8,7 @@ export default async function Login() {
   return (
     <Link
       href={session ? "/api/auth/signout" : "/api/auth/signin"}
-      className="bg-accent/50 hover:bg-accent/80 rounded-full px-6 py-2 font-bold no-underline transition"
+      className="rounded-full bg-accent/50 px-6 py-2 font-bold leading-[24px] no-underline transition hover:bg-accent/80"
     >
       {session ? "Sign out" : "Sign in"}
     </Link>

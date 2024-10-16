@@ -9,11 +9,11 @@ import { HydrateClient } from "~/trpc/server";
 export default async function Home() {
   return (
     <HydrateClient>
-      <div className="min-h-full bg-background">
+      <div className="min-h-full">
         <div className="relative">
           <Image src={mainBackgroundImg} alt="background" placeholder="blur" />
           <div
-            className="absolute z-20 max-w-[500px] rounded-full bg-slate-200 p-[2%] shadow-2xl"
+            className="absolute z-20 max-w-[500px] rounded-full bg-default-50 p-[2%] shadow-2xl"
             style={{ right: "23%", top: "23%", width: "16%" }}
           >
             {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
@@ -42,13 +42,19 @@ export default async function Home() {
                 </p>
                 <p>
                   Naši muziku tvoří: Kuba&nbsp;
-                  <span className="text-gray-600/50">(housle)</span>, Adam&nbsp;
-                  <span className="text-gray-600/50">(housle)</span>, Petr&nbsp;
-                  <span className="text-gray-600/50">(flétny)</span>, Aleš&nbsp;
-                  <span className="text-gray-600/50">(viola)</span>, Mário&nbsp;
-                  <span className="text-gray-600/50">(viola)</span>, Míša&nbsp;
-                  <span className="text-gray-600/50">(basa)</span>, Patrik&nbsp;
-                  <span className="text-gray-600/50">(cimbál)</span>
+                  <span className="text-default-600/70">(housle)</span>,
+                  Adam&nbsp;
+                  <span className="text-default-600/70">(housle)</span>,
+                  Petr&nbsp;
+                  <span className="text-default-600/70">(flétny)</span>,
+                  Aleš&nbsp;
+                  <span className="text-default-600/70">(viola)</span>,
+                  Mário&nbsp;
+                  <span className="text-default-600/70">(viola)</span>,
+                  Míša&nbsp;
+                  <span className="text-default-600/70">(basa)</span>,
+                  Patrik&nbsp;
+                  <span className="text-default-600/70">(cimbál)</span>
                 </p>
               </div>
             </div>

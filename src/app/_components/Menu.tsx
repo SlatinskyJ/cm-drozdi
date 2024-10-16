@@ -1,5 +1,6 @@
 "use client";
-import { Button } from "@nextui-org/button";
+
+import { Button } from "@components/ui/Button";
 import {
   Dropdown,
   DropdownItem,

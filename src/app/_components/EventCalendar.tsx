@@ -1,9 +1,14 @@
 "use client";
 
+import { Calendar } from "@components/ui/Calendar";
 import "../EventCalendar.css";
 
-import { getLocalTimeZone, isSameDay, today } from "@internationalized/date";
-import { Calendar, type DateValue } from "@nextui-org/calendar";
+import {
+  type DateValue,
+  getLocalTimeZone,
+  isSameDay,
+  today,
+} from "@internationalized/date";
 import { api } from "~/trpc/react";
 import { parseDateJStoCalendarDateTime } from "~/utils/date";
 

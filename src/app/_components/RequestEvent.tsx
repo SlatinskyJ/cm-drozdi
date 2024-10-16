@@ -1,6 +1,6 @@
 "use client";
+import { Button } from "@components/ui/Button";
 import { getLocalTimeZone, today } from "@internationalized/date";
-import { Button } from "@nextui-org/button";
 import { type DateInputValue } from "@nextui-org/date-input";
 import { DateRangePicker } from "@nextui-org/date-picker";
 import { Input, Textarea } from "@nextui-org/input";
@@ -32,7 +32,7 @@ export default function RequestEvent() {
   const {
     control,
     handleSubmit,
-    formState: { isValid, isDirty },
+    formState: { isValid },
   } = useForm<Inputs>({ defaultValues: { isPrivate: true }, mode: "onChange" });
 
   const onSubmit: SubmitHandler<Inputs> = useCallback(
@@ -61,14 +61,15 @@ export default function RequestEvent() {
   return (
     <>
       <Button
-        className="fixed bottom-20 right-16 z-50 p-8 text-xl font-semibold shadow-lg"
+        className="fixed bottom-20 right-16 z-50 shadow-lg"
         radius="full"
         color="primary"
+        size="xl"
         onClick={onOpen}
       >
         Rezervovat
       </Button>
-      <Modal isOpen={isOpen} size="2xl" hideCloseButton backdrop="blur">
+      <Modal isOpen={isOpen} size="xl" hideCloseButton backdrop="blur">
         <ModalContent>
           <ModalHeader className="flex justify-center">
             Nová rezervace

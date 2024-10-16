@@ -10,11 +10,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#a98467",
-        secondary: "#C5D791",
-        accent: "#A3B86A",
-        dark: "#6c584c",
+        primary: "#977351",
+        secondary: "#CADC99",
+        accent: "#ACC270",
+        dark: "#5D4435",
         background: "#E6DFC4",
+        white: "#e2e8f0",
+        default: {
+          50: "#FAF8E8",
+          100: "#e6dfc4",
+          200: "#dcd2ab",
+          300: "#c9b880",
+          400: "#bda262",
+          500: "#b18c4f",
+          600: "#9c7243",
+          700: "#825a3b",
+          800: "#6c4934",
+          900: "#5a3d2d",
+        },
+        content1: "#FAF8E8",
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],
@@ -27,11 +41,10 @@ export default {
       themes: {
         dark: {
           colors: {
-            primary: { DEFAULT: "#a98467" },
-            secondary: { DEFAULT: "#dde5b6" },
-            success: { DEFAULT: "#adc178" },
-            background: { DEFAULT: "#D9D2B4" },
-            // dark: { DEFAULT: "#6c584c" },
+            primary: { DEFAULT: "#977351" },
+            secondary: { DEFAULT: "#CADC99" },
+            success: { DEFAULT: "#ACC270" },
+            background: { DEFAULT: "#E6DFC4" },
           },
         },
       },
