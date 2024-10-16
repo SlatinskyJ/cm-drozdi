@@ -25,7 +25,7 @@ export default async function Home() {
           style={{ top: "45%" }}
         >
           <div className="relative flex min-h-[95%] w-full max-w-[1500px]">
-            <div className="m-10">
+            <div className="m-10 mt-7">
               <EventCalendar />
             </div>
             <div>

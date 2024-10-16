@@ -19,6 +19,13 @@ export default function EventCalendar() {
   };
 
   return (
-    <Calendar isReadOnly isDateUnavailable={isDateUnavailable} showShadow />
+    <>
+      <div className="flex justify-center pb-3">
+        <div className="rounded-full bg-secondary px-4 text-xl font-semibold">
+          Kalendář akcí
+        </div>
+      </div>
+      <Calendar isReadOnly isDateUnavailable={isDateUnavailable} showShadow />
+    </>
   );
 }

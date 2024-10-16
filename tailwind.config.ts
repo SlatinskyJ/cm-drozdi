@@ -11,10 +11,10 @@ export default {
     extend: {
       colors: {
         primary: "#a98467",
-        secondary: "#dde5b6",
-        accent: "#adc178",
+        secondary: "#C5D791",
+        accent: "#A3B86A",
         dark: "#6c584c",
-        background: "#D9D2B4",
+        background: "#E6DFC4",
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],
