@@ -30,9 +30,12 @@ export default async function RootLayout({
               {session && <Menu />}
             </div>
             <div className="mx-auto h-full grow">{children}</div>
-            <div className="bg-dark fixed bottom-0 z-50 flex h-10 w-full flex-col justify-center text-center">
+            <div className="fixed bottom-0 z-50 flex h-10 w-full flex-col justify-center bg-dark text-center">
               <span>
-                Created by <b>@SlatinskyJ</b>
+                Created by{" "}
+                <a href="https://github.com/SlatinskyJ" target="_blank">
+                  <b>@SlatinskyJ</b>
+                </a>
               </span>
             </div>
           </div>
