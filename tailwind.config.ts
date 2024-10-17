@@ -16,7 +16,7 @@ export default {
         dark: "#5a3d2d",
         background: "#E6DFC4",
         white: "#FAF8E8",
-        danger: "#ed5122",
+        danger: { DEFAULT: "#ed5122", foreground: "#422506" },
         success: "#687f31",
         warning: "#fade15",
         unknown: "#7152ff",

@@ -10,6 +10,9 @@ export const Chip = extendVariants(NextChip, {
       default: {
         base: ["bg-default-100"],
       },
+      danger: {
+        base: ["text-white"],
+      },
       success: {
         base: ["text-default-100"],
       },

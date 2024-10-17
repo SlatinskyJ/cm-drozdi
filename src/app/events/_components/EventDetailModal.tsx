@@ -65,10 +65,11 @@ export function EventDetailModal({
             <EventValues event={event} />
           )}
         </ModalBody>
-        <ModalFooter>
-          <Button onClick={handleClose} color="danger">
+        <ModalFooter className="flex">
+          <Button onClick={handleClose} color="danger" variant="ghost">
             Zavřít
           </Button>
+          <div className="grow" />
           {isEdit ? (
             <Button
               color="primary"

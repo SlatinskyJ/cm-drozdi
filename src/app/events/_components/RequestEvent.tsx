@@ -51,10 +51,16 @@ export default function RequestEvent() {
             <ModalBody>
               <EventForm control={control} />
             </ModalBody>
-            <ModalFooter>
-              <Button onClick={onClose} isLoading={isPending} color="danger">
+            <ModalFooter className="flex">
+              <Button
+                onClick={onClose}
+                isLoading={isPending}
+                color="danger"
+                variant="ghost"
+              >
                 Zrušit
               </Button>
+              <div className="grow" />
               <Button
                 type="submit"
                 isLoading={isPending}
