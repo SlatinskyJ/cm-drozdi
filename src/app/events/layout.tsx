@@ -1,3 +1,4 @@
+import { GeistSans } from "geist/font/sans";
 import { type ReactNode } from "react";
 import AccessForbiddenPage from "~/app/_components/AccessForbidden";
 import { UserRole } from "~/enums/UserRole";
@@ -12,5 +13,5 @@ export default async function EventsLayout({
     return <AccessForbiddenPage />;
   }
 
-  return children;
+  return <div className={GeistSans.className}>{children}</div>;
 }

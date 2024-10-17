@@ -10,12 +10,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#977351",
-        secondary: "#CADC99",
-        accent: "#ACC270",
-        dark: "#5D4435",
+        primary: "#9c7243",
+        secondary: "#bdd086",
+        accent: "#85a042",
+        dark: "#5a3d2d",
         background: "#E6DFC4",
-        white: "#e2e8f0",
+        white: "#FAF8E8",
+        danger: "#ed5122",
         default: {
           50: "#FAF8E8",
           100: "#e6dfc4",
@@ -28,10 +29,37 @@ export default {
           800: "#6c4934",
           900: "#5a3d2d",
         },
+        green: {
+          "50": "#f6f8ed",
+          "100": "#ebf0d7",
+          "200": "#d7e3b3",
+          "300": "#bdd086",
+          "400": "#acc270",
+          "500": "#85a042",
+          "600": "#687f31",
+          "700": "#4f6229",
+          "800": "#424f25",
+          "900": "#394423",
+          "950": "#1c240f",
+        },
+        orange: {
+          "50": "#fef4ee",
+          "100": "#fde6d7",
+          "200": "#facaae",
+          "300": "#f6a67e",
+          "400": "#f17546",
+          "500": "#ed5122",
+          "600": "#de3918",
+          "700": "#b82816",
+          "800": "#932219",
+          "900": "#761f18",
+          "950": "#400c0a",
+        },
         content1: "#FAF8E8",
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],
+        pacifico: ["var(--font-pacifico)"],
       },
     },
   },
@@ -39,14 +67,7 @@ export default {
   plugins: [
     nextui({
       themes: {
-        dark: {
-          colors: {
-            primary: { DEFAULT: "#977351" },
-            secondary: { DEFAULT: "#CADC99" },
-            success: { DEFAULT: "#ACC270" },
-            background: { DEFAULT: "#E6DFC4" },
-          },
-        },
+        dark: {},
       },
       layout: {
         radius: {

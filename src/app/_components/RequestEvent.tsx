@@ -61,7 +61,7 @@ export default function RequestEvent() {
   return (
     <>
       <Button
-        className="fixed bottom-20 right-16 z-50 shadow-lg"
+        className="fixed bottom-20 right-16 z-50 text-2xl shadow-lg"
         radius="full"
         color="primary"
         size="xl"
@@ -134,10 +134,15 @@ export default function RequestEvent() {
               />
             </ModalBody>
             <ModalFooter>
-              <Button onClick={onClose} isLoading={isPending}>
+              <Button onClick={onClose} isLoading={isPending} color="danger">
                 Zrušit
               </Button>
-              <Button type="submit" isLoading={isPending} isDisabled={!isValid}>
+              <Button
+                type="submit"
+                isLoading={isPending}
+                isDisabled={!isValid}
+                color="primary"
+              >
                 Potvrdit
               </Button>
             </ModalFooter>

@@ -25,14 +25,14 @@ export default async function Home() {
           style={{ top: "45%" }}
         >
           <div className="relative flex min-h-[95%] w-full max-w-[1500px]">
-            <div className="m-10 mt-7">
+            <div className="m-10 mt-5">
               <EventCalendar />
             </div>
             <div>
-              <div className="ml-6 mt-4 w-2/5 border-b-[1px] border-gray-500 p-2 pl-8">
-                <span className="text-4xl font-medium">Vítejte!</span>
+              <div className="ml-6 mt-5 w-2/5 border-b-[1px] border-gray-500/30 pb-3 pl-8">
+                <span className="text-3xl">Vítejte!</span>
               </div>
-              <div className="w-1/2 break-normal p-4">
+              <div className="w-1/2 break-normal p-4 text-lg">
                 <p>
                   Jsme cimbálová muzika z&nbsp;okolí Brna. Poprvé jsme se sešli
                   v&nbsp;roce 2020 a&nbsp;našim přátelům zahráli v&nbsp;roce

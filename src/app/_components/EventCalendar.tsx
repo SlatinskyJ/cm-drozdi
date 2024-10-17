@@ -26,7 +26,7 @@ export default function EventCalendar() {
   return (
     <>
       <div className="flex justify-center pb-3">
-        <div className="rounded-full bg-secondary px-4 text-xl font-semibold">
+        <div className="rounded-full bg-secondary px-4 text-3xl font-semibold">
           Kalendář akcí
         </div>
       </div>

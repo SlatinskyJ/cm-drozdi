@@ -6,7 +6,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from "@nextui-org/dropdown";
+} from "@components/ui/Dropdown";
 
 export default function Menu() {
   return (

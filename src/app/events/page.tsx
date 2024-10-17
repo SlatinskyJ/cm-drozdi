@@ -7,10 +7,10 @@ export default async function EventsPage() {
   return (
     <div className="flex h-full w-full flex-col bg-background">
       <div className="h-[70px] w-full bg-secondary pt-5">
-        <span className="ml-8 text-3xl font-semibold">Události</span>
+        <span className="ml-8 text-2xl font-semibold">Události</span>
       </div>
       <div className="h-12 w-full pt-5">
-        <span className="ml-8 text-2xl font-semibold">Nadcházející</span>
+        <span className="ml-8 text-xl font-semibold">Nadcházející</span>
       </div>
       <div className="m-4 flex gap-4">
         {events.map((event) => (
