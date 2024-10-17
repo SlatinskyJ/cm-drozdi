@@ -6,6 +6,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/modal";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { type TEvent } from "~/app/_models/event";
 import DeleteEvent from "~/app/events/_components/DeleteEvent";
@@ -13,7 +14,6 @@ import EditableState from "~/app/events/_components/EditableState";
 import { EventForm } from "~/app/events/_components/EventForm";
 import EventValues from "~/app/events/_components/EventValues";
 import { useEventForm } from "~/app/events/_utils/useEventForm";
-import { api } from "~/trpc/react";
 import { type TFormatEventStateReturn } from "../_utils/formatEventState";
 
 export function EventDetailModal({
@@ -28,7 +28,7 @@ export function EventDetailModal({
   onClose: () => void;
 }>) {
   const [isEdit, setIsEdit] = useState<boolean>(false);
-  const utils = api.useUtils();
+  const router = useRouter();
 
   const handleEdit = () => {
     setIsEdit((prev) => !prev);
@@ -40,7 +40,7 @@ export function EventDetailModal({
   };
 
   const handleSaveSuccess = () => {
-    void utils.event.getUpcoming.invalidate();
+    router.refresh();
     handleClose();
   };
 
