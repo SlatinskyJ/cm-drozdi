@@ -33,8 +33,8 @@ export const eventRouter = createTRPCRouter({
       });
     }),
 
-  getUpcoming: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.db.event.findMany({
+  getUpcoming: protectedProcedure.query(({ ctx }) => {
+    return ctx.db.event.findMany({
       where: {
         OR: [
           {
@@ -51,8 +51,8 @@ export const eventRouter = createTRPCRouter({
     });
   }),
 
-  getForCalendar: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.event.findMany({
+  getForCalendar: publicProcedure.query(({ ctx }) => {
+    return ctx.db.event.findMany({
       select: {
         name: true,
         start: true,
@@ -82,6 +82,16 @@ export const eventRouter = createTRPCRouter({
         },
         data: {
           state: input.state,
+        },
+      });
+    }),
+
+  deleteById: protectedProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .mutation(({ ctx, input }) => {
+      return ctx.db.event.delete({
+        where: {
+          id: input.id,
         },
       });
     }),

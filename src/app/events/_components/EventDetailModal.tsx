@@ -8,6 +8,7 @@ import {
 } from "@nextui-org/modal";
 import { useState } from "react";
 import { type TEvent } from "~/app/_models/event";
+import DeleteEvent from "~/app/events/_components/DeleteEvent";
 import EditableState from "~/app/events/_components/EditableState";
 import { EventForm } from "~/app/events/_components/EventForm";
 import EventValues from "~/app/events/_components/EventValues";
@@ -35,7 +36,7 @@ export function EventDetailModal({
 
   const handleClose = () => {
     onClose();
-    handleEdit();
+    setIsEdit(false);
   };
 
   const handleSaveSuccess = () => {
@@ -70,6 +71,7 @@ export function EventDetailModal({
             Zavřít
           </Button>
           <div className="grow" />
+          <DeleteEvent eventId={event.id} onSuccess={handleClose} />
           {isEdit ? (
             <Button
               color="primary"
