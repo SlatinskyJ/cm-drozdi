@@ -10,6 +10,7 @@ export const eventRouter = createTRPCRouter({
   create: publicProcedure
     .input(
       z.object({
+        id: z.string().cuid().optional(),
         name: z.string(),
         start: z.coerce.date().optional(),
         end: z.coerce.date().optional(),
@@ -21,8 +22,14 @@ export const eventRouter = createTRPCRouter({
       }),
     )
     .mutation(({ ctx, input }) => {
-      return ctx.db.event.create({
-        data: input,
+      const { id, ...data } = input;
+
+      return ctx.db.event.upsert({
+        where: {
+          id: id,
+        },
+        update: { ...data },
+        create: { ...data },
       });
     }),
 

@@ -1,9 +1,5 @@
 "use client";
 import { Button } from "@components/ui/Button";
-import { getLocalTimeZone, today } from "@internationalized/date";
-import { type DateInputValue } from "@nextui-org/date-input";
-import { DateRangePicker } from "@nextui-org/date-picker";
-import { Input, Textarea } from "@nextui-org/input";
 import {
   Modal,
   ModalBody,
@@ -12,48 +8,28 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@nextui-org/modal";
-import { Switch } from "@nextui-org/switch";
-import { type RangeValue } from "@react-types/shared";
 import React, { useCallback } from "react";
-import { Controller, type SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { type TCreateEvent } from "~/app/_models/event";
+import { EventForm } from "~/app/events/_components/EventForm";
+import { useEventForm } from "~/app/events/_utils/useEventForm";
 import { api } from "~/trpc/react";
-
-type Inputs = Omit<TCreateEvent, "start" | "end"> & {
-  date: RangeValue<DateInputValue>;
-};
 
 export default function RequestEvent() {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { mutate: createEvent, isPending } = api.event.create.useMutation();
   const utils = api.useUtils();
 
+  const onSaveSuccess = useCallback(() => {
+    void utils.event.getForCalendar.invalidate();
+    onClose();
+    toast.success("Rezervace vytvořena");
+  }, [onClose, utils.event.getForCalendar]);
+
   const {
-    control,
     handleSubmit,
+    control,
+    isPending,
     formState: { isValid },
-  } = useForm<Inputs>({ defaultValues: { isPrivate: true }, mode: "onChange" });
-
-  const onSubmit: SubmitHandler<Inputs> = useCallback(
-    (data) => {
-      const { date, ...rest } = data;
-
-      const req: TCreateEvent = {
-        ...rest,
-        start: date?.start.toDate(getLocalTimeZone()),
-        end: date?.end.toDate(getLocalTimeZone()),
-      };
-      createEvent(req, {
-        onSuccess: () => {
-          void utils.event.getForCalendar.invalidate();
-          toast.success("Rezervace vytvořena");
-          onClose();
-        },
-      });
-    },
-    [createEvent, onClose, utils.event.getForCalendar],
-  );
+  } = useEventForm(undefined, onSaveSuccess);
 
   return (
     <>
@@ -71,70 +47,9 @@ export default function RequestEvent() {
           <ModalHeader className="flex justify-center">
             Nová rezervace
           </ModalHeader>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit}>
             <ModalBody>
-              <Controller
-                name="name"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <Input {...field} label="Název události" isRequired />
-                )}
-              />
-              <Controller
-                name="isPrivate"
-                control={control}
-                render={(field) => (
-                  <Switch
-                    isSelected={field.field.value}
-                    onValueChange={field.field.onChange}
-                  >
-                    Soukormá událost
-                  </Switch>
-                )}
-              />
-              <Controller
-                name="date"
-                control={control}
-                render={({ field }) => (
-                  <DateRangePicker
-                    {...field}
-                    minValue={today(getLocalTimeZone())}
-                    granularity="minute"
-                    label="Datum a čas"
-                    hourCycle={24}
-                  />
-                )}
-              />
-              <Controller
-                name="email"
-                control={control}
-                rules={{
-                  required: true,
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "invalid email address",
-                  },
-                }}
-                render={({ field }) => (
-                  <Input {...field} label="Email" isRequired />
-                )}
-              />
-              <Controller
-                name="phone"
-                control={control}
-                render={({ field }) => <Input {...field} label="Telefon" />}
-              />
-              <Controller
-                name="location"
-                control={control}
-                render={({ field }) => <Input {...field} label="Lokace" />}
-              />
-              <Controller
-                name="description"
-                control={control}
-                render={({ field }) => <Textarea {...field} label="Popis" />}
-              />
+              <EventForm control={control} />
             </ModalBody>
             <ModalFooter>
               <Button onClick={onClose} isLoading={isPending} color="danger">

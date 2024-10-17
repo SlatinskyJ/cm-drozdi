@@ -1,3 +1,4 @@
+"use client";
 import {
   Dropdown as NextDropdown,
   DropdownItem as NextDropdownItem,

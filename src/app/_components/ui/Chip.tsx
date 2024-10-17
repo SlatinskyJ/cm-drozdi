@@ -8,7 +8,7 @@ export const Chip = extendVariants(NextChip, {
   variants: {
     color: {
       default: {
-        base: ["bg-white"],
+        base: ["bg-default-100"],
       },
       success: {
         base: ["text-default-100"],
