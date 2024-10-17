@@ -4,7 +4,7 @@ import {
   parseTime,
   Time,
 } from "@internationalized/date";
-import { floor, trimStart } from "lodash";
+import { floor } from "lodash";
 
 export function getTimeDiff(start: Date, end: Date): Time {
   const startDateTime = parseDateJStoCalendarDateTime(start);
@@ -18,7 +18,11 @@ export function parseDateJStoCalendarDateTime(date: Date): CalendarDateTime {
 }
 
 export function formatTime(time: Time): string {
-  return trimStart(time.toString().slice(0, -3), "0");
+  const timeString = time.toString().slice(0, -3);
+  if (timeString.startsWith("0")) {
+    return timeString.slice(1, timeString.length);
+  }
+  return timeString;
 }
 
 export function formatDateToTime(date: Date): string {
