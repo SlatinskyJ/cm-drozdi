@@ -1,5 +1,5 @@
+import { Chip } from "@components/ui/Chip";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Chip } from "@nextui-org/chip";
 import { Divider } from "@nextui-org/divider";
 import { Tooltip } from "@nextui-org/tooltip";
 import { type ReactElement } from "react";
@@ -19,7 +19,7 @@ function formatEventState(state: EventState): ReactElement {
     case EventState.CANCELED:
       return <Chip color="danger">Zrušeno</Chip>;
     default:
-      return <Chip>Neznámý</Chip>;
+      return <Chip color="unknown">Neznámý</Chip>;
   }
 }
 
@@ -29,7 +29,7 @@ export default function Event({ event }: Readonly<{ event: TEvent }>) {
     null;
 
   return (
-    <Card className="w-1/5 bg-accent">
+    <Card className="w-1/5 bg-green-400">
       <CardHeader className="flex">
         <Tooltip content={event.name} delay={500}>
           <span className="truncate text-lg">{event.name}</span>

@@ -29,9 +29,14 @@ export const eventRouter = createTRPCRouter({
   getUpcoming: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.event.findMany({
       where: {
-        start: {
-          gte: new Date(),
-        },
+        OR: [
+          {
+            start: {
+              gte: new Date(),
+            },
+          },
+          { start: null },
+        ],
       },
       orderBy: {
         start: "asc",

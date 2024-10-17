@@ -6,7 +6,7 @@ export default async function EventsPage() {
 
   return (
     <div className="flex h-full w-full flex-col bg-background">
-      <div className="h-[70px] w-full bg-secondary pt-5">
+      <div className="h-[70px] w-full bg-green-300 pt-5">
         <span className="ml-8 text-2xl font-semibold">Události</span>
       </div>
       <div className="h-12 w-full pt-5">

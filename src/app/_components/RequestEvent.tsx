@@ -37,15 +37,12 @@ export default function RequestEvent() {
 
   const onSubmit: SubmitHandler<Inputs> = useCallback(
     (data) => {
-      const {
-        date: { start, end },
-        ...rest
-      } = data;
+      const { date, ...rest } = data;
 
       const req: TCreateEvent = {
         ...rest,
-        start: start.toDate(getLocalTimeZone()),
-        end: end.toDate(getLocalTimeZone()),
+        start: date?.start.toDate(getLocalTimeZone()),
+        end: date?.end.toDate(getLocalTimeZone()),
       };
       createEvent(req, {
         onSuccess: () => {
@@ -112,7 +109,13 @@ export default function RequestEvent() {
               <Controller
                 name="email"
                 control={control}
-                rules={{ required: true }}
+                rules={{
+                  required: true,
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "invalid email address",
+                  },
+                }}
                 render={({ field }) => (
                   <Input {...field} label="Email" isRequired />
                 )}
