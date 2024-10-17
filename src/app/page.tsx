@@ -2,8 +2,8 @@ import logo from "@public/logo.svg";
 import mainBackgroundImg from "@public/mainBackground.jpg";
 
 import Image from "next/image";
-import EventCalendar from "~/app/_components/EventCalendar";
-import RequestEvent from "~/app/_components/RequestEvent";
+import EventCalendar from "~/app/events/_components/EventCalendar";
+import RequestEvent from "~/app/events/_components/RequestEvent";
 import { HydrateClient } from "~/trpc/server";
 
 export default async function Home() {

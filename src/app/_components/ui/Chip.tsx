@@ -19,3 +19,5 @@ export const Chip = extendVariants(NextChip, {
     },
   },
 });
+
+export type ChipProps = React.ComponentProps<typeof Chip>;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar } from "@components/ui/Calendar";
-import "../EventCalendar.css";
+import "../../EventCalendar.css";
 
 import {
   type DateValue,

@@ -1,5 +1,5 @@
 import { api } from "~/trpc/server";
-import Event from "../_components/Event";
+import Event from "./_components/Event";
 
 export default async function EventsPage() {
   const events = await api.event.getUpcoming();
