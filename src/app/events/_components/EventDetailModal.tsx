@@ -1,5 +1,4 @@
 import { Button } from "@components/ui/Button";
-import { Chip } from "@components/ui/Chip";
 import {
   Modal,
   ModalBody,
@@ -9,6 +8,7 @@ import {
 } from "@nextui-org/modal";
 import { useState } from "react";
 import { type TEvent } from "~/app/_models/event";
+import EditableState from "~/app/events/_components/EditableState";
 import { EventForm } from "~/app/events/_components/EventForm";
 import EventValues from "~/app/events/_components/EventValues";
 import { useEventForm } from "~/app/events/_utils/useEventForm";
@@ -56,7 +56,7 @@ export function EventDetailModal({
         <ModalHeader className="flex">
           <div>{event.name}</div>
           <div className="grow" />
-          <Chip color={state.color}>{state.label}</Chip>
+          <EditableState state={state} eventId={event.id} />
         </ModalHeader>
         <ModalBody>
           {isEdit ? (

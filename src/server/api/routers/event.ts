@@ -67,4 +67,22 @@ export const eventRouter = createTRPCRouter({
       },
     });
   }),
+
+  changeState: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        state: z.nativeEnum(EventState),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.db.event.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          state: input.state,
+        },
+      });
+    }),
 });

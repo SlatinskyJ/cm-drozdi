@@ -4,6 +4,7 @@ import { EventState } from "~/enums/EventState";
 export type TFormatEventStateReturn = {
   label: string;
   color: ChipProps["color"];
+  value: EventState;
 };
 
 export default function formatEventState(
@@ -11,14 +12,14 @@ export default function formatEventState(
 ): TFormatEventStateReturn {
   switch (state) {
     case EventState.PROPOSED:
-      return { label: "Návrh", color: "default" };
+      return { label: "Návrh", color: "default", value: state };
     case EventState.PENDING:
-      return { label: "Nerozhodnuto", color: "warning" };
+      return { label: "Nerozhodnuto", color: "warning", value: state };
     case EventState.CONFIRMED:
-      return { label: "Potvrzeno", color: "success" };
+      return { label: "Potvrzeno", color: "success", value: state };
     case EventState.CANCELED:
-      return { label: "Zrušeno", color: "danger" };
+      return { label: "Zrušeno", color: "danger", value: state };
     default:
-      return { label: "Neznámý", color: "unknown" };
+      return { label: "Neznámý", color: "unknown", value: state };
   }
 }
