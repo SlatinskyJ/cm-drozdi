@@ -12,7 +12,7 @@ export function useIsAdmin(): boolean {
     }
 
     void getRole();
-  });
+  }, []);
 
   return isAdmin;
 }
