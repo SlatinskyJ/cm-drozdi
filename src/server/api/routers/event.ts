@@ -26,7 +26,7 @@ export const eventRouter = createTRPCRouter({
 
       return ctx.db.event.upsert({
         where: {
-          id: id,
+          id: id ?? "",
         },
         update: { ...data },
         create: { ...data },

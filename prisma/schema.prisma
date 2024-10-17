@@ -75,7 +75,7 @@ model VerificationToken {
 }
 
 model Event {
-  id          String    @id @default(cuid())
+  id          String    @id @unique @default(cuid())
   name        String
   start       DateTime?
   end         DateTime?
