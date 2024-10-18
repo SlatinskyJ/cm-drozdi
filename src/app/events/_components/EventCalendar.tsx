@@ -30,12 +30,14 @@ export default function EventCalendar() {
           Kalendář akcí
         </div>
       </div>
-      <Calendar
-        isReadOnly
-        isDateUnavailable={isDateUnavailable}
-        showShadow
-        minValue={today(getLocalTimeZone())}
-      />
+      <div className="flex w-full justify-center">
+        <Calendar
+          isReadOnly
+          isDateUnavailable={isDateUnavailable}
+          showShadow
+          minValue={today(getLocalTimeZone())}
+        />
+      </div>
     </>
   );
 }

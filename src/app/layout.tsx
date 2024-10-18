@@ -1,5 +1,6 @@
 import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
+import type { Viewport } from "next";
 import { type Metadata } from "next";
 
 import { Pacifico } from "next/font/google";
@@ -8,6 +9,13 @@ import Login from "~/app/_components/Login";
 import Providers from "~/app/_components/Providers";
 import { getServerAuthSession } from "~/server/auth";
 import Menu from "./_components/Menu";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: "CM Drozdi",
@@ -35,7 +43,7 @@ export default async function RootLayout({
         <Providers>
           <Toaster position="bottom-right" />
           <div className="h-full">
-            <div className="absolute right-4 top-4 z-10 flex gap-2 align-bottom">
+            <div className="absolute right-4 top-2 z-10 flex gap-2 align-bottom">
               <Login />
               {session && <Menu />}
             </div>
