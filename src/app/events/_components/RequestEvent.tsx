@@ -34,7 +34,7 @@ export default function RequestEvent() {
   return (
     <>
       <Button
-        className="fixed bottom-12 right-3 z-50 text-2xl shadow-lg"
+        className="fixed bottom-12 right-3 z-50 text-2xl shadow-lg lg:bottom-14 lg:right-5"
         radius="full"
         color="primary"
         size="xl"
