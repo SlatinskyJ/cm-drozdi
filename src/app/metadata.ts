@@ -13,4 +13,7 @@ export const metadata: Metadata = {
   twitter: {
     images: logo.src,
   },
+  verification: {
+    google: "UIA_yQ2RFXxRh2mBtUqRN7jmYkUxlV0mdOtMIkK0rVU",
+  },
 };
