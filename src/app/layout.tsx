@@ -1,12 +1,12 @@
 import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import type { Viewport } from "next";
-import { type Metadata } from "next";
 
 import { Pacifico } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Login from "~/app/_components/Login";
 import Providers from "~/app/_components/Providers";
+import { metadata as myMeta } from "~/app/metadata";
 import { getServerAuthSession } from "~/server/auth";
 import Menu from "./_components/Menu";
 
@@ -17,11 +17,7 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export const metadata: Metadata = {
-  title: "CM Drozdi",
-  description: "CM Drozdi",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
-};
+export const metadata = myMeta;
 
 const pacifico = Pacifico({
   weight: "400",
