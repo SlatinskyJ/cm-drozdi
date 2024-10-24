@@ -1,3 +1,4 @@
+import logo from "@public/logo.png";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -6,10 +7,10 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
   openGraph: {
     siteName: "CM Drozdi",
-    images: "<generated>",
+    images: logo.src,
     url: "http://cmdrozdi.cz",
   },
   twitter: {
-    // images: "<generated>",
+    images: logo.src,
   },
 };

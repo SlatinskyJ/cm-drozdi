@@ -12,7 +12,5 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|auth|favicon.ico|images|$|opengraph-image.png|twitter-image.png).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|auth|favicon.ico|images|$).*)"],
 };
