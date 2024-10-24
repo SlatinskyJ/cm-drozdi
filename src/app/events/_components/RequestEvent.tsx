@@ -8,21 +8,21 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@nextui-org/modal";
+import { useRouter } from "next/navigation";
 import React, { useCallback } from "react";
 import toast from "react-hot-toast";
 import { EventForm } from "~/app/events/_components/EventForm";
 import { useEventForm } from "~/app/events/_utils/useEventForm";
-import { api } from "~/trpc/react";
 
 export default function RequestEvent() {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const utils = api.useUtils();
+  const router = useRouter();
 
   const onSaveSuccess = useCallback(() => {
-    void utils.event.getForCalendar.invalidate();
+    router.refresh();
     onClose();
     toast.success("Rezervace vytvořena");
-  }, [onClose, utils.event.getForCalendar]);
+  }, [onClose, router]);
 
   const {
     handleSubmit,
