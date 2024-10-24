@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   description: "Cimbálová muzika Drozdi",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
   openGraph: {
+    siteName: "CM Drozdi",
     images: "<generated>",
   },
   twitter: {
