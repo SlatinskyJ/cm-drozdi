@@ -7,8 +7,9 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: "CM Drozdi",
     images: "<generated>",
+    url: "http://cmdrozdi.cz",
   },
   twitter: {
-    images: "<generated>",
+    // images: "<generated>",
   },
 };
