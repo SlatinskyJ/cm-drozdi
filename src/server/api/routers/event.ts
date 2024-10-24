@@ -60,10 +60,12 @@ export const eventRouter = createTRPCRouter({
         location: true,
       },
       where: {
-        state: {
-          not: EventState.CANCELED,
+        AND: {
+          state: {
+            not: EventState.CANCELED,
+          },
+          start: { not: null },
         },
-        start: { not: null },
       },
     });
   }),

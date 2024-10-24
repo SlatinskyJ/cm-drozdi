@@ -6,3 +6,4 @@ type RouterOutput = inferRouterOutputs<AppRouter>;
 
 export type TCreateEvent = RouterInput["event"]["create"];
 export type TEvent = RouterOutput["event"]["getUpcoming"][0];
+export type TCalendarEvent = RouterOutput["event"]["getForCalendar"][0];

@@ -88,6 +88,8 @@ export default {
           "950": "#200a6b",
         },
         content1: "#FAF8E8",
+        content3: "#dcd2ab",
+        content4: "#c9b880",
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],

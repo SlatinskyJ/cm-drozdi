@@ -1,28 +1,10 @@
-"use client";
-
-import { Calendar } from "@components/ui/Calendar";
 import "../../EventCalendar.css";
+import { CalendarWithDates } from "@components/ui/Calendar";
+import CalendarSkeleton from "@components/ui/skeletons/CalendarSkeleton";
+import { Suspense } from "react";
+import { api } from "~/trpc/server";
 
-import {
-  type DateValue,
-  getLocalTimeZone,
-  isSameDay,
-  today,
-} from "@internationalized/date";
-import { api } from "~/trpc/react";
-import { parseDateJStoCalendarDateTime } from "~/utils/date";
-
-export default function EventCalendar() {
-  const { data: events } = api.event.getForCalendar.useQuery();
-
-  const dates = events?.map((event) =>
-    parseDateJStoCalendarDateTime(event.start!),
-  );
-
-  const isDateUnavailable = (calendarDate: DateValue): boolean => {
-    return !!dates?.find((date) => isSameDay(date, calendarDate));
-  };
-
+export default async function EventCalendar() {
   return (
     <>
       <div className="flex justify-center pb-3">
@@ -31,13 +13,16 @@ export default function EventCalendar() {
         </div>
       </div>
       <div className="flex w-full justify-center">
-        <Calendar
-          isReadOnly
-          isDateUnavailable={isDateUnavailable}
-          showShadow
-          minValue={today(getLocalTimeZone())}
-        />
+        <Suspense fallback={<CalendarSkeleton />}>
+          <CalendarWrapper />
+        </Suspense>
       </div>
     </>
   );
+}
+
+async function CalendarWrapper() {
+  const events = await api.event.getForCalendar();
+
+  return <CalendarWithDates events={events} />;
 }
