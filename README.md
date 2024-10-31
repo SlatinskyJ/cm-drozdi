@@ -1,29 +1,22 @@
-# Create T3 App
+# CM Drozdi web page
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+This project is the source code of www.cmdrozdi.cz
 
-## What's next? How do I make an app with this?
+## How to run local dev
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+### Prerequisites
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+1. NodeJs LTS version
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+### How to start dev
 
-## Learn More
+1. Create PrismaDB on your local machine - You can use DBngin or any other solution you find attractive
+2. Create .env file. You will need following keys to run the application:
+    1. DATABASE_URL in following format <i>"postgres://{userName}:{password}@{ipAddress}:{port}"</i>
+    2. <b>TODO</b> make other keys not required for dev env
+    3. <b>TODO</b> Create mock authentication
+3. Make sure your db is running
+4. From root folder of this project run `npm run db:push`
+5. You are now ready to start dev env with `npm run dev`
+6. Happy coding
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
-
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
-
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
