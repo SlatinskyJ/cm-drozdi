@@ -32,7 +32,5 @@ export function formatDateToTime(date: Date): string {
 }
 
 export function addMinutes(date: Date, minutes: number) {
-  const test = new Date(date.getTime() + minutes * 60 * 1000);
-  console.log("before", date, "after", test);
-  return test;
+  return new Date(date.getTime() + minutes * 60 * 1000);
 }
