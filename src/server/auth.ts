@@ -5,8 +5,8 @@ import {
 	type NextAuthOptions,
 } from 'next-auth';
 import { type Adapter } from 'next-auth/adapters';
+import Auth0Provider from 'next-auth/providers/auth0';
 import DiscordProvider from 'next-auth/providers/discord';
-import FacebookProvider from 'next-auth/providers/facebook';
 import { type UserRole } from '~/enums/UserRole';
 
 import { env } from '~/env';
@@ -20,14 +20,15 @@ import { db } from '~/server/db';
  */
 declare module 'next-auth' {
 	interface Session extends DefaultSession {
-		user: {
-			id: string;
-			role: UserRole;
-		} & DefaultSession['user'];
+		user: User & DefaultSession['user'];
 	}
 
 	interface User {
-		// ...other properties
+		id: string;
+		name: string;
+		email: string;
+		image: string;
+		emailVerified: boolean;
 		role: UserRole;
 	}
 }
@@ -45,14 +46,17 @@ export const authOptions: NextAuthOptions = {
 				...user,
 			},
 		}),
-		session: ({ session, user }) => ({
-			...session,
-			user: {
-				...session.user,
-				id: user.id,
-				role: user.role,
-			},
-		}),
+		session: ({ session, user }) => {
+			console.log('user', user);
+			return {
+				...session,
+				user: {
+					...session.user,
+					id: user.id,
+					role: user.role,
+				},
+			};
+		},
 	},
 	adapter: PrismaAdapter(db) as Adapter,
 	providers: [
@@ -60,11 +64,14 @@ export const authOptions: NextAuthOptions = {
 			clientId: env.DISCORD_CLIENT_ID,
 			clientSecret: env.DISCORD_CLIENT_SECRET,
 		}),
-		FacebookProvider({
-			clientId: env.FACEBOOK_CLIENT_ID,
-			clientSecret: env.FACEBOOK_CLIENT_SECRET,
+		Auth0Provider({
+			clientId: env.AUTH0_CLIENT_ID,
+			clientSecret: env.AUTH0_CLIENT_SECRET,
+			issuer: env.AUTH0_ISSUER,
 		}),
 		/**
+		 *
+		 *
 		 * ...add more providers here.
 		 *
 		 * Most other providers require a bit more work than the Discord provider. For example, the
