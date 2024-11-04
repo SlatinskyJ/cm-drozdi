@@ -7,15 +7,15 @@
  * need to use are documented accordingly near the end.
  */
 
-import { initTRPC, TRPCError } from "@trpc/server";
-import _ from "lodash";
-import superjson from "superjson";
-import { ZodError } from "zod";
+import { initTRPC, TRPCError } from '@trpc/server';
+import _ from 'lodash';
+import superjson from 'superjson';
+import { ZodError } from 'zod';
 
-import { getServerAuthSession } from "~/server/auth";
-import { db } from "~/server/db";
-import { addMinutes } from "~/utils/date";
-import { mapValuesDeep } from "~/utils/object";
+import { getServerAuthSession } from '~/server/auth';
+import { db } from '~/server/db';
+import { addMinutes } from '~/utils/date';
+import { mapValuesDeep } from '~/utils/object';
 
 /**
  * 1. CONTEXT
@@ -30,13 +30,13 @@ import { mapValuesDeep } from "~/utils/object";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const session = await getServerAuthSession();
+	const session = await getServerAuthSession();
 
-  return {
-    db,
-    session,
-    ...opts,
-  };
+	return {
+		db,
+		session,
+		...opts,
+	};
 };
 
 /**
@@ -47,17 +47,19 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  * errors on the backend.
  */
 const t = initTRPC.context<typeof createTRPCContext>().create({
-  transformer: superjson,
-  errorFormatter({ shape, error }) {
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
-    };
-  },
+	transformer: superjson,
+	errorFormatter({ shape, error }) {
+		return {
+			...shape,
+			data: {
+				...shape.data,
+				zodError:
+					error.cause instanceof ZodError
+						? error.cause.flatten()
+						: null,
+			},
+		};
+	},
 });
 
 /**
@@ -88,40 +90,40 @@ export const createTRPCRouter = t.router;
  * network latency that would occur in production but not in local development.
  */
 const timingMiddleware = t.middleware(async ({ next, path }) => {
-  const start = Date.now();
+	const start = Date.now();
 
-  if (t._config.isDev) {
-    // artificial delay in dev
-    const waitMs = Math.floor(Math.random() * 400) + 100;
-    await new Promise((resolve) => setTimeout(resolve, waitMs));
-  }
+	if (t._config.isDev) {
+		// artificial delay in dev
+		const waitMs = Math.floor(Math.random() * 400) + 100;
+		await new Promise((resolve) => setTimeout(resolve, waitMs));
+	}
 
-  const result = await next();
+	const result = await next();
 
-  const end = Date.now();
-  console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
+	const end = Date.now();
+	console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
 
-  return result;
+	return result;
 });
 
 const dateMiddleware = t.middleware(async ({ next }) => {
-  const result = await next();
+	const result = await next();
 
-  const offset = -1 * new Date().getTimezoneOffset();
+	const offset = -1 * new Date().getTimezoneOffset();
 
-  const data = result.ok
-    ? mapValuesDeep(result.data, (value) => {
-        if (_.isDate(value)) {
-          return addMinutes(value, offset);
-        }
-        return value;
-      })
-    : undefined;
+	const data = result.ok
+		? mapValuesDeep(result.data, (value) => {
+				if (_.isDate(value)) {
+					return addMinutes(value, offset);
+				}
+				return value;
+			})
+		: undefined;
 
-  return {
-    ...result,
-    data,
-  };
+	return {
+		...result,
+		data,
+	};
 });
 
 /**
@@ -132,8 +134,8 @@ const dateMiddleware = t.middleware(async ({ next }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure
-  .use(timingMiddleware)
-  .use(dateMiddleware);
+	.use(timingMiddleware)
+	.use(dateMiddleware);
 
 /**
  * Protected (authenticated) procedure
@@ -144,16 +146,16 @@ export const publicProcedure = t.procedure
  * @see https://trpc.io/docs/procedures
  */
 export const protectedProcedure = t.procedure
-  .use(timingMiddleware)
-  .use(dateMiddleware)
-  .use(({ ctx, next }) => {
-    if (!ctx.session || !ctx.session.user) {
-      throw new TRPCError({ code: "UNAUTHORIZED" });
-    }
-    return next({
-      ctx: {
-        // infers the `session` as non-nullable
-        session: { ...ctx.session, user: ctx.session.user },
-      },
-    });
-  });
+	.use(timingMiddleware)
+	.use(dateMiddleware)
+	.use(({ ctx, next }) => {
+		if (!ctx.session || !ctx.session.user) {
+			throw new TRPCError({ code: 'UNAUTHORIZED' });
+		}
+		return next({
+			ctx: {
+				// infers the `session` as non-nullable
+				session: { ...ctx.session, user: ctx.session.user },
+			},
+		});
+	});
