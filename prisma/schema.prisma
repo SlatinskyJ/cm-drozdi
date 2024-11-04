@@ -55,15 +55,33 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  posts         Post[]
-  role          Int?      @default(0)
+  id                 String               @id @default(cuid())
+  name               String?
+  email              String?              @unique
+  emailVerified      DateTime?
+  image              String?
+  accounts           Account[]
+  sessions           Session[]
+  posts              Post[]
+  role               Int?                 @default(0)
+  InstrumentsOnUsers InstrumentsOnUsers[]
+  UsersOnEvents      UsersOnEvents[]
+}
+
+model InstrumentsOnUsers {
+  user         User       @relation(fields: [userId], references: [id])
+  userId       String
+  instrument   Instrument @relation(fields: [instrumentId], references: [id])
+  instrumentId String
+
+  @@id([userId, instrumentId])
+}
+
+model Instrument {
+  id                 String               @id @default(cuid())
+  name               String
+  imageUrl           String?
+  InstrumentsOnUsers InstrumentsOnUsers[]
 }
 
 model VerificationToken {
@@ -74,15 +92,27 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model UsersOnEvents {
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, eventId])
+}
+
 model Event {
-  id          String    @id @unique @default(cuid())
-  name        String
-  start       DateTime?
-  end         DateTime?
-  state       Int       @default(0)
-  email       String?
-  phone       String?
-  description String?
-  isPrivate   Boolean
-  location    String?
+  id            String          @id @unique @default(cuid())
+  name          String
+  start         DateTime?
+  end           DateTime?
+  state         Int             @default(0)
+  email         String?
+  phone         String?
+  description   String?
+  isPrivate     Boolean
+  location      String?
+  UsersOnEvents UsersOnEvents[]
 }
