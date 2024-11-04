@@ -5,11 +5,13 @@ import {
   Time,
 } from "@internationalized/date";
 import { floor } from "lodash";
+import moment from "moment";
 
 export function getTimeDiff(start: Date, end: Date): Time {
-  const startDateTime = parseDateJStoCalendarDateTime(start);
-  const endDateTime = parseDateJStoCalendarDateTime(end);
-  const minutes = endDateTime.compare(startDateTime) / (60 * 1000);
+  const startDateTime = moment(start);
+  const endDateTime = moment(end);
+
+  const minutes = endDateTime.diff(startDateTime, "minutes");
   return new Time(floor(minutes / 60), minutes % 60);
 }
 
@@ -27,4 +29,10 @@ export function formatTime(time: Time): string {
 
 export function formatDateToTime(date: Date): string {
   return formatTime(parseTime(date.toISOString().slice(11, 16)));
+}
+
+export function addMinutes(date: Date, minutes: number) {
+  const test = new Date(date.getTime() + minutes * 60 * 1000);
+  console.log("before", date, "after", test);
+  return test;
 }

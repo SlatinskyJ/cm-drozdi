@@ -39,11 +39,12 @@ export function useEventForm(initValues?: TEvent, onSuccess?: () => void) {
   const onSubmit: SubmitHandler<TEventInputs> = useCallback(
     (data) => {
       const { date, ...rest } = data;
+      const localTZ = getLocalTimeZone();
 
       const req: TCreateEvent = {
         ...rest,
-        start: date?.start.toDate(getLocalTimeZone()),
-        end: date?.end.toDate(getLocalTimeZone()),
+        start: date?.start.toDate(localTZ),
+        end: date?.end.toDate(localTZ),
       };
       createEvent(req, {
         onSuccess,
