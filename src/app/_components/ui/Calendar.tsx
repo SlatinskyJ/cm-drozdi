@@ -15,9 +15,10 @@ export const Calendar = extendVariants(NextCalendar, {});
 export function CalendarWithDates({
 	events,
 }: Readonly<{ events: TCalendarEvent[] }>) {
-	const dates = events.map((event) =>
-		parseDateJStoCalendarDateTime(event.start!),
-	);
+	const dates = events
+		.map((event) => event.start)
+		.filter((date) => !!date)
+		.map((startDate) => parseDateJStoCalendarDateTime(startDate));
 
 	const isDateUnavailable = (calendarDate: DateValue): boolean => {
 		return !!dates?.find((date) => isSameDay(date, calendarDate));
