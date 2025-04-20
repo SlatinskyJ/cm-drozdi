@@ -1,9 +1,4 @@
-import {
-	type CalendarDateTime,
-	parseDateTime,
-	parseTime,
-	Time,
-} from '@internationalized/date';
+import { parseDateTime, parseTime, Time } from '@internationalized/date';
 import { floor } from 'lodash';
 import moment from 'moment';
 
@@ -15,7 +10,7 @@ export function getTimeDiff(start: Date, end: Date): Time {
 	return new Time(floor(minutes / 60), minutes % 60);
 }
 
-export function parseDateJStoCalendarDateTime(date: Date): CalendarDateTime {
+export function parseDateJStoCalendarDateTime(date: Date) {
 	return parseDateTime(date.toISOString().slice(0, -1));
 }
 
