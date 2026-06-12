@@ -21,7 +21,6 @@ next-env.d.ts
 # production
 /build
 package-lock.json
-yarn.lock
 
 # misc
 .DS_Store
