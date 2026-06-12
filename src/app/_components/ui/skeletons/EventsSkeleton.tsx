@@ -1,11 +1,11 @@
-import { EventSkeleton } from "@components/ui/skeletons/EventSkeleton";
+import { EventSkeleton } from '@components/ui/skeletons/EventSkeleton';
 
 export async function EventsSkeleton() {
-  return (
-    <>
-      <EventSkeleton />
-      <EventSkeleton />
-      <EventSkeleton />
-    </>
-  );
+	return (
+		<>
+			<EventSkeleton />
+			<EventSkeleton />
+			<EventSkeleton />
+		</>
+	);
 }
