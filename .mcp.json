@@ -28,7 +28,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "prisma",
+        "prisma@latest",
         "mcp"
       ],
       "env": {}
