@@ -25,7 +25,7 @@ export default function EditableState({
 
   const handleUpdate = (newState: string | number) => {
     mutate(
-      { id: eventId, state: toNumber(newState) as EventState },
+      { id: eventId, state: toNumber(newState) },
       {
         onSuccess: () => {
           void utils.event.getUpcoming.refetch();
