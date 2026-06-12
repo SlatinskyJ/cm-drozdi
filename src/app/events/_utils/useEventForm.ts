@@ -1,6 +1,5 @@
 import { getLocalTimeZone } from '@internationalized/date';
-import type { DateInputValue } from '@nextui-org/date-input';
-import type { RangeValue } from '@react-types/shared';
+import type { DateRangePickerProps } from '@nextui-org/date-picker';
 import { isNil, omitBy } from 'lodash';
 import { useCallback } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
@@ -9,7 +8,7 @@ import { api } from '~/trpc/react';
 import { parseDateJStoCalendarDateTime } from '~/utils/date';
 
 export type TEventInputs = Omit<TCreateEvent, 'start' | 'end'> & {
-	date: RangeValue<DateInputValue>;
+	date: NonNullable<DateRangePickerProps['value']>;
 };
 
 function transformInitValues(data?: TEvent): Partial<TEventInputs> {
@@ -18,10 +17,13 @@ function transformInitValues(data?: TEvent): Partial<TEventInputs> {
 	const { start, end, ...rest } = data;
 	const date =
 		!!start && !!end
-			? {
+			? // parseDateJStoCalendarDateTime returns a CalendarDateTime from the
+				// top-level @internationalized/date, which is a separate physical copy
+				// from the one DateRangePicker resolves; cast to bridge the nominal gap.
+				({
 					start: parseDateJStoCalendarDateTime(start),
 					end: parseDateJStoCalendarDateTime(end),
-				}
+				} as unknown as TEventInputs['date'])
 			: undefined;
 	return { ...omitBy(rest, isNil), date };
 }
