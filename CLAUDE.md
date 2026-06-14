@@ -63,8 +63,8 @@ All env vars are validated via `@t3-oss/env-nextjs` in `src/env.js`. Adding a ne
 
 `src/utils/date.ts` mixes `@internationalized/date` (calendar UI, e.g. NextUI date pickers) and `moment` (duration math) — used by the events calendar and event form.
 
-## Active initiative: dependency upgrade
+## Active initiative: modernization & dependency upgrade
 
-`docs/superpowers/plans/2026-06-11-dependency-upgrade-master-plan.md` is the master roadmap for migrating this app from its 2024-era T3 stack (Next 14, React 18, NextUI, Prisma 5, Tailwind 3, Zod 3, ESLint 8) to current versions, in 9 sequential phases (each its own branch/PR, with a spec written via the `writing-plans` skill before the phase starts). Do not execute phases from that doc alone — read it for context and current phase status before doing any dependency-upgrade or NextUI→shadcn work. A WIP shadcn migration (Phase 3) exists stashed on `chore/migrate-to-shadcn`.
+`docs/superpowers/plans/2026-06-11-dependency-upgrade-master-plan.md` is the master roadmap for modernizing this app from its 2024-era T3 stack to current versions, plus migrating auth off NextAuth. The work is split into sequential phases, each its own branch/PR, with a spec written via the `writing-plans` skill before the phase starts. **Read that file first** for the locked decisions, phase breakdown, ordering rationale, and current status before doing any upgrade, auth, or NextUI→shadcn work — it is the source of truth and is kept current there (don't duplicate its specifics here). Do not execute phases from the roadmap alone; each phase gets its own spec + execution plan.
 
 `.agents/skills/` contains project-local skills supporting this effort (`next-upgrade`, `prisma-upgrade-v7`, `prisma-driver-adapter-implementation`, `tailwind-v4-shadcn`, `shadcn`, `zod-4`, `vercel-cli`).

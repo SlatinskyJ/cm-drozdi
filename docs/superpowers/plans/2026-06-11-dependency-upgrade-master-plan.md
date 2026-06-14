@@ -1,18 +1,32 @@
-# Dependency Upgrade Master Plan
+# Dependency Upgrade & Modernization Master Plan
 
 > **For agentic workers:** This is the MASTER ROADMAP, not an execution plan. Each phase gets its own spec + detailed execution plan (written via superpowers:writing-plans) immediately before that phase starts. Do NOT execute phases from this document alone.
 
-**Goal:** Upgrade cm-drozdi from its 2024-era T3 stack to current LTS/stable versions of every dependency, one phase per PR, with a working app after every phase.
+**Goal:** Modernize cm-drozdi from its 2024-era T3 stack to current stable versions, and replace the aging OAuth-only auth with a maintained credentials-based system — one phase per PR, with a working, deployable app after every phase.
 
-**Architecture:** Nine sequential phases. First lay guardrails (baseline + an E2E regression net), then cheap pinned-version bumps, then UI library migration (removes the biggest React-19 blocker), then framework majors (React/Next), then styling (Tailwind 4), then data layer (Prisma 7), then validation (Zod 4), then tooling (ESLint flat config). Each phase is independently shippable and leaves `main` deployable.
+**Architecture:** Ten sequential phases. Lay guardrails (baseline), migrate auth to Better Auth, build an E2E regression net + CI, then climb the dependency ladder ordered by risk and dependency chain: cheap bumps → UI library migration → framework majors → styling → data layer → validation → tooling. Each phase is independently shippable.
 
-**Tech Stack:** Next.js, React, tRPC, Prisma, NextAuth v4, Tailwind, shadcn/ui, Zod, TypeScript, Yarn 1, Vercel Postgres.
+**Tech Stack:** Next.js, React, tRPC, Prisma, **Better Auth** (replacing NextAuth v4), Tailwind, shadcn/ui, Zod, TypeScript, Yarn 1, Postgres.
+
+---
+
+## Decisions (locked 2026-06-14)
+
+- **Branch base:** ALL phases fork from `develop` and PR back into `develop`. Ignore `main` unless told otherwise. `main` stays production-only (release merges from develop).
+- **Prior attempts:** Discard all previous upgrade work — remote branches `feature/upgrade-to-NextJS15`, `chore/update-prisma`, and the local shadcn stash/`chore/migrate-to-shadcn` branch. Nothing is salvaged.
+- **Version target:** latest stable across the board (Next 16, React 19, Prisma 7, Tailwind 4, Zod 4, ESLint 10). Early-adopter risk accepted; the phased approach + E2E net absorbs it.
+- **Auth:** migrate off NextAuth v4 to **Better Auth** (actively maintained, free/self-hosted, first-class email+password, DB sessions, optional social later). NextAuth v5/Auth.js is maintenance-mode and OAuth-focused — rejected.
+  - **Account model:** per-member, **admin-created** (no open self-registration). Better Auth `admin` plugin for create-member + role management.
+  - **Social login:** dropped as a requirement; nice-to-have to add later.
+  - **Data:** **full DB reset** — wipe everything (incl. events) and reseed. No data migration. Greatly simplifies the auth phase.
+- **Roles:** keep `UserRole` GUEST=0 / MEMBER=1 / ADMIN=2, carried as a Better Auth custom user field.
+- **CI:** introduce **GitHub Actions** (repo has none) in Phase 2 — runs the full gate on every PR with a throwaway Postgres service.
 
 ---
 
 ## Ground rules (apply to every phase)
 
-1. **One phase = one branch = one PR.** Branch from fresh `main`. Merge before starting next phase.
+1. **One phase = one branch = one PR.** Fork from fresh `develop`. Merge before starting next phase.
 2. **Before each phase:** write a spec (brainstorming skill) + detailed execution plan (writing-plans skill) saved next to this file as `2026-MM-DD-phase-N-<name>.md`.
 3. **Verification gate (the gate, since there is no unit suite):**
    ```bash
@@ -21,27 +35,28 @@
    yarn lint
    npx tsc --noEmit
    yarn build
-   yarn e2e        # added once Phase 1 lands; before that, manual smoke only
+   yarn e2e        # added once Phase 2 lands; before that, manual smoke only
    ```
-   All must pass clean. Then manual smoke for anything e2e does not cover: `yarn dev`, log in, view events calendar, open event detail, create/request event, delete event.
-4. **No mixed concerns.** If a phase reveals an unrelated bug, fix in separate PR.
+   All must pass clean. From Phase 2 on, CI enforces this on every PR.
+4. **No mixed concerns.** If a phase reveals an unrelated bug, fix in a separate PR.
 5. **Lockfile:** commit `yarn.lock` changes with the phase that caused them.
 6. **Rollback story:** every phase is one `git revert` of one merge commit.
 
 ---
 
-## Current state (audited 2026-06-11)
+## Current state (audited 2026-06-11 / 14)
 
-- On `main` @ `60096ee`, clean tree.
-- **Testing: none.** No `*.test.*`/`*.spec.*` files, no vitest/jest/playwright/cypress, no `.github/workflows` CI, no `test` script. Only existing safety net = `tsc` + `next build` + manual checking.
-- Shadcn migration WIP exists in `stash@{0}` on branch `chore/migrate-to-shadcn` (new `Button.tsx`/`Calendar.tsx`, old ones renamed `Old*`, `components.json`, `src/lib/`, edits to Menu/events components/globals.css/tailwind.config).
-- Node v22.14.0 local, Yarn 1.22.19. No `engines` field, no `.nvmrc`.
-- 14 files import `@nextui-org/*`. ESLint uses legacy `.eslintrc.cjs`. `src/env.js` uses `@t3-oss/env-nextjs`. NextAuth v4 with Prisma adapter, custom `src/middleware.ts`.
+- Work from `develop` (4 commits ahead of `main`). Discard prior upgrade branches and the shadcn stash.
+- **Testing: none.** No `*.test.*`/`*.spec.*`, no Playwright/vitest/jest, no `.github/workflows`, no `test` script. Safety net today = `tsc` + `next build` + manual checking.
+- **Auth today:** NextAuth v4, OAuth-only (Discord + Facebook), `@auth/prisma-adapter`, **database sessions**. `src/server/auth.ts`, `src/middleware.ts` (cookie gate), `src/app/api/auth/[...nextauth]/route.ts`, `src/utils/permissions.ts`, `getServerAuthSession`. Env: `DISCORD_*`, `FACEBOOK_*`, `NEXTAUTH_*` in `src/env.js`.
+- Node v22.14.0 local, Yarn 1.22.19. No `engines`, no `.nvmrc`.
+- 14 files import `@nextui-org/*`. ESLint on legacy `.eslintrc.cjs`. `src/env.js` uses `@t3-oss/env-nextjs`.
 
 ## Version gap table
 
 | Package | Current | Target | Jump |
 |---|---|---|---|
+| next-auth + @auth/prisma-adapter | ^4.24 / ^1.6 | **removed** → better-auth | auth migration (Phase 1) |
 | next | ^14.2.4 | 16.x | 2 majors |
 | react / react-dom | ^18.3.1 | 19.2.x | 1 major |
 | prisma + @prisma/client | ^5.21 / ^5.14 | 7.x | 2 majors |
@@ -52,13 +67,11 @@
 | @tanstack/react-query | ^5.50 | 5.10x | minors |
 | framer-motion | ^11 | **removed** | dies with NextUI |
 | @nextui-org/* (13 pkgs) | 2.x | **removed** | replaced by shadcn |
-| next-auth | ^4.24.7 | 4.24.x | patches only (v5 out of scope) |
-| @auth/prisma-adapter | ^1.6.0 | latest v4-compatible | check peer deps |
-| @vercel/postgres | ^0.10.0 | keep (deprecated upstream) | migration deferred, see Phase 6 note |
+| @vercel/postgres | ^0.10.0 | keep (deprecated upstream) | migration deferred, see Phase 7 |
 | typescript | ^5.5.3 | 5.x latest | minor |
 | @types/node | ^20 | 22.x | match runtime |
 
-**Explicit non-goals:** NextAuth v5 / Auth.js migration, replacing @vercel/postgres, a full unit/integration suite, Yarn 1 → modern package manager. Each is a candidate follow-up after Phase 8.
+**Explicit non-goals:** social/OAuth login (defer as nice-to-have), replacing @vercel/postgres, a full unit/integration suite, Yarn 1 → modern package manager. Candidate follow-ups after Phase 9.
 
 ---
 
@@ -67,120 +80,138 @@
 **Branch:** `chore/upgrade-phase-0-baseline`
 **Risk:** none. **Size:** tiny.
 
-- Add `"engines": { "node": ">=20" }` to package.json; add `.nvmrc` with `22`.
-- Run the verification gate on untouched `main` and record results in the phase PR description — this is the baseline every later phase is measured against. If anything already fails, fix it here.
-- Optional: add `"typecheck": "tsc --noEmit"` script so the gate is one command per step.
+- Add `"engines": { "node": ">=20" }`; add `.nvmrc` with `22`.
+- Add `"typecheck": "tsc --noEmit"` script so the gate is one command per step.
+- Run the gate on untouched `develop`; record results in the PR as the baseline. Fix anything already broken here.
 
-**Exit criteria:** gate passes on main; baseline documented.
+**Exit criteria:** gate passes on develop; baseline documented.
 
-## Phase 1 — E2E regression net
+## Phase 1 — Auth migration to Better Auth
 
-**Branch:** `chore/upgrade-phase-1-e2e`
-**Risk:** low (additive only, no app changes). **Size:** medium. **Rationale:** with zero tests and seven risky upgrade PRs ahead, a thin behavior-level net catches the regressions `tsc` cannot — Tailwind visual breaks, Next caching/rendering changes, runtime auth/data breakage. Playwright E2E tests behavior not implementation, so it survives every later upgrade unchanged.
+**Branch:** `feat/upgrade-phase-1-better-auth`
+**Risk:** high (auth is critical-path; no E2E net yet — rely on thorough manual smoke + review). **Size:** large.
+**Note:** done on the current stable stack (pre-framework-upgrades) to isolate auth from Next 16/React 19 churn, and to remove the next-auth-v4-on-React-19 risk before Phase 5. Use context7 for current Better Auth docs during the spec (no project-local better-auth skill exists).
 
-- Add Playwright + `@playwright/test`; `playwright.config.ts`; `yarn e2e` + `yarn e2e:ui` scripts.
-- **Auth strategy (decide in spec):** NextAuth v4 login in E2E — likely a test-only credentials path or storageState session-cookie injection, against a seeded test DB. Needs a dev/test database + seed script. This is the main design question for the spec.
-- Critical-path specs (~5-8): unauthenticated redirect to login; events calendar renders; open event detail modal; request/create event form — validation error + successful submit; delete event; menu navigation.
-- Add `.github/workflows/ci.yml`: install → prisma generate → lint → tsc → build → e2e on every PR. (First CI in the repo.)
-- Tests assert user-visible outcomes (text, navigation, row presence), never internal markup that shadcn/Tailwind phases will legitimately change.
+- Add `better-auth`; remove `next-auth`, `@auth/prisma-adapter`.
+- `src/server/auth.ts`: Better Auth instance with `emailAndPassword: { enabled: true, disableSignUp: true }`, Prisma adapter, `admin` plugin, `additionalFields: { role }` mapped to `UserRole` (default GUEST).
+- Schema: replace NextAuth's `Account`/`Session`/`User`/`VerificationToken` with Better Auth's generated schema (`npx @better-auth/cli generate`). Keep `UsersOnEvents`/`InstrumentsOnUsers`/`Event`/`Instrument` domain tables. **Full DB reset** — drop & recreate, fresh migration; no data preservation.
+- Route handler: `src/app/api/auth/[...nextauth]/route.ts` → `src/app/api/auth/[...all]/route.ts` using `toNextJsHandler(auth)`.
+- `src/middleware.ts`: swap the NextAuth cookie gate for Better Auth session check (`getSessionCookie`), preserving the existing matcher exclusions.
+- Replace `getServerAuthSession()` (server) and `useSession` (client) call sites with Better Auth equivalents (`auth.api.getSession`, `authClient.useSession`). Update `src/utils/permissions.ts` (`useIsAdmin`).
+- New UI: a sign-in page (email + password form via `authClient.signIn.email`) and a minimal admin "create member" flow (set email + initial password + role via the admin plugin). A sign-out control.
+- `src/env.js` + `.env.example`: remove `DISCORD_*`/`FACEBOOK_*`/`NEXTAUTH_*`; add `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (server schema + runtimeEnv).
+- Seed script: initial ADMIN + a couple of MEMBER accounts for dev/test.
 
-**Exit criteria:** `yarn e2e` green locally and in CI; all critical paths covered; gate (now incl. e2e) documented as the new baseline. From here on, every phase must keep e2e green.
+**Exit criteria:** gate passes; manual smoke — admin creates a member, member logs in/out, role gating (admin-only UI) works, unauthenticated hits redirect, protected tRPC procedures still authorize, event CRUD works under the new session.
 
-## Phase 2 — Low-risk version bumps
+## Phase 2 — E2E regression net + CI
 
-**Branch:** `chore/upgrade-phase-2-minor-bumps`
+**Branch:** `chore/upgrade-phase-2-e2e-ci`
+**Risk:** low (additive only). **Size:** medium. **Rationale:** with credentials auth now in place, E2E login is trivial; this net is the regression detector for phases 4-9 (catches what `tsc` can't — visual breaks, caching/rendering changes, runtime breakage). Built against the final auth, so it survives every later upgrade.
+
+- Add `@playwright/test`; `playwright.config.ts`; `yarn e2e` + `yarn e2e:ui` scripts.
+- Login helper: seed a known user, sign in via the credentials form (or programmatic `signIn.email`), save `storageState`. One dedicated test exercises the real login flow directly (no mocking needed now).
+- **Per-test isolation:** truncate + reseed the test DB before each test. (True transactional rollback won't work — the Next server holds its own DB connection across the HTTP boundary; truncate-and-reseed gives equivalent isolation.) Needs a dedicated test database + seed.
+- Critical-path specs (~6-8): unauthenticated redirect to sign-in; successful login; events calendar renders; open event detail modal; request/create event — validation error + successful submit; delete event; admin-only UI gated for non-admins.
+- `.github/workflows/ci.yml` (first CI in repo): Postgres service container + test env secrets → install → prisma generate → lint → tsc → build → e2e, on every PR to develop.
+- Assert user-visible outcomes (text, navigation, row presence), never internal markup that shadcn/Tailwind phases will legitimately change.
+
+**Exit criteria:** `yarn e2e` green locally and in CI; all critical paths covered; CI required on PRs. From here, every phase keeps e2e green.
+
+## Phase 3 — Low-risk version bumps
+
+**Branch:** `chore/upgrade-phase-3-minor-bumps`
 **Risk:** low. **Size:** small.
 
-- `@trpc/server`, `@trpc/client`, `@trpc/react-query`: `11.0.0-rc.446` → `^11` stable. Check changelog rc.446 → stable for renamed APIs (e.g. `unstable_httpBatchStreamLink` naming, transformer placement) against `src/trpc/` setup files.
+- `@trpc/server`, `@trpc/client`, `@trpc/react-query`: `11.0.0-rc.446` → `^11` stable. Check rc.446→stable changelog for renamed APIs (e.g. `unstable_httpBatchStreamLink`, transformer placement) against `src/trpc/` setup.
 - `@tanstack/react-query` → latest 5.x.
-- Minor/patch bumps: `next-auth`, `@auth/prisma-adapter` (stay v4-peer-compatible), `react-hook-form`, `react-hot-toast`, `react-icons`, `superjson`, `geist`, `@vercel/speed-insights`, `prettier`, `prettier-plugin-tailwindcss`, `@t3-oss/env-nextjs` (latest zod-3-compatible only — zod 4 comes in Phase 7), `@types/node` → 22.
-- Do **not** touch: react, next, prisma, tailwind, zod, eslint, anything `@nextui-org`.
+- Minor/patch bumps: `react-hook-form`, `react-hot-toast`, `react-icons`, `superjson`, `geist`, `@vercel/speed-insights`, `prettier`, `prettier-plugin-tailwindcss`, `@t3-oss/env-nextjs` (latest zod-3-compatible only — zod 4 is Phase 8), `@types/node` → 22.
+- Do **not** touch: react, next, prisma, tailwind, zod, eslint, anything `@nextui-org`, better-auth.
 
 **Exit criteria:** gate passes; tRPC calls work in e2e + smoke.
 
-## Phase 3 — Finish shadcn migration, remove NextUI
+## Phase 4 — Finish shadcn migration, remove NextUI
 
-**Branch:** resume `chore/migrate-to-shadcn` (pop `stash@{0}`)
-**Risk:** medium (UI regressions). **Size:** large — the biggest manual-work phase.
+**Branch:** `feat/upgrade-phase-4-shadcn`
+**Risk:** medium (UI regressions). **Size:** large — biggest manual-work phase. **Restart fresh** (the old stash is discarded).
 
-- Restore stash; reconcile with anything merged since (`2c0a036` instrument-tables commit is on this branch but not main — decide: rebase branch on main or cherry-pick).
-- Migrate remaining NextUI consumers (14 files at audit time): Providers, Chip, Tooltip, Calendar, Button, Dropdown, Skeleton(s), KeyValue, EventForm, Event, EventDetailModal, RequestEvent, useEventForm.
-- Component mapping: Modal → shadcn Dialog, Dropdown → DropdownMenu, date-picker/date-input → shadcn Calendar (`react-day-picker`) + Popover + input, Chip → Badge, Switch → Switch, Skeleton → Skeleton, Tooltip → Tooltip, Card → Card.
-- Remove deps: all 13 `@nextui-org/*`, `framer-motion`, `@internationalized/date` (verify nothing else imports it first).
-- Remove NextUI plugin/content paths from `tailwind.config.ts`; delete `Old*.tsx` files once nothing imports them.
-- shadcn install targets Tailwind 3 setup for now (Tailwind 4 conversion is Phase 5).
-- E2E from Phase 1 must stay green — if a selector breaks, it means either a real regression or an over-coupled test; fix the test only if it asserted internal markup.
+- Run `shadcn init` cleanly on current develop (Tailwind 3 setup — TW4 conversion is Phase 6). Use the `shadcn` project-local skill + MCP.
+- Migrate all NextUI consumers (14 files at audit time): Providers, Chip, Tooltip, Calendar, Button, Dropdown, Skeleton(s), KeyValue, EventForm, Event, EventDetailModal, RequestEvent, useEventForm.
+- Component mapping: Modal → Dialog, Dropdown → DropdownMenu, date-picker/date-input → shadcn Calendar (`react-day-picker`) + Popover + input, Chip → Badge, Switch → Switch, Skeleton → Skeleton, Tooltip → Tooltip, Card → Card.
+- Remove deps: all 13 `@nextui-org/*`, `framer-motion`, `@internationalized/date` (verify no other importers first).
+- Remove NextUI plugin/content from `tailwind.config.ts`.
+- Keep E2E green — if a selector breaks it's either a real regression or an over-coupled test (fix the test only if it asserted internal markup).
 
-**Exit criteria:** `grep -r "@nextui-org\|framer-motion" src/` returns nothing; gate passes; every screen visually smoke-checked (calendar, modals, forms, toasts, menu).
+**Exit criteria:** `grep -r "@nextui-org\|framer-motion" src/` empty; gate passes; every screen visually smoke-checked.
 
-## Phase 4 — React 19 + Next.js 14 → 15 → 16
+## Phase 5 — React 19 + Next.js 14 → 15 → 16
 
-**Branch:** `chore/upgrade-phase-4-react19-next16`
-**Risk:** high. **Size:** large. Two sub-steps inside one PR, committed separately.
+**Branch:** `feat/upgrade-phase-5-react19-next16`
+**Risk:** high. **Size:** large. Two sub-steps in one PR, committed separately. Use the `next-upgrade` project-local skill.
 
 **Step A — Next 15 + React 19:**
-- `npx @next/codemod@canary upgrade 15` (handles async request APIs).
-- Breaking changes to hunt manually: `cookies()`/`headers()`/`draftMode()` now async (check `src/server/`, tRPC context, auth); `params`/`searchParams` are Promises in pages/layouts/routes; fetch & route handlers **no longer cached by default** (audit every `fetch` and GET route handler for needed `cache`/`revalidate` opts); `useFormState` → `useActionState`.
-- Bump `@types/react` `@types/react-dom` → 19. NextAuth v4 + React 19: expect peer-dep warnings, verify `SessionProvider`/`getServerSession` runtime behavior.
+- `npx @next/codemod@canary upgrade 15` (async request APIs).
+- Hunt manually: `cookies()`/`headers()`/`draftMode()` now async (tRPC context, Better Auth server calls); `params`/`searchParams` are Promises; fetch & route handlers **no longer cached by default** (audit every `fetch` + GET handler for needed `cache`/`revalidate`); `useFormState` → `useActionState`.
+- Bump `@types/react` `@types/react-dom` → 19. Better Auth is React-19/Next-compatible (a key reason auth moved to Phase 1).
 - Verify gate + full smoke before Step B.
 
 **Step B — Next 16:**
-- `npx @next/codemod@canary upgrade` to 16. Review: Turbopack-by-default for dev/build (check tailwind/postcss compat — should be fine on TW3), `middleware.ts` conventions (file still supported; confirm matcher behavior unchanged for the timezone-offset + auth middleware), removed legacy APIs (`next lint` behavior changes — note for Phase 8), image defaults.
-- `eslint-config-next` → 16-compatible version (still on legacy config until Phase 8 — confirm it still loads under eslint 8; if next 16 drops eslintrc support entirely, Phase 8 folds into this phase — check release notes during spec).
+- `npx @next/codemod@canary upgrade` to 16. Review: Turbopack-by-default (check tailwind/postcss compat on TW3), `middleware.ts` conventions (confirm matcher unchanged for the timezone-offset + Better Auth gate), removed legacy APIs, `next lint` behavior (note for Phase 9), image defaults.
+- `eslint-config-next` → 16-compatible (still legacy config until Phase 9 — confirm it loads under eslint 8; **if Next 16 hard-drops eslintrc, fold Phase 9 in here** — verify in this phase's spec).
 
-**Exit criteria:** gate passes on Next 16/React 19; auth flow, middleware redirects, event CRUD, calendar all e2e + smoke-tested; build output shows no unexpected dynamic/static rendering changes (`yarn build` route table compared against Phase 0 baseline).
+**Exit criteria:** gate passes on Next 16/React 19; auth flow, middleware redirects, event CRUD, calendar all e2e + smoke-tested; `yarn build` route table compared against Phase 0 baseline for unexpected dynamic/static changes.
 
-## Phase 5 — Tailwind 3 → 4
+## Phase 6 — Tailwind 3 → 4
 
-**Branch:** `chore/upgrade-phase-5-tailwind4`
-**Risk:** medium-high (visual regressions everywhere, silent). **Size:** medium.
+**Branch:** `chore/upgrade-phase-6-tailwind4`
+**Risk:** medium-high (silent visual regressions). **Size:** medium. Use `tailwind-v4-shadcn` skill.
 
-- Run `npx @tailwindcss/upgrade` (requires Node 20+, clean git — both satisfied).
-- Config moves: `tailwind.config.ts` theme → CSS `@theme` in `src/styles/globals.css`; `@tailwind base/components/utilities` → `@import "tailwindcss"`; PostCSS plugin → `@tailwindcss/postcss`.
-- shadcn/ui Tailwind-4 conversion: CSS variables move to `@theme inline`, `tailwindcss-animate` → `tw-animate-css`, update per shadcn's official TW4 guide. Verify `components.json` config matches.
-- `prettier-plugin-tailwindcss` → TW4-compatible version.
-- Hunt renamed utilities the codemod flags: `shadow-sm`→`shadow-xs` scale shifts, `outline-none`→`outline-hidden`, ring width default change, border default color change.
+- Run `npx @tailwindcss/upgrade`.
+- Config moves: `tailwind.config.ts` theme → CSS `@theme` in `src/styles/globals.css`; `@tailwind ...` → `@import "tailwindcss"`; PostCSS plugin → `@tailwindcss/postcss`.
+- shadcn TW4 conversion: CSS vars → `@theme inline`, `tailwindcss-animate` → `tw-animate-css`, per shadcn's official TW4 guide; verify `components.json`.
+- `prettier-plugin-tailwindcss` → TW4-compatible.
+- Hunt codemod-flagged renames: `shadow-sm`→`shadow-xs`, `outline-none`→`outline-hidden`, ring width + border color default changes.
 
-**Exit criteria:** gate passes; side-by-side visual check of every page vs production; dark/light theme (if any) intact.
+**Exit criteria:** gate passes; side-by-side visual check of every page vs production.
 
-## Phase 6 — Prisma 5 → 6 → 7
+## Phase 7 — Prisma 5 → 6 → 7
 
-**Branch:** `chore/upgrade-phase-6-prisma7`
-**Risk:** high (data layer). **Size:** medium. Two sub-steps, committed separately.
+**Branch:** `feat/upgrade-phase-7-prisma7`
+**Risk:** high (data layer). **Size:** medium. Two sub-steps, committed separately. Use `prisma-upgrade-v7` (+ `prisma-driver-adapter-implementation` if adapters) skills.
 
-**Step A — 5 → 6:** minimal breakage expected; Node/TS minimums already satisfied. Check: implicit m-n relation order changes, `Buffer` → `Uint8Array` for `Bytes` fields, full-text search flag changes. Regenerate client, gate, smoke.
+**Step A — 5 → 6:** minimal breakage expected. Check implicit m-n relation order, `Buffer`→`Uint8Array` for `Bytes`, full-text search flags. Regenerate, gate, smoke.
 
-**Step B — 6 → 7:** the real work. During spec, read the v7 upgrade guide and decide on:
-- New `prisma.config.ts` (replaces schema-folder/env conventions; `package.json#prisma` config removed).
-- Generator: `prisma-client-js` → new `prisma-client` generator (output path now explicit, client imported from generated path — touches `src/server/db.ts` and possibly the `postinstall` hook).
-- Driver adapters now the default pattern — decide between `@prisma/adapter-pg` and keeping current setup; this is the moment to evaluate dropping deprecated `@vercel/postgres` (it's only used for the DB connection — check `src/server/db.ts`). If swap is trivial, fold it in; if not, defer and note follow-up.
-- `@auth/prisma-adapter` compatibility with Prisma 7 client — verify before committing to Step B; if incompatible, Step B blocks until adapter release supports it (check during spec, not mid-flight).
-- Run `prisma migrate dev` against a branch/dev database, never prod. Verify `db:*` scripts still work.
+**Step B — 6 → 7:** the real work. During spec, read the v7 guide and decide on:
+- New `prisma.config.ts` (replaces `package.json#prisma`/schema-folder conventions).
+- Generator `prisma-client-js` → new `prisma-client` (explicit output path, import from generated path — touches `src/server/db.ts`, possibly `postinstall`).
+- Driver adapters now default — choose `@prisma/adapter-pg` vs current; evaluate dropping deprecated `@vercel/postgres` here (only used for the connection — check `src/server/db.ts`). Fold the swap in if trivial, else defer + note.
+- **Verify Better Auth's Prisma adapter is compatible with Prisma 7 client** before committing Step B; block on it if not (check during spec).
+- Run `prisma migrate dev` against a dev/test DB, never prod. Verify `db:*` scripts.
 
-**Exit criteria:** gate passes; all CRUD e2e + smoke-tested against dev DB; migration deploy dry-run documented; Vercel build (postinstall generate) works.
+**Exit criteria:** gate passes; all CRUD + auth e2e + smoke-tested against dev DB; migrate-deploy dry-run documented; Vercel build (postinstall generate) works.
 
-## Phase 7 — Zod 3 → 4
+## Phase 8 — Zod 3 → 4
 
-**Branch:** `chore/upgrade-phase-7-zod4`
-**Risk:** medium. **Size:** small-medium.
+**Branch:** `chore/upgrade-phase-8-zod4`
+**Risk:** medium. **Size:** small-medium. Use `zod-4` skill.
 
 - `zod` → 4.x and `@t3-oss/env-nextjs` → zod-4-compatible major together (env.js is the tightest coupling).
-- Breaking changes to hunt: `z.string().email()` → `z.email()` style top-level formats, error customization API (`message` → `error`, errorMap changes), `.default()` semantics with transforms, `z.record()` now requires two args, coerce changes.
-- Touch points: `src/env.js`, every tRPC router input schema (`src/server/api/routers/`), `useEventForm` / form validation.
-- tRPC 11 stable supports zod 4 — confirm resolver versions if react-hook-form uses `@hookform/resolvers` (not currently a dep; forms may validate via tRPC only — confirm during spec).
+- Hunt: `z.string().email()` → top-level `z.email()`, error-customization API (`message`→`error`, errorMap), `.default()` w/ transforms, `z.record()` two-arg requirement, coerce changes.
+- Touch points: `src/env.js`, every tRPC router input schema (`src/server/api/routers/`), `useEventForm`/form validation.
+- Confirm tRPC 11 stable + any `@hookform/resolvers` usage support zod 4 (resolvers not currently a dep — confirm during spec).
 
-**Exit criteria:** gate passes; form validation errors still render correctly (submit invalid event form, check messages); env validation still fails-fast on missing var (test by unsetting one).
+**Exit criteria:** gate passes; form validation errors still render (submit invalid event form); env validation still fails-fast on a missing var.
 
-## Phase 8 — ESLint 8 → 10 flat config
+## Phase 9 — ESLint 8 → 10 flat config
 
-**Branch:** `chore/upgrade-phase-8-eslint10`
-**Risk:** low (tooling only, no runtime). **Size:** small-medium.
+**Branch:** `chore/upgrade-phase-9-eslint10`
+**Risk:** low (tooling only). **Size:** small-medium.
 
 - `.eslintrc.cjs` → `eslint.config.mjs` flat config.
 - `eslint` → 10.x, `@typescript-eslint/*` → latest (flat-native `typescript-eslint` meta-package), `eslint-config-next` flat preset, drop `@types/eslint`.
-- Preserve current rule customizations: type-checked presets, `array-type` off, `consistent-type-definitions` off, inline type-imports preference, `no-unused-vars` argsIgnorePattern, `require-await` off, drizzle rules (audit full `.eslintrc.cjs` during spec — only top 30 lines reviewed so far).
-- `next lint` was deprecated/removed in Next 16 — switch `lint` script to `eslint .` invocation per Next 16 docs.
-- Expect new violations from newer rule versions: fix or explicitly disable with comment, don't blanket-disable.
+- Preserve current rule customizations (audit full `.eslintrc.cjs` during spec — only top 30 lines reviewed so far): type-checked presets, `array-type` off, `consistent-type-definitions` off, inline type-imports, `no-unused-vars` argsIgnorePattern, etc.
+- `next lint` removed in Next 16 — switch `lint` script to `eslint .` per Next 16 docs.
+- Fix or explicitly-comment new violations; no blanket disables.
 
 **Exit criteria:** `yarn lint` passes with equivalent-or-stricter ruleset; CI/Vercel build unaffected.
 
@@ -188,22 +219,24 @@
 
 ## Phase order rationale
 
-- **1 before everything risky:** the E2E net is the regression detector for phases 3-8; building it first means every later phase has an objective pass/fail signal beyond `tsc`.
-- **3 before 4:** NextUI 2.x is incompatible-or-flaky with React 19 and pins framer-motion 11. Migrating UI first means Phase 4 debugs only framework breakage, not doomed-library breakage.
-- **4 before 5:** Tailwind 4 + shadcn TW4 guide assumes current React; also Next 16's Turbopack default interacts with PostCSS — better to land framework first, then styling on a stable base.
-- **6/7 after 4:** independent of UI churn; kept late so the riskiest data-layer change happens on an otherwise-quiet codebase. 6 and 7 could swap or parallelize if needed.
-- **8 last:** pure tooling, zero runtime risk, and final ESLint setup depends on Next 16 (Phase 4) being settled. **Exception:** if Next 16 hard-drops eslintrc support and `next build` fails on it, pull Phase 8 forward into Phase 4 (verify in Phase 4 spec).
+- **1 (auth) early:** independent of dep upgrades, highest-value change; doing it on the stable stack isolates it from framework churn and removes the next-auth-v4/React-19 risk before Phase 5. Credentials auth also makes Phase 2's E2E login trivial (vs a throwaway OAuth harness).
+- **2 (E2E) before the risky climb:** the regression detector for phases 4-9; built against final auth so it never needs rewriting.
+- **4 before 5:** NextUI 2.x is flaky on React 19 and pins framer-motion 11 — migrate UI first so Phase 5 debugs only framework breakage.
+- **5 before 6:** Tailwind 4 + shadcn TW4 guide assume current React; Next 16 Turbopack interacts with PostCSS — land framework first.
+- **7/8 after 5:** independent of UI churn; kept late so the riskiest data-layer change lands on a quiet codebase. 7 and 8 can swap if needed.
+- **9 last:** pure tooling, depends on Next 16 being settled. Exception: if Next 16 hard-drops eslintrc, fold into Phase 5.
 
 ## Tracking
 
 | Phase | PR | Status |
 |---|---|---|
 | 0 — Baseline | – | not started |
-| 1 — E2E regression net | – | not started |
-| 2 — Minor bumps | – | not started |
-| 3 — shadcn migration | – | WIP in stash@{0} |
-| 4 — React 19 / Next 16 | – | not started |
-| 5 — Tailwind 4 | – | not started |
-| 6 — Prisma 7 | – | not started |
-| 7 — Zod 4 | – | not started |
-| 8 — ESLint 10 | – | not started |
+| 1 — Better Auth migration | – | not started |
+| 2 — E2E net + CI | – | not started |
+| 3 — Minor bumps | – | not started |
+| 4 — shadcn migration | – | not started |
+| 5 — React 19 / Next 16 | – | not started |
+| 6 — Tailwind 4 | – | not started |
+| 7 — Prisma 7 | – | not started |
+| 8 — Zod 4 | – | not started |
+| 9 — ESLint 10 | – | not started |

@@ -45,3 +45,5 @@ yarn-error.log*
 
 # idea files
 .idea
+# Local-only session handoffs
+docs/superpowers/handoffs/
