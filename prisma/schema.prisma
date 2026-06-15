@@ -63,9 +63,9 @@ model Verification {
 
 model User {
   id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
   image         String?
   role          String?
   banned        Boolean?  @default(false)
