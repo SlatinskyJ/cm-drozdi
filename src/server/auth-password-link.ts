@@ -40,19 +40,22 @@ export async function generateSetPasswordUrl(userId: string): Promise<string> {
 /**
  * Consume a set/reset token and set the user's password. Creates the
  * `credential` account on first use (passwordless → active), otherwise updates
- * the existing password. One-time: `consumeVerificationValue` atomically
- * finds and deletes the verification row.
+ * the existing password. One-time: the verification row is deleted after a
+ * successful consume (or after detecting expiry).
  */
 export async function setPasswordWithToken(
 	token: string,
 	newPassword: string,
 ): Promise<void> {
 	const ctx = await auth.$context;
-	const record = await ctx.internalAdapter.consumeVerificationValue(
+	const record = await ctx.internalAdapter.findVerificationValue(
 		PREFIX + token,
 	);
 	if (!record) throw new Error('INVALID_TOKEN');
-	if (record.expiresAt < new Date()) throw new Error('EXPIRED_TOKEN');
+	if (record.expiresAt < new Date()) {
+		await ctx.internalAdapter.deleteVerificationByIdentifier(PREFIX + token);
+		throw new Error('EXPIRED_TOKEN');
+	}
 
 	const minLength = ctx.password.config.minPasswordLength;
 	if (newPassword.length < minLength) throw new Error('PASSWORD_TOO_SHORT');
@@ -72,4 +75,6 @@ export async function setPasswordWithToken(
 	} else {
 		await ctx.internalAdapter.updatePassword(userId, hash);
 	}
+
+	await ctx.internalAdapter.deleteVerificationByIdentifier(PREFIX + token);
 }
