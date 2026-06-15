@@ -26,6 +26,22 @@ export const env = createEnv({
 		DISCORD_CLIENT_SECRET: z.string(),
 		FACEBOOK_CLIENT_ID: z.string(),
 		FACEBOOK_CLIENT_SECRET: z.string(),
+		BETTER_AUTH_SECRET:
+			process.env.NODE_ENV === 'production'
+				? z.string()
+				: z.string().optional(),
+		BETTER_AUTH_URL: z.preprocess(
+			(str) =>
+				process.env.VERCEL_URL
+					? `https://${process.env.VERCEL_URL}`
+					: str,
+			z.string().url(),
+		),
+		// Required in production (no default); dev/test fall back to 'admin@cmdrozdi.cz'.
+		BOOTSTRAP_ADMIN_EMAIL:
+			process.env.NODE_ENV === 'production'
+				? z.string().email()
+				: z.string().email().default('admin@cmdrozdi.cz'),
 	},
 
 	/**
@@ -50,6 +66,9 @@ export const env = createEnv({
 		DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
 		FACEBOOK_CLIENT_ID: process.env.FACEBOOK_CLIENT_ID,
 		FACEBOOK_CLIENT_SECRET: process.env.FACEBOOK_CLIENT_SECRET,
+		BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+		BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+		BOOTSTRAP_ADMIN_EMAIL: process.env.BOOTSTRAP_ADMIN_EMAIL,
 	},
 	/**
 	 * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
