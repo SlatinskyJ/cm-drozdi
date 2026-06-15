@@ -4,7 +4,6 @@ import type { Viewport } from 'next';
 
 import { Pacifico } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
-import Login from '~/app/_components/Login';
 import Providers from '~/app/_components/Providers';
 import { metadata as myMeta } from '~/app/metadata';
 import { getServerAuthSession } from '~/server/auth';
@@ -40,7 +39,6 @@ export default async function RootLayout({
 					<Toaster position="bottom-right" />
 					<div className="h-full">
 						<div className="absolute right-4 top-2 z-10 flex gap-2 align-bottom">
-							<Login />
 							{session && <Menu />}
 						</div>
 						<div className="mx-auto h-full grow">{children}</div>

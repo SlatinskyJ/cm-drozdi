@@ -40,6 +40,7 @@ export type AppSession = {
  * `headers()` becomes async (Phase 5). Returns `null` when unauthenticated.
  */
 export const getServerAuthSession = async (): Promise<AppSession | null> => {
+	// eslint-disable-next-line @typescript-eslint/await-thenable -- headers() is sync on Next 14 but becomes async on Next 15+; awaiting now is forward-compatible.
 	const session = await auth.api.getSession({ headers: await headers() });
 	return session as AppSession | null;
 };
