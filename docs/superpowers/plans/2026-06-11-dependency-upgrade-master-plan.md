@@ -27,7 +27,7 @@
 ## Ground rules (apply to every phase)
 
 1. **One phase = one branch = one PR.** Fork from fresh `develop`. Merge before starting next phase.
-2. **Before each phase:** write a spec (brainstorming skill) + detailed execution plan (writing-plans skill) saved next to this file as `2026-MM-DD-phase-N-<name>.md`.
+2. **Before each phase:** write a spec (brainstorming skill) saved to `docs/superpowers/specs/2026-MM-DD-phase-N-<name>-design.md`, plus a detailed execution plan (writing-plans skill) saved to `docs/superpowers/plans/2026-MM-DD-phase-N-<name>.md`.
 3. **Verification gate (the gate, since there is no unit suite):**
    ```bash
    yarn install
