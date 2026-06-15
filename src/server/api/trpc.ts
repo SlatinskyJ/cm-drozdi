@@ -12,6 +12,7 @@ import _ from 'lodash';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
 
+import { UserRole } from '~/enums/UserRole';
 import { getServerAuthSession } from '~/server/auth';
 import { db } from '~/server/db';
 import { addMinutes } from '~/utils/date';
@@ -159,3 +160,14 @@ export const protectedProcedure = t.procedure
 			},
 		});
 	});
+
+/**
+ * Admin-only procedure. Builds on `protectedProcedure` and asserts the session
+ * user's role is ADMIN. Used by the `member` router (§8).
+ */
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+	if (ctx.session.user.role !== UserRole.ADMIN) {
+		throw new TRPCError({ code: 'FORBIDDEN' });
+	}
+	return next({ ctx });
+});
