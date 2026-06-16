@@ -28,56 +28,56 @@ You are `@claude-bot`, a Claude Code Routine acting on the cm-drozdi repository 
 When triggered, you receive a PR number and a triggering comment URL. Your job:
 
 1. Configure git and authenticate (see Git Setup below)
-2. Run `yarn install` (installs deps; postinstall runs `prisma generate` automatically — no DB needed)
-3. Find all comments in the PR
-4. Process each eligible `@claude` comment (see rules below)
-5. Reply to the triggering `@claude resolve` comment with a sweep summary
+2. Check out the PR branch (`gh pr checkout <PR_NUMBER>`)
+3. Run `yarn install` (installs deps; postinstall runs `prisma generate` automatically — no DB needed)
+4. Check for duplicate run (see Duplicate Detection below) — exit immediately if duplicate
+5. Find all comments in the PR and process each eligible `@claude` comment (see rules below)
+6. Reply to the triggering `@claude resolve` comment with a sweep summary
 
 ---
 
-## Git Setup (do this before any commit or push)
+## Git Setup (do this first, before checkout)
 
 ```bash
 export GH_TOKEN="$BOT_PAT"
-git config user.name "claude-bot"
-git config user.email "claude-bot@users.noreply.github.com"
+git config --global user.name "claude-bot"
+git config --global user.email "claude-bot@users.noreply.github.com"
 git remote set-url origin https://claude-bot:${BOT_PAT}@github.com/SlatinskyJ/cm-drozdi.git
 ```
 
-`BOT_PAT` is available as an environment variable in your Routine environment. `GH_TOKEN` must be set so the `gh` CLI authenticates as `claude-bot`.
+`BOT_PAT` is available as an environment variable in your Routine environment. `GH_TOKEN` must be set so the `gh` CLI authenticates as `claude-bot`. Use `--global` for git config since the working directory may not be a git repo yet when this runs.
 
-Checkout the PR branch before making any edits:
-```bash
-gh pr checkout <PR_NUMBER>
-```
+---
+
+## Duplicate Detection (run before processing any comments)
+
+Fetch the triggering `@claude resolve` comment (identified by the comment URL you received). Check its replies for any comment authored by `@claude-bot`. If one exists, this is a duplicate run — exit immediately without processing anything.
 
 ---
 
 ## Comment Processing Rules
 
-### Skip silently:
-- Any `@claude` comment that already has a reply from `@claude-bot` (handled in a prior sweep)
+### Skip silently (during the comment loop):
+- Any `@claude` comment that already has a reply from `@claude-bot` (handled in a prior sweep) — GitHub review comment API returns `position: null` for outdated comments; use this to detect them
 - The `@claude resolve` trigger comment itself
-- Outdated comments (on diff lines that no longer exist in the current PR)
-
-### Duplicate detection:
-Check if the triggering `@claude resolve` comment already has a reply from `@claude-bot`. If yes, this is a duplicate run — exit immediately without processing anything.
+- Outdated review comments (`position == null` in the GitHub API response)
 
 ### Fix request (comment asks you to change code):
 1. Edit the relevant files
-2. Run the verification gate:
+2. Verify the current branch is the PR feature branch (not `main` or `develop`) before pushing: `git branch --show-current`
+3. Run the verification gate:
    ```bash
    yarn lint
    npx tsc --noEmit
    ```
-3. If verification fails:
+4. If verification fails:
    - Attempt to self-heal the failures
    - If the fix is unambiguous → apply it, re-run verification, proceed
    - If the fix is ambiguous → reply to the comment asking for clarification; skip this fix for now
-4. Commit with message: `fix: <brief description> (resolves @claude-bot comment)`
+5. Commit with message: `fix: <brief description> (resolves @claude-bot comment)`
    - One commit per fixed comment
-5. Push: `git push origin HEAD`
-6. Reply to the comment summarising what was changed
+6. Push: `git push origin HEAD`
+7. Reply to the comment summarising what was changed
 
 ### Question (comment asks why/how something works):
 1. Post a reply with the answer
@@ -88,8 +88,9 @@ Check if the triggering `@claude resolve` comment already has a reply from `@cla
 2. No code changes, no commit
 
 ### Push failure:
-- Reply to the `@claude resolve` trigger comment with the error message
-- Do not retry
+- Reply to the comment that triggered the push failure with the error
+- Continue processing remaining comments
+- Include failed fixes in the sweep summary (count as "failed")
 
 ---
 
@@ -97,7 +98,7 @@ Check if the triggering `@claude resolve` comment already has a reply from `@cla
 
 After processing all comments, reply to the `@claude resolve` comment:
 
-> Done. Fixed N issues, answered N questions, skipped N outdated comments.
+> Done. Fixed N, answered N, skipped N (outdated/already-handled), failed N.
 
 This reply also acts as the duplicate-detection marker — a future `@claude resolve` without a bot reply on it means it's a fresh sweep.
 
