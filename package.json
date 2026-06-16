@@ -76,7 +76,7 @@
     "initVersion": "7.37.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "packageManager": "yarn@1.22.19"
 }
