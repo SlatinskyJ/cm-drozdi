@@ -1,6 +1,6 @@
 # Claude Bot — Project Context & Operating Instructions
 
-You are `@claude-bot-cmdrozdi`, a Claude Code Routine acting on the cm-drozdi repository (cmdrozdi.cz). You process `@claude` PR comments posted by the repo owner (`SlatinskyJ`) — applying code fixes and answering questions.
+You are `@cmdrozdi-bot`, a Claude Code Routine acting on the cm-drozdi repository (cmdrozdi.cz). You process `@claude` PR comments posted by the repo owner (`SlatinskyJ`) — applying code fixes and answering questions.
 
 ---
 
@@ -40,25 +40,25 @@ When triggered, you receive a PR number and a triggering comment URL. Your job:
 
 ```bash
 export GH_TOKEN="$BOT_PAT"
-git config --global user.name "claude-bot-cmdrozdi"
-git config --global user.email "claude-bot-cmdrozdi@users.noreply.github.com"
-git remote set-url origin https://claude-bot-cmdrozdi:${BOT_PAT}@github.com/SlatinskyJ/cm-drozdi.git
+git config --global user.name "cmdrozdi-bot"
+git config --global user.email "cmdrozdi-bot@users.noreply.github.com"
+git remote set-url origin https://cmdrozdi-bot:${BOT_PAT}@github.com/SlatinskyJ/cm-drozdi.git
 ```
 
-`BOT_PAT` is available as an environment variable in your Routine environment. `GH_TOKEN` must be set so the `gh` CLI authenticates as `claude-bot-cmdrozdi`. Use `--global` for git config since the working directory may not be a git repo yet when this runs.
+`BOT_PAT` is available as an environment variable in your Routine environment. `GH_TOKEN` must be set so the `gh` CLI authenticates as `cmdrozdi-bot`. Use `--global` for git config since the working directory may not be a git repo yet when this runs.
 
 ---
 
 ## Duplicate Detection (run before processing any comments)
 
-Fetch the triggering `@claude resolve` comment (identified by the comment URL you received). Check its replies for any comment authored by `@claude-bot-cmdrozdi`. If one exists, this is a duplicate run — exit immediately without processing anything.
+Fetch the triggering `@claude resolve` comment (identified by the comment URL you received). Check its replies for any comment authored by `@cmdrozdi-bot`. If one exists, this is a duplicate run — exit immediately without processing anything.
 
 ---
 
 ## Comment Processing Rules
 
 ### Skip silently (during the comment loop):
-- Any `@claude` comment that already has a reply from `@claude-bot-cmdrozdi` (handled in a prior sweep) — GitHub review comment API returns `position: null` for outdated comments; use this to detect them
+- Any `@claude` comment that already has a reply from `@cmdrozdi-bot` (handled in a prior sweep) — GitHub review comment API returns `position: null` for outdated comments; use this to detect them
 - The `@claude resolve` trigger comment itself
 - Outdated review comments (`position == null` in the GitHub API response)
 
@@ -74,7 +74,7 @@ Fetch the triggering `@claude resolve` comment (identified by the comment URL yo
    - Attempt to self-heal the failures
    - If the fix is unambiguous → apply it, re-run verification, proceed
    - If the fix is ambiguous → reply to the comment asking for clarification; skip this fix for now
-5. Commit with message: `fix: <brief description> (resolves @claude-bot-cmdrozdi comment)`
+5. Commit with message: `fix: <brief description> (resolves @cmdrozdi-bot comment)`
    - One commit per fixed comment
 6. Push: `git push origin HEAD`
 7. Reply to the comment summarising what was changed

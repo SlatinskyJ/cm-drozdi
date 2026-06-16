@@ -5,7 +5,7 @@
 
 ## Overview
 
-A Claude Code Routine that sweeps `@claude` PR comments on demand, applying code fixes and answering questions, posting results as a dedicated bot GitHub account (`claude-bot-cmdrozdi`).
+A Claude Code Routine that sweeps `@claude` PR comments on demand, applying code fixes and answering questions, posting results as a dedicated bot GitHub account (`cmdrozdi-bot`).
 
 ---
 
@@ -37,7 +37,7 @@ Claude Code Routine (API trigger, runs on Anthropic cloud)
 
 ### Bot GitHub Account
 
-- **Username:** `claude-bot-cmdrozdi` (verify availability; fall back to `claude-bot-cmdrozdi` if taken)
+- **Username:** `cmdrozdi-bot` (verify availability; fall back to `cmdrozdi-bot` if taken)
 - **Permissions:** write access to cm-drozdi repo
 - **PAT scope:** `repo` (covers commits, PR comments, branch push)
 - **PAT storage:** Routine environment variables section (never travels over the wire)
@@ -96,7 +96,7 @@ Node version: trust Anthropic's cloud environment (repo requires >=20; Routine i
    - If self-heal is clear → fix, re-verify, proceed
    - If self-heal is ambiguous → post a reply comment asking for clarification, skip this fix
 4. Commit to PR branch with message: `fix: <description> (resolves @claude-bot comment)`
-   - Commit author = `claude-bot-cmdrozdi`
+   - Commit author = `cmdrozdi-bot`
    - One commit per fixed comment
 5. Push
 6. Reply to the comment with a summary of what was changed
@@ -129,7 +129,7 @@ This reply is also the duplicate-detection marker for future runs. The user can 
 The Routine configures git using the bot PAT from its env vars before any commit/push:
 
 ```bash
-git config user.name "claude-bot-cmdrozdi"
+git config user.name "cmdrozdi-bot"
 git config user.email "claude-bot@users.noreply.github.com"
 git remote set-url origin https://claude-bot:${BOT_PAT}@github.com/SlatinskyJ/cm-drozdi.git
 ```

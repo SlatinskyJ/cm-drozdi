@@ -123,12 +123,12 @@ When triggered, you receive a PR number and a triggering comment URL. Your job:
 
 ```bash
 export GH_TOKEN="$BOT_PAT"
-git config user.name "claude-bot-cmdrozdi"
+git config user.name "cmdrozdi-bot"
 git config user.email "claude-bot@users.noreply.github.com"
 git remote set-url origin https://claude-bot:${BOT_PAT}@github.com/SlatinskyJ/cm-drozdi.git
 ```
 
-`BOT_PAT` is available as an environment variable in your Routine environment. `GH_TOKEN` must be set so the `gh` CLI authenticates as `claude-bot-cmdrozdi`.
+`BOT_PAT` is available as an environment variable in your Routine environment. `GH_TOKEN` must be set so the `gh` CLI authenticates as `cmdrozdi-bot`.
 
 Checkout the PR branch before making any edits:
 ```bash
@@ -211,21 +211,21 @@ git commit -m "feat: add claude-bot context file for Claude Code Routine"
 
 - [ ] **Step 1: Check username availability**
 
-Go to `https://github.com/claude-bot` — if the account exists and is not yours, use `claude-bot-cmdrozdi` instead. Update `.github/claude-bot.md` and the workflow git config accordingly if you use a different name.
+Go to `https://github.com/claude-bot` — if the account exists and is not yours, use `cmdrozdi-bot` instead. Update `.github/claude-bot.md` and the workflow git config accordingly if you use a different name.
 
 - [ ] **Step 2: Create the account**
 
-Sign up at github.com with a new email address. Set username to `claude-bot-cmdrozdi` (or fallback).
+Sign up at github.com with a new email address. Set username to `cmdrozdi-bot` (or fallback).
 
 - [ ] **Step 3: Grant repo access**
 
-In the cm-drozdi repo settings → Collaborators → Add `claude-bot-cmdrozdi` with **Write** role.
+In the cm-drozdi repo settings → Collaborators → Add `cmdrozdi-bot` with **Write** role.
 
-Accept the invitation from the `claude-bot-cmdrozdi` account.
+Accept the invitation from the `cmdrozdi-bot` account.
 
-- [ ] **Step 4: Generate a PAT for `claude-bot-cmdrozdi`**
+- [ ] **Step 4: Generate a PAT for `cmdrozdi-bot`**
 
-Logged in as `claude-bot-cmdrozdi`:
+Logged in as `cmdrozdi-bot`:
 - Go to Settings → Developer settings → Personal access tokens → Fine-grained tokens (or classic)
 - Classic token, scope: `repo`
 - No expiry (or set a long expiry you'll remember to rotate)
