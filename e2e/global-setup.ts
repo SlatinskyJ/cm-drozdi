@@ -9,7 +9,8 @@ async function saveStorageState(email: string, password: string, outPath: string
   const baseUrl = process.env['BETTER_AUTH_URL'] ?? 'http://localhost:3000';
   const response = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    // Origin must match BETTER_AUTH_URL — Better Auth rejects null/missing origins (CSRF protection)
+    headers: { 'Content-Type': 'application/json', Origin: baseUrl },
     body: JSON.stringify({ email, password }),
   });
 
