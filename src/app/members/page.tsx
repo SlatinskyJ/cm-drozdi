@@ -1,10 +1,10 @@
 'use client';
 
 import { Button } from '@components/ui/Button';
-import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { UserRole } from '~/enums/UserRole';
 import { api } from '~/trpc/react';
+import { CreateMemberForm } from '~/app/members/_components/CreateMemberForm';
 
 const ASSIGNABLE: { label: string; value: UserRole }[] = [
 	{ label: 'Člen', value: UserRole.MEMBER },
@@ -14,26 +14,6 @@ const ASSIGNABLE: { label: string; value: UserRole }[] = [
 export default function MembersPage() {
 	const utils = api.useUtils();
 	const list = api.member.list.useQuery();
-	const [email, setEmail] = useState('');
-	const [name, setName] = useState('');
-	const [role, setRole] = useState<UserRole>(UserRole.MEMBER);
-
-	const create = api.member.create.useMutation({
-		onSuccess: async ({ userId }) => {
-			setEmail('');
-			setName('');
-			await utils.member.list.invalidate();
-			toast.success('Člen vytvořen.');
-			try {
-				const { url } = await genLink.mutateAsync({ userId });
-				await navigator.clipboard.writeText(url);
-				toast.success('Odkaz pro nastavení hesla zkopírován.');
-			} catch {
-				// genLink.onError already shows the error toast
-			}
-		},
-		onError: (e) => toast.error(e.message),
-	});
 	const setRoleMut = api.member.setRole.useMutation({
 		onSuccess: () => utils.member.list.invalidate(),
 		onError: (e) => toast.error(e.message),
@@ -56,44 +36,7 @@ export default function MembersPage() {
 		<div className="mx-auto max-w-3xl p-6">
 			<h1 className="mb-4 text-2xl font-bold">Členové</h1>
 
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					create.mutate({ email, name, role });
-				}}
-				className="mb-8 flex flex-wrap items-end gap-2"
-			>
-				<input
-					type="text"
-					placeholder="Jméno"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					required
-					className="rounded border px-3 py-2"
-				/>
-				<input
-					type="email"
-					placeholder="E-mail"
-					value={email}
-					onChange={(e) => setEmail(e.target.value)}
-					required
-					className="rounded border px-3 py-2"
-				/>
-				<select
-					value={role}
-					onChange={(e) => setRole(e.target.value as UserRole)}
-					className="rounded border px-3 py-2"
-				>
-					{ASSIGNABLE.map((r) => (
-						<option key={r.value} value={r.value}>
-							{r.label}
-						</option>
-					))}
-				</select>
-				<Button type="submit" color="primary" disabled={create.isPending}>
-					Vytvořit
-				</Button>
-			</form>
+			<CreateMemberForm />
 
 			<table className="w-full text-left">
 				<thead>

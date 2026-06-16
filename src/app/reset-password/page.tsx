@@ -1,50 +1,32 @@
 'use client';
-
 import { Button } from '@components/ui/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
-import { api } from '~/trpc/react';
+import { Suspense } from 'react';
+import { ResetPasswordFormFields } from '~/app/reset-password/ResetPasswordFormFields';
+import { useResetPasswordForm } from '~/app/reset-password/_utils/useResetPasswordForm';
 
 function ResetPasswordForm() {
 	const router = useRouter();
 	const token = useSearchParams().get('token') ?? '';
-	const [password, setPassword] = useState('');
-	const [error, setError] = useState<string | null>(null);
-	const setPasswordMut = api.member.setPassword.useMutation({
-		onSuccess: () => router.push('/login'),
-		onError: (e) => setError(e.message),
-	});
 
-	function onSubmit(e: React.FormEvent) {
-		e.preventDefault();
-		setError(null);
-		if (password.length < 8) {
-			setError('Heslo musí mít alespoň 8 znaků.');
-			return;
-		}
-		setPasswordMut.mutate({ token, newPassword: password });
-	}
+	const { handleSubmit, control, isPending, errors } = useResetPasswordForm(
+		token,
+		() => router.push('/login'),
+	);
 
 	if (!token) return <p className="p-8">Neplatný odkaz.</p>;
 
 	return (
 		<div className="flex h-full w-full items-center justify-center">
-			<form onSubmit={onSubmit} className="flex w-80 flex-col gap-4">
+			<form onSubmit={handleSubmit} className="flex w-80 flex-col gap-4">
 				<h1 className="text-xl font-bold">Nastavit heslo</h1>
-				<input
-					type="password"
-					placeholder="Nové heslo (min. 8 znaků)"
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					required
-					className="rounded border px-3 py-2"
-				/>
-				{error && <p className="text-sm text-red-500">{error}</p>}
-				<Button
-					type="submit"
-					color="primary"
-					disabled={setPasswordMut.isPending}
-				>
+				<ResetPasswordFormFields control={control} />
+				{(errors.password?.message ?? errors.root?.message) && (
+					<p className="text-sm text-red-500">
+						{errors.password?.message ?? errors.root?.message}
+					</p>
+				)}
+				<Button type="submit" color="primary" disabled={isPending}>
 					Nastavit heslo
 				</Button>
 			</form>

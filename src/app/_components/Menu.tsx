@@ -21,12 +21,6 @@ export default function Menu() {
 		router.refresh();
 	}
 
-	const signOutItem = (
-		<DropdownItem key="signout" onPress={handleSignOut}>
-			Odhlásit
-		</DropdownItem>
-	);
-
 	return (
 		<Dropdown>
 			<DropdownTrigger>
@@ -37,30 +31,22 @@ export default function Menu() {
 					Menu
 				</Button>
 			</DropdownTrigger>
-			{isAdmin ? (
-				<DropdownMenu>
-					<DropdownItem key="home" href="/">
-						Domů
-					</DropdownItem>
-					<DropdownItem key="events" href="/events">
-						Události
-					</DropdownItem>
+			<DropdownMenu>
+				<DropdownItem key="home" href="/">
+					Domů
+				</DropdownItem>
+				<DropdownItem key="events" href="/events">
+					Události
+				</DropdownItem>
+				{isAdmin ? (
 					<DropdownItem key="members" href="/members">
 						Členové
 					</DropdownItem>
-					{signOutItem}
-				</DropdownMenu>
-			) : (
-				<DropdownMenu>
-					<DropdownItem key="home" href="/">
-						Domů
-					</DropdownItem>
-					<DropdownItem key="events" href="/events">
-						Události
-					</DropdownItem>
-					{signOutItem}
-				</DropdownMenu>
-			)}
+				) : null}
+				<DropdownItem key="signout" onPress={handleSignOut}>
+					Odhlásit
+				</DropdownItem>
+			</DropdownMenu>
 		</Dropdown>
 	);
 }
