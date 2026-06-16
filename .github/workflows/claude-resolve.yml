@@ -31,7 +31,7 @@ jobs:
             --arg url "$COMMENT_URL" \
             '{"text": "PR number: \($pr)\nTriggering comment URL: \($url)"}')
 
-          curl -sf -X POST "$ROUTINE_URL" \
+          curl -sfS -X POST "$ROUTINE_URL" \
             -H "Authorization: Bearer $ROUTINE_TOKEN" \
             -H "Content-Type: application/json" \
             -d "$payload"
