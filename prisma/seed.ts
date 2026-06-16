@@ -3,6 +3,7 @@ import { generateSetPasswordUrl } from '~/server/auth-password-link';
 import { db } from '~/server/db';
 import { env } from '~/env';
 import { UserRole } from '~/enums/UserRole';
+import { hashPassword } from '@better-auth/utils/password';
 
 const DEV_PASSWORD = 'admin1234';
 
@@ -13,7 +14,30 @@ async function ensureUser(opts: {
 	password?: string;
 }) {
 	const existing = await db.user.findUnique({ where: { email: opts.email } });
-	if (existing) return { id: existing.id, created: false };
+	if (existing) {
+		// Ensure the credential account has the expected password (idempotent fix for
+		// users created without a password or whose password drifted from DEV_PASSWORD)
+		if (opts.password) {
+			const hashed = await hashPassword(opts.password);
+			const updated = await db.account.updateMany({
+				where: { userId: existing.id, providerId: 'credential' },
+				data: { password: hashed },
+			});
+			if (updated.count === 0) {
+				await db.account.create({
+					data: {
+						providerId: 'credential',
+						accountId: existing.id,
+						userId: existing.id,
+						password: hashed,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+				});
+			}
+		}
+		return { id: existing.id, created: false };
+	}
 	const res = await auth.api.createUser({
 		body: {
 			email: opts.email,
