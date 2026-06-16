@@ -17,7 +17,7 @@ A Claude Code Routine that sweeps `@claude` PR comments on demand, applying code
 GitHub Actions workflow (.github/workflows/claude-resolve.yml)
   — issue_comment trigger, filtered to owner + "@claude resolve"
   — checks PR is open
-  — POSTs to Routine /fire endpoint with PR number, comment body, comment URL
+  — POSTs to Routine /fire endpoint with PR number, comment URL
        ↓
 Claude Code Routine (API trigger, runs on Anthropic cloud)
   — reads .github/claude-bot.md for project context
@@ -60,7 +60,7 @@ Claude Code Routine (API trigger, runs on Anthropic cloud)
    - Filters to comments by the repo owner only
    - Filters to comments containing `@claude resolve`
    - Checks the PR is open (exits silently if closed/merged)
-   - POSTs to Routine `/fire` with: PR number, comment body, comment URL
+   - POSTs to Routine `/fire` with: PR number, comment URL
 4. Routine fires; Claude reads `.github/claude-bot.md` for project context
 5. Claude checks if this specific `@claude resolve` comment already has a reply from `@claude-bot` — if yes, this is a duplicate run, exit immediately
 6. Claude finds all `@claude` comments in the PR and processes them
@@ -160,7 +160,6 @@ Read `.github/claude-bot.md` for project context and operating instructions.
 You have been triggered by an `@claude resolve` comment.
 PR number: {{pr_number}}
 Triggering comment URL: {{comment_url}}
-Triggering comment body: {{comment_body}}
 
 Find all @claude comments in this PR and process them per the instructions in `.github/claude-bot.md`.
 When done, reply to the triggering comment with a sweep summary.
@@ -178,7 +177,7 @@ Steps:
 1. Filter: comment author must be repo owner (`SlatinskyJ`)
 2. Filter: comment body must contain `@claude resolve`
 3. Check PR is open via GitHub API; exit silently if closed/merged
-4. POST to `${{ secrets.CLAUDE_ROUTINE_URL }}` with bearer token `${{ secrets.CLAUDE_ROUTINE_TOKEN }}` and body containing PR number, comment URL, comment body
+4. POST to `${{ secrets.CLAUDE_ROUTINE_URL }}` with bearer token `${{ secrets.CLAUDE_ROUTINE_TOKEN }}` and body containing PR number, comment URL
 
 No checkout needed — the Routine clones the repo itself.
 
