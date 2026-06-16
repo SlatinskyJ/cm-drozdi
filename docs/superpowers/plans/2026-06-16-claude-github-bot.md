@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Wire up a Claude Code Routine that sweeps `@claude` PR comments when the repo owner posts `@claude resolve`, applying fixes and answering questions as a dedicated `@claude-bot` GitHub account.
+**Goal:** Wire up a Claude Code Routine that sweeps `bot:` PR comments when the repo owner posts `bot: resolve`, applying fixes and answering questions as a dedicated `@claude-bot` GitHub account.
 
-**Architecture:** GitHub Actions workflow listens for `@claude resolve` PR comments (owner-only) and POSTs to a Claude Code Routine's API trigger endpoint. The Routine runs on Anthropic's cloud, reads `.github/claude-bot.md` for project context, processes all pending `@claude` comments in the PR (fixes or answers each), then replies to the trigger comment with a sweep summary.
+**Architecture:** GitHub Actions workflow listens for `bot: resolve` PR comments (owner-only) and POSTs to a Claude Code Routine's API trigger endpoint. The Routine runs on Anthropic's cloud, reads `.github/claude-bot.md` for project context, processes all pending `bot:` comments in the PR (fixes or answers each), then replies to the trigger comment with a sweep summary.
 
 **Tech Stack:** GitHub Actions (`issue_comment` trigger), Claude Code Routines (API trigger), `gh` CLI / GitHub REST API, `jq`, `yarn`, TypeScript/Next.js (the app being edited by the bot)
 
@@ -36,12 +36,12 @@ jobs:
   claude-resolve:
     # Only fire when:
     # - comment is by the repo owner
-    # - comment contains "@claude resolve"
+    # - comment contains "bot: resolve"
     # - the issue is actually a PR
     # - the PR is open
     if: |
       github.event.comment.user.login == 'SlatinskyJ' &&
-      contains(github.event.comment.body, '@claude resolve') &&
+      contains(github.event.comment.body, 'bot: resolve') &&
       github.event.issue.pull_request != null &&
       github.event.issue.state == 'open'
     runs-on: ubuntu-latest
@@ -69,7 +69,7 @@ jobs:
 
 ```bash
 git add .github/workflows/claude-resolve.yml
-git commit -m "feat: add GitHub Actions workflow to fire Claude Routine on @claude resolve"
+git commit -m "feat: add GitHub Actions workflow to fire Claude Routine on bot: resolve"
 ```
 
 ---
@@ -84,7 +84,7 @@ git commit -m "feat: add GitHub Actions workflow to fire Claude Routine on @clau
 ```markdown
 # Claude Bot — Project Context & Operating Instructions
 
-You are `@claude-bot`, a Claude Code Routine acting on the cm-drozdi repository (cmdrozdi.cz). You process `@claude` PR comments posted by the repo owner (`SlatinskyJ`) — applying code fixes and answering questions.
+You are `@claude-bot`, a Claude Code Routine acting on the cm-drozdi repository (cmdrozdi.cz). You process `bot:` PR comments posted by the repo owner (`SlatinskyJ`) — applying code fixes and answering questions.
 
 ---
 
@@ -114,8 +114,8 @@ When triggered, you receive a PR number and a triggering comment URL. Your job:
 1. Configure git and authenticate (see Git Setup below)
 2. Run `yarn install` (installs deps; postinstall runs `prisma generate` automatically — no DB needed)
 3. Find all comments in the PR
-4. Process each eligible `@claude` comment (see rules below)
-5. Reply to the triggering `@claude resolve` comment with a sweep summary
+4. Process each eligible `bot:` comment (see rules below)
+5. Reply to the triggering `bot: resolve` comment with a sweep summary
 
 ---
 
@@ -140,12 +140,12 @@ gh pr checkout <PR_NUMBER>
 ## Comment Processing Rules
 
 ### Skip silently:
-- Any `@claude` comment that already has a reply from `@claude-bot` (handled in a prior sweep)
-- The `@claude resolve` trigger comment itself
+- Any `bot:` comment that already has a reply from `@claude-bot` (handled in a prior sweep)
+- The `bot: resolve` trigger comment itself
 - Outdated comments (on diff lines that no longer exist in the current PR)
 
 ### Duplicate detection:
-Check if the triggering `@claude resolve` comment already has a reply from `@claude-bot`. If yes, this is a duplicate run — exit immediately without processing anything.
+Check if the triggering `bot: resolve` comment already has a reply from `@claude-bot`. If yes, this is a duplicate run — exit immediately without processing anything.
 
 ### Fix request (comment asks you to change code):
 1. Edit the relevant files
@@ -172,18 +172,18 @@ Check if the triggering `@claude resolve` comment already has a reply from `@cla
 2. No code changes, no commit
 
 ### Push failure:
-- Reply to the `@claude resolve` trigger comment with the error message
+- Reply to the `bot: resolve` trigger comment with the error message
 - Do not retry
 
 ---
 
 ## Sweep Summary
 
-After processing all comments, reply to the `@claude resolve` comment:
+After processing all comments, reply to the `bot: resolve` comment:
 
 > Done. Fixed N issues, answered N questions, skipped N outdated comments.
 
-This reply also acts as the duplicate-detection marker — a future `@claude resolve` without a bot reply on it means it's a fresh sweep.
+This reply also acts as the duplicate-detection marker — a future `bot: resolve` without a bot reply on it means it's a fresh sweep.
 
 ---
 
@@ -247,14 +247,14 @@ Type: Remote
 ```
 Read `.github/claude-bot.md` for project context and operating instructions.
 
-You have been triggered by an `@claude resolve` comment. The following context was provided:
+You have been triggered by an `bot: resolve` comment. The following context was provided:
 
 {{text}}
 
 Extract the PR number and triggering comment URL from the above text, then proceed according to `.github/claude-bot.md`.
 ```
 
-> **Note:** `{{text}}` may or may not be interpolated depending on how the Routine injects the POST body's `text` field. If the raw placeholder appears at runtime (not substituted), remove the `{{text}}` and instead instruct Claude to use the `gh` CLI to find the most recent `@claude resolve` comment on the PR as the trigger. Verify this on first run.
+> **Note:** `{{text}}` may or may not be interpolated depending on how the Routine injects the POST body's `text` field. If the raw placeholder appears at runtime (not substituted), remove the `{{text}}` and instead instruct Claude to use the `gh` CLI to find the most recent `bot: resolve` comment on the PR as the trigger. Verify this on first run.
 
 - [ ] **Step 3: Set trigger to API**
 
@@ -297,18 +297,18 @@ Value: the Routine bearer token from Task 4 Step 5.
 
 Push a small throwaway branch from `develop` and open a draft PR.
 
-- [ ] **Step 2: Leave a test `@claude` comment**
+- [ ] **Step 2: Leave a test `bot:` comment**
 
 On any line in the diff, add an inline comment:
 ```
 @claude Add a comment explaining what this line does
 ```
 
-- [ ] **Step 3: Post `@claude resolve`**
+- [ ] **Step 3: Post `bot: resolve`**
 
 As `SlatinskyJ`, post a top-level PR comment:
 ```
-@claude resolve
+bot: resolve
 ```
 
 - [ ] **Step 4: Verify GitHub Actions fired**
@@ -321,7 +321,7 @@ Go to `claude.ai/code/routines` → `cm-drozdi PR Resolver` → run history. Con
 
 - [ ] **Step 6: Verify bot replied**
 
-Check the PR — `@claude-bot` should have replied to the `@claude` comment and posted a sweep summary on the `@claude resolve` comment.
+Check the PR — `@claude-bot` should have replied to the `bot:` comment and posted a sweep summary on the `bot: resolve` comment.
 
 - [ ] **Step 7: Close and delete the test PR/branch**
 

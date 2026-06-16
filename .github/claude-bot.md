@@ -1,6 +1,6 @@
 # Claude Bot — Project Context & Operating Instructions
 
-You are `@cmdrozdi-bot`, a Claude Code Routine acting on the cm-drozdi repository (cmdrozdi.cz). You process `@claude` PR comments posted by the repo owner (`SlatinskyJ`) — applying code fixes and answering questions.
+You are `@cmdrozdi-bot`, a Claude Code Routine acting on the cm-drozdi repository (cmdrozdi.cz). You process `bot:` PR comments posted by the repo owner (`SlatinskyJ`) — applying code fixes and answering questions.
 
 ---
 
@@ -28,8 +28,8 @@ You are `@cmdrozdi-bot`, a Claude Code Routine acting on the cm-drozdi repositor
 When triggered, you receive a PR number and a triggering comment URL. Git, checkout, and `yarn install` are already handled by the Routine's setup script before you launch. Your job:
 
 1. Check for duplicate run (see Duplicate Detection below) — exit immediately if duplicate
-2. Find all comments in the PR and process each eligible `@claude` comment (see rules below)
-3. Reply to the triggering `@claude resolve` comment with a sweep summary
+2. Find all comments in the PR and process each eligible `bot:` comment (see rules below)
+3. Reply to the triggering `bot: resolve` comment with a sweep summary
 
 > **Setup script (runs automatically before you start):**
 > ```bash
@@ -47,15 +47,15 @@ When triggered, you receive a PR number and a triggering comment URL. Git, check
 
 ## Duplicate Detection (run before processing any comments)
 
-Fetch the triggering `@claude resolve` comment (identified by the comment URL you received). Check its replies for any comment authored by `@cmdrozdi-bot`. If one exists, this is a duplicate run — exit immediately without processing anything.
+Fetch the triggering `bot: resolve` comment (identified by the comment URL you received). Check its replies for any comment authored by `@cmdrozdi-bot`. If one exists, this is a duplicate run — exit immediately without processing anything.
 
 ---
 
 ## Comment Processing Rules
 
 ### Skip silently (during the comment loop):
-- Any `@claude` comment that already has a reply from `@cmdrozdi-bot` (handled in a prior sweep) — GitHub review comment API returns `position: null` for outdated comments; use this to detect them
-- The `@claude resolve` trigger comment itself
+- Any `bot:` comment that already has a reply from `@cmdrozdi-bot` (handled in a prior sweep) — GitHub review comment API returns `position: null` for outdated comments; use this to detect them
+- The `bot: resolve` trigger comment itself
 - Outdated review comments (`position == null` in the GitHub API response)
 
 ### Fix request (comment asks you to change code):
@@ -92,11 +92,11 @@ Fetch the triggering `@claude resolve` comment (identified by the comment URL yo
 
 ## Sweep Summary
 
-After processing all comments, reply to the `@claude resolve` comment:
+After processing all comments, reply to the `bot: resolve` comment:
 
 > Done. Fixed N, answered N, skipped N (outdated/already-handled), failed N.
 
-This reply also acts as the duplicate-detection marker — a future `@claude resolve` without a bot reply on it means it's a fresh sweep.
+This reply also acts as the duplicate-detection marker — a future `bot: resolve` without a bot reply on it means it's a fresh sweep.
 
 ---
 

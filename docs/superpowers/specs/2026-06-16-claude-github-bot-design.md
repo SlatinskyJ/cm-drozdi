@@ -5,17 +5,17 @@
 
 ## Overview
 
-A Claude Code Routine that sweeps `@claude` PR comments on demand, applying code fixes and answering questions, posting results as a dedicated bot GitHub account (`cmdrozdi-bot`).
+A Claude Code Routine that sweeps `bot:` PR comments on demand, applying code fixes and answering questions, posting results as a dedicated bot GitHub account (`cmdrozdi-bot`).
 
 ---
 
 ## Architecture
 
 ```
-@claude resolve comment (posted by repo owner)
+bot: resolve comment (posted by repo owner)
        ↓
 GitHub Actions workflow (.github/workflows/claude-resolve.yml)
-  — issue_comment trigger, filtered to owner + "@claude resolve"
+  — issue_comment trigger, filtered to owner + "bot: resolve"
   — checks PR is open
   — POSTs to Routine /fire endpoint with PR number, comment URL
        ↓
@@ -23,7 +23,7 @@ Claude Code Routine (API trigger, runs on Anthropic cloud)
   — reads .github/claude-bot.md for project context
   — processes all pending @claude comments in the PR
   — pushes fixes, posts replies as claude-bot account
-  — replies to @claude resolve with sweep summary
+  — replies to bot: resolve with sweep summary
 ```
 
 ### Claude Code Routine
@@ -55,16 +55,16 @@ Claude Code Routine (API trigger, runs on Anthropic cloud)
 ## Trigger Flow
 
 1. User leaves one or more `@claude <instruction>` comments on a PR
-2. When ready for a sweep, user posts `@claude resolve` in the PR
+2. When ready for a sweep, user posts `bot: resolve` in the PR
 3. GitHub Actions fires on the `issue_comment` event:
    - Filters to comments by the repo owner only
-   - Filters to comments containing `@claude resolve`
+   - Filters to comments containing `bot: resolve`
    - Checks the PR is open (exits silently if closed/merged)
    - POSTs to Routine `/fire` with: PR number, comment URL
 4. Routine fires; Claude reads `.github/claude-bot.md` for project context
-5. Claude checks if this specific `@claude resolve` comment already has a reply from `@claude-bot` — if yes, this is a duplicate run, exit immediately
-6. Claude finds all `@claude` comments in the PR and processes them
-7. Claude replies to the `@claude resolve` comment with a sweep summary
+5. Claude checks if this specific `bot: resolve` comment already has a reply from `@claude-bot` — if yes, this is a duplicate run, exit immediately
+6. Claude finds all `bot:` comments in the PR and processes them
+7. Claude replies to the `bot: resolve` comment with a sweep summary
 
 ---
 
@@ -85,8 +85,8 @@ Node version: trust Anthropic's cloud environment (repo requires >=20; Routine i
 ## Comment Processing Rules
 
 **Skip (silently):**
-- Any `@claude` comment that already has a reply from `@claude-bot` → handled in a prior sweep
-- The `@claude resolve` trigger comment itself
+- Any `bot:` comment that already has a reply from `@claude-bot` → handled in a prior sweep
+- The `bot: resolve` trigger comment itself
 - Outdated comments (on code lines no longer in the current diff)
 
 **Fix request** (comment asks Claude to change code):
@@ -110,17 +110,17 @@ Node version: trust Anthropic's cloud environment (repo requires >=20; Routine i
 2. No code changes
 
 **Push failure:**
-- Reply to the `@claude resolve` trigger comment with the error; do not retry silently
+- Reply to the `bot: resolve` trigger comment with the error; do not retry silently
 
 ---
 
 ## Sweep Completion
 
-After processing all comments, the bot replies to the `@claude resolve` comment:
+After processing all comments, the bot replies to the `bot: resolve` comment:
 
 > Done. Fixed 2 issues, answered 1 question, skipped 1 outdated comment.
 
-This reply is also the duplicate-detection marker for future runs. The user can post new `@claude` comments and trigger `@claude resolve` again for another sweep — each sweep is independent.
+This reply is also the duplicate-detection marker for future runs. The user can post new `bot:` comments and trigger `bot: resolve` again for another sweep — each sweep is independent.
 
 ---
 
@@ -142,11 +142,11 @@ Lives in the repo (versioned). The Routine reads it at the start of every run. T
 
 Sections:
 - **Project overview** — condensed from `CLAUDE.md`: T3 stack, branching rules, path aliases, tRPC/auth/Prisma notes, verification gate
-- **Bot role** — process all pending `@claude` comments in the triggered PR
+- **Bot role** — process all pending `bot:` comments in the triggered PR
 - **Verification gate** — `yarn lint` + `npx tsc --noEmit`; self-heal failures; post comment if ambiguous
 - **Commit conventions** — `fix: <description> (resolves @claude comment)`; bot account as author; one commit per fix
 - **Constraints** — never touch `main`; skip outdated comments; skip already-answered comments; don't apply fixes to future-work comments (flag them)
-- **Trigger comment** — `@claude resolve` starts the sweep; do not process it as a task
+- **Trigger comment** — `bot: resolve` starts the sweep; do not process it as a task
 
 Full draft is written as part of the implementation.
 
@@ -157,7 +157,7 @@ Full draft is written as part of the implementation.
 ```
 Read `.github/claude-bot.md` for project context and operating instructions.
 
-You have been triggered by an `@claude resolve` comment. Context:
+You have been triggered by an `bot: resolve` comment. Context:
 
 {{text}}
 
@@ -174,7 +174,7 @@ Trigger: `issue_comment` → `created`
 
 Steps:
 1. Filter: comment author must be repo owner (`SlatinskyJ`)
-2. Filter: comment body must contain `@claude resolve`
+2. Filter: comment body must contain `bot: resolve`
 3. Check PR is open via GitHub API; exit silently if closed/merged
 4. POST to `${{ secrets.CLAUDE_ROUTINE_URL }}` with bearer token `${{ secrets.CLAUDE_ROUTINE_TOKEN }}` and body containing PR number, comment URL
 

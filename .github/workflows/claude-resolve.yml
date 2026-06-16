@@ -8,12 +8,12 @@ jobs:
   claude-resolve:
     # Only fire when:
     # - comment is by the repo owner
-    # - comment contains "@claude resolve"
+    # - comment contains "bot: resolve"
     # - the issue is actually a PR
     # - the PR is open
     if: >-
       github.event.comment.user.login == 'SlatinskyJ' &&
-      contains(github.event.comment.body, '@claude resolve') &&
+      contains(github.event.comment.body, 'bot: resolve') &&
       github.event.issue.pull_request != null &&
       github.event.issue.state == 'open'
     runs-on: ubuntu-latest
