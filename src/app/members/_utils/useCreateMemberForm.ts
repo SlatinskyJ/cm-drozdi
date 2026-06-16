@@ -28,17 +28,19 @@ export function useCreateMemberForm() {
 	const onSubmit: SubmitHandler<TCreateMemberInputs> = useCallback(
 		(data) => {
 			create(data, {
-				onSuccess: async ({ userId }) => {
-					reset();
-					await utils.member.list.invalidate();
-					toast.success('Člen vytvořen.');
-					try {
-						const { url } = await genLink.mutateAsync({ userId });
-						await navigator.clipboard.writeText(url);
-						toast.success('Odkaz pro nastavení hesla zkopírován.');
-					} catch {
-						// genLink.onError already shows the error toast
-					}
+				onSuccess: ({ userId }) => {
+					void (async () => {
+						reset();
+						await utils.member.list.invalidate();
+						toast.success('Člen vytvořen.');
+						try {
+							const { url } = await genLink.mutateAsync({ userId });
+							await navigator.clipboard.writeText(url);
+							toast.success('Odkaz pro nastavení hesla zkopírován.');
+						} catch {
+							// genLink.onError already shows the error toast
+						}
+					})();
 				},
 			});
 		},

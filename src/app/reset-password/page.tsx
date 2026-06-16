@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { ResetPasswordFormFields } from '~/app/reset-password/ResetPasswordFormFields';
 import { useResetPasswordForm } from '~/app/reset-password/_utils/useResetPasswordForm';
+import { ResetPasswordSkeleton } from '~/app/reset-password/ResetPasswordSkeleton';
 
 function ResetPasswordForm() {
 	const router = useRouter();
@@ -36,7 +37,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
 	return (
-		<Suspense fallback={null}>
+		<Suspense fallback={<ResetPasswordSkeleton />}>
 			<ResetPasswordForm />
 		</Suspense>
 	);

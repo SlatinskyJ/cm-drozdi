@@ -1,5 +1,6 @@
 'use client';
 import { type Control, Controller } from 'react-hook-form';
+import { EmailInput } from '@components/ui/EmailInput';
 import { UserRole } from '~/enums/UserRole';
 import { type TCreateMemberInputs } from '~/app/members/_utils/useCreateMemberForm';
 
@@ -27,26 +28,7 @@ export function CreateMemberFields({
 					/>
 				)}
 			/>
-			<Controller
-				name="email"
-				control={control}
-				rules={{
-					required: true,
-					pattern: {
-						value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-						message: 'Neplatná e-mailová adresa',
-					},
-				}}
-				render={({ field }) => (
-					<input
-						{...field}
-						type="email"
-						placeholder="E-mail"
-						required
-						className="rounded border px-3 py-2"
-					/>
-				)}
-			/>
+			<EmailInput control={control} name="email" />
 			<Controller
 				name="role"
 				control={control}
