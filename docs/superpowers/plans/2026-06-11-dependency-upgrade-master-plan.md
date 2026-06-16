@@ -71,7 +71,9 @@
 | typescript | ^5.5.3 | 5.x latest | minor |
 | @types/node | ^20 | 22.x | match runtime |
 
-**Explicit non-goals:** social/OAuth login (defer as nice-to-have), replacing @vercel/postgres, a full unit/integration suite, Yarn 1 → modern package manager. Candidate follow-ups after Phase 9.
+**Explicit non-goals:** social/OAuth login (defer as nice-to-have), a full unit/integration suite, Yarn 1 → modern package manager. Candidate follow-ups after Phase 9.
+
+**Post-Phase-9 cleanup:** remove `start-database.sh` (unused — local dev runs a native Postgres install, not Docker).
 
 ---
 

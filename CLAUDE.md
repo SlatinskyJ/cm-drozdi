@@ -10,6 +10,7 @@ Source code for www.cmdrozdi.cz — a T3-stack app (Next.js 14 App Router + tRPC
 
 - `develop` is the integration branch — fork new work branches from `develop`, and target `develop` with PRs.
 - `main` is production-only. Never commit or push directly to `main`; it's updated only via release merges from `develop`.
+- **PRs must always be created as drafts** (`gh pr create --draft`). Only the user marks a PR ready for review. Never create a ready-for-review PR directly.
 
 ## Commands
 
