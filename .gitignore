@@ -47,3 +47,6 @@ yarn-error.log*
 .idea
 # Local-only session handoffs
 docs/superpowers/handoffs/
+
+# Playwright auth storageState (generated at runtime — contains session cookies)
+e2e/.auth/
