@@ -1,4 +1,4 @@
-import { eventRouter } from '~/server/api/routers';
+import { eventRouter, memberRouter } from '~/server/api/routers';
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 
 /**
@@ -8,6 +8,7 @@ import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
  */
 export const appRouter = createTRPCRouter({
 	event: eventRouter,
+	member: memberRouter,
 });
 
 // export type definition of API

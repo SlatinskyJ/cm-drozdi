@@ -8,6 +8,7 @@
     "db:generate": "prisma migrate dev",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
+    "db:seed": "tsx --env-file=.env prisma/seed.ts",
     "db:studio": "prisma studio",
     "dev": "next dev",
     "postinstall": "prisma generate",
@@ -17,7 +18,6 @@
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.1",
-    "@auth/prisma-adapter": "^1.6.0",
     "@internationalized/date": "^3.5.6",
     "@nextui-org/card": "^2.0.34",
     "@nextui-org/chip": "^2.0.33",
@@ -40,12 +40,12 @@
     "@trpc/server": "^11.0.0-rc.446",
     "@vercel/postgres": "^0.10.0",
     "@vercel/speed-insights": "^1.0.12",
+    "better-auth": "^1.6.18",
     "framer-motion": "^11.11.8",
     "geist": "^1.3.0",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
     "next": "^14.2.4",
-    "next-auth": "^4.24.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.0",
@@ -69,13 +69,14 @@
     "prettier-plugin-tailwindcss": "^0.6.5",
     "prisma": "^5.21.0",
     "tailwindcss": "^3.4.3",
+    "tsx": "^4.22.4",
     "typescript": "^5.5.3"
   },
   "ct3aMetadata": {
     "initVersion": "7.37.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": "24.x"
   },
   "packageManager": "yarn@1.22.19"
 }

@@ -7,8 +7,20 @@ import {
 	DropdownMenu,
 	DropdownTrigger,
 } from '@components/ui/Dropdown';
+import { useRouter } from 'next/navigation';
+import { signOut } from '~/lib/auth-client';
+import { useIsAdmin } from '~/utils/permissions';
 
 export default function Menu() {
+	const router = useRouter();
+	const isAdmin = useIsAdmin();
+
+	async function handleSignOut() {
+		await signOut();
+		router.push('/login');
+		router.refresh();
+	}
+
 	return (
 		<Dropdown>
 			<DropdownTrigger>
@@ -26,8 +38,13 @@ export default function Menu() {
 				<DropdownItem key="events" href="/events">
 					Události
 				</DropdownItem>
-				<DropdownItem key="members" href="/members">
-					Členové
+				{isAdmin ? (
+					<DropdownItem key="members" href="/members">
+						Členové
+					</DropdownItem>
+				) : null}
+				<DropdownItem key="signout" onPress={handleSignOut}>
+					Odhlásit
 				</DropdownItem>
 			</DropdownMenu>
 		</Dropdown>

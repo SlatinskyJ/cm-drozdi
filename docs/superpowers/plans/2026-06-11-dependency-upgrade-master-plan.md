@@ -27,7 +27,7 @@
 ## Ground rules (apply to every phase)
 
 1. **One phase = one branch = one PR.** Fork from fresh `develop`. Merge before starting next phase.
-2. **Before each phase:** write a spec (brainstorming skill) saved to `docs/superpowers/specs/2026-MM-DD-phase-N-<name>-design.md`, plus a detailed execution plan (writing-plans skill) saved to `docs/superpowers/plans/2026-MM-DD-phase-N-<name>.md`.
+2. **Before each phase:** write a spec (brainstorming skill) saved to `docs/superpowers/specs/2026-MM-DD-phase-N-<name>.md`, then a detailed execution plan (writing-plans skill) saved to `docs/superpowers/plans/2026-MM-DD-phase-N-<name>.md`. (Specs live in `specs/`, execution plans + this master plan live in `plans/`.)
 3. **Verification gate (the gate, since there is no unit suite):**
    ```bash
    yarn install
@@ -112,6 +112,7 @@
 - Add `@playwright/test`; `playwright.config.ts`; `yarn e2e` + `yarn e2e:ui` scripts.
 - Login helper: seed a known user, sign in via the credentials form (or programmatic `signIn.email`), save `storageState`. One dedicated test exercises the real login flow directly (no mocking needed now).
 - **Per-test isolation:** truncate + reseed the test DB before each test. (True transactional rollback won't work — the Next server holds its own DB connection across the HTTP boundary; truncate-and-reseed gives equivalent isolation.) Needs a dedicated test database + seed.
+- **Preview DB (idea, needs refinement):** currently preview deployments share the production DATABASE_URL and have no Better Auth schema or seed data — login doesn't work on preview. Phase 2 already needs a throwaway DB for CI; consider extending that solution to Vercel preview environments too (e.g. Neon branching or a dedicated preview Postgres). Decide approach during Phase 2 spec.
 - Critical-path specs (~6-8): unauthenticated redirect to sign-in; successful login; events calendar renders; open event detail modal; request/create event — validation error + successful submit; delete event; admin-only UI gated for non-admins.
 - `.github/workflows/ci.yml` (first CI in repo): Postgres service container + test env secrets → install → prisma generate → lint → tsc → build → e2e, on every PR to develop.
 - Assert user-visible outcomes (text, navigation, row presence), never internal markup that shadcn/Tailwind phases will legitimately change.
@@ -230,8 +231,8 @@
 
 | Phase | PR | Status |
 |---|---|---|
-| 0 — Baseline | `chore/upgrade-phase-0-baseline` | in review — gate green (lint, tsc, build) |
-| 1 — Better Auth migration | – | not started |
+| 0 — Baseline | `chore/upgrade-phase-0-baseline` | merged |
+| 1 — Better Auth migration | `feat/upgrade-phase-1-better-auth` | in review |
 | 2 — E2E net + CI | – | not started |
 | 3 — Minor bumps | – | not started |
 | 4 — shadcn migration | – | not started |
