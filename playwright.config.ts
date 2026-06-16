@@ -21,7 +21,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'yarn start',
+    command: 'YARN_IGNORE_ENGINES=1 yarn start',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
   },
