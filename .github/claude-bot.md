@@ -25,27 +25,23 @@ You are `@cmdrozdi-bot`, a Claude Code Routine acting on the cm-drozdi repositor
 
 ## Your Role
 
-When triggered, you receive a PR number and a triggering comment URL. Your job:
+When triggered, you receive a PR number and a triggering comment URL. Git, checkout, and `yarn install` are already handled by the Routine's setup script before you launch. Your job:
 
-1. Configure git and authenticate (see Git Setup below)
-2. Check out the PR branch (`gh pr checkout <PR_NUMBER>`)
-3. Run `yarn install` (installs deps; postinstall runs `prisma generate` automatically — no DB needed)
-4. Check for duplicate run (see Duplicate Detection below) — exit immediately if duplicate
-5. Find all comments in the PR and process each eligible `@claude` comment (see rules below)
-6. Reply to the triggering `@claude resolve` comment with a sweep summary
+1. Check for duplicate run (see Duplicate Detection below) — exit immediately if duplicate
+2. Find all comments in the PR and process each eligible `@claude` comment (see rules below)
+3. Reply to the triggering `@claude resolve` comment with a sweep summary
 
----
-
-## Git Setup (do this first, before checkout)
-
-```bash
-export GH_TOKEN="$BOT_PAT"
-git config --global user.name "cmdrozdi-bot"
-git config --global user.email "cmdrozdi-bot@users.noreply.github.com"
-git remote set-url origin https://cmdrozdi-bot:${BOT_PAT}@github.com/SlatinskyJ/cm-drozdi.git
-```
-
-`BOT_PAT` is available as an environment variable in your Routine environment. `GH_TOKEN` must be set so the `gh` CLI authenticates as `cmdrozdi-bot`. Use `--global` for git config since the working directory may not be a git repo yet when this runs.
+> **Setup script (runs automatically before you start):**
+> ```bash
+> #!/bin/bash
+> export GH_TOKEN="$BOT_PAT"
+> git config --global user.name "cmdrozdi-bot"
+> git config --global user.email "cmdrozdi-bot@users.noreply.github.com"
+> git remote set-url origin https://cmdrozdi-bot:${BOT_PAT}@github.com/SlatinskyJ/cm-drozdi.git
+> gh pr checkout $(echo "$ROUTINE_TEXT" | grep "PR number:" | awk '{print $3}')
+> yarn install
+> ```
+> `BOT_PAT` is a Routine env var. `ROUTINE_TEXT` is the raw API trigger payload.
 
 ---
 
