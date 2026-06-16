@@ -68,3 +68,13 @@ All env vars are validated via `@t3-oss/env-nextjs` in `src/env.js`. Adding a ne
 `docs/superpowers/plans/2026-06-11-dependency-upgrade-master-plan.md` is the master roadmap for modernizing this app from its 2024-era T3 stack to current versions, plus migrating auth off NextAuth. The work is split into sequential phases, each its own branch/PR, with a spec written via the `brainstorming` skill (saved under `docs/superpowers/specs/`) and an execution plan via the `writing-plans` skill (saved under `docs/superpowers/plans/`) before the phase starts. **Read that file first** for the locked decisions, phase breakdown, ordering rationale, and current status before doing any upgrade, auth, or NextUI→shadcn work — it is the source of truth and is kept current there (don't duplicate its specifics here). Do not execute phases from the roadmap alone; each phase gets its own spec + execution plan.
 
 `.agents/skills/` contains project-local skills supporting this effort (`next-upgrade`, `prisma-upgrade-v7`, `prisma-driver-adapter-implementation`, `tailwind-v4-shadcn`, `shadcn`, `zod-4`, `vercel-cli`).
+
+## Model routing
+
+Subagent tiers: **Haiku explores, Sonnet builds, Opus orchestrates + reviews.**
+
+- Default to `sonnet` for all implementation work.
+- Use `haiku` subagents for read-only search/exploration only; they must write findings to disk (not SendMessage — Haiku goes idle instead of returning via message-passing).
+- Escalate to `opus` only for: planning, architectural decisions, final code review.
+- Do not use `opus` for commit messages, formatting, grep/search, or trivial one-liner edits.
+- Three named agents in `~/.claude/agents/`: `explorer` (haiku), `implementor` (sonnet), `reviewer` (opus).
