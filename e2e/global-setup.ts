@@ -1,26 +1,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
-import { auth } from '../src/server/auth';
+import { ADMIN_AUTH, MEMBER_AUTH } from './helpers/auth';
 
-const AUTH_DIR = path.join(process.cwd(), 'e2e/.auth');
 const DEV_PASSWORD = 'admin1234';
 
 async function saveStorageState(email: string, password: string, outPath: string) {
-  const response = await auth.api.signInEmail({
-    body: { email, password },
-    asResponse: true,
+  const baseUrl = process.env['BETTER_AUTH_URL'] ?? 'http://localhost:3000';
+  const response = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
   });
 
   if (!response.ok) {
     throw new Error(`Sign-in failed for ${email}: HTTP ${response.status}`);
   }
 
-  // Node 18+ API; getSetCookie() returns an array, one entry per Set-Cookie header
-  const rawCookies =
-    typeof response.headers.getSetCookie === 'function'
-      ? response.headers.getSetCookie()
-      : [response.headers.get('set-cookie') ?? ''];
+  // getSetCookie() returns each Set-Cookie header separately (Node 22 undici)
+  const rawCookies: string[] = (response.headers as any).getSetCookie?.()
+    ?? (response.headers.get('set-cookie') ? [response.headers.get('set-cookie')!] : []);
 
   const cookies = rawCookies.filter(Boolean).map((raw) => {
     const parts = raw.split(';').map((s) => s.trim());
@@ -50,17 +49,10 @@ export default async function globalSetup() {
   execSync('npx prisma migrate deploy', { stdio: 'inherit' });
   execSync('yarn db:seed', { stdio: 'inherit' });
 
-  await saveStorageState(
-    process.env['BOOTSTRAP_ADMIN_EMAIL'] ?? 'admin@cmdrozdi.cz',
-    DEV_PASSWORD,
-    path.join(AUTH_DIR, 'admin.json'),
-  );
+  const adminEmail = process.env['BOOTSTRAP_ADMIN_EMAIL'] ?? 'admin@cmdrozdi.cz';
 
-  await saveStorageState(
-    'member@cmdrozdi.cz',
-    DEV_PASSWORD,
-    path.join(AUTH_DIR, 'member.json'),
-  );
+  await saveStorageState(adminEmail, DEV_PASSWORD, ADMIN_AUTH);
+  await saveStorageState('member@cmdrozdi.cz', DEV_PASSWORD, MEMBER_AUTH);
 
   console.log('✔ Auth storageState saved to e2e/.auth/');
 }
