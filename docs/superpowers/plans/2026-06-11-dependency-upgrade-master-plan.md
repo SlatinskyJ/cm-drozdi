@@ -112,6 +112,7 @@
 - Add `@playwright/test`; `playwright.config.ts`; `yarn e2e` + `yarn e2e:ui` scripts.
 - Login helper: seed a known user, sign in via the credentials form (or programmatic `signIn.email`), save `storageState`. One dedicated test exercises the real login flow directly (no mocking needed now).
 - **Per-test isolation:** truncate + reseed the test DB before each test. (True transactional rollback won't work — the Next server holds its own DB connection across the HTTP boundary; truncate-and-reseed gives equivalent isolation.) Needs a dedicated test database + seed.
+- **Preview DB (idea, needs refinement):** currently preview deployments share the production DATABASE_URL and have no Better Auth schema or seed data — login doesn't work on preview. Phase 2 already needs a throwaway DB for CI; consider extending that solution to Vercel preview environments too (e.g. Neon branching or a dedicated preview Postgres). Decide approach during Phase 2 spec.
 - Critical-path specs (~6-8): unauthenticated redirect to sign-in; successful login; events calendar renders; open event detail modal; request/create event — validation error + successful submit; delete event; admin-only UI gated for non-admins.
 - `.github/workflows/ci.yml` (first CI in repo): Postgres service container + test env secrets → install → prisma generate → lint → tsc → build → e2e, on every PR to develop.
 - Assert user-visible outcomes (text, navigation, row presence), never internal markup that shadcn/Tailwind phases will legitimately change.
