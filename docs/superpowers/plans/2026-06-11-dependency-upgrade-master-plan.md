@@ -230,8 +230,8 @@
 
 | Phase | PR | Status |
 |---|---|---|
-| 0 — Baseline | `chore/upgrade-phase-0-baseline` | in review — gate green (lint, tsc, build) |
-| 1 — Better Auth migration | – | not started |
+| 0 — Baseline | `chore/upgrade-phase-0-baseline` | merged |
+| 1 — Better Auth migration | `feat/upgrade-phase-1-better-auth` | in review |
 | 2 — E2E net + CI | – | not started |
 | 3 — Minor bumps | – | not started |
 | 4 — shadcn migration | – | not started |
