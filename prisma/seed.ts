@@ -27,7 +27,7 @@ async function ensureUser(opts: {
 }
 
 async function main() {
-	const isProd = env.NODE_ENV === 'production';
+	const isProd = env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production';
 
 	// Admin
 	const admin = await ensureUser({
