@@ -23,9 +23,14 @@ export default function MembersPage() {
 			setEmail('');
 			setName('');
 			await utils.member.list.invalidate();
-			const { url } = await genLink.mutateAsync({ userId });
-			await navigator.clipboard.writeText(url);
-			toast.success('Člen vytvořen. Odkaz pro nastavení hesla zkopírován.');
+			toast.success('Člen vytvořen.');
+			try {
+				const { url } = await genLink.mutateAsync({ userId });
+				await navigator.clipboard.writeText(url);
+				toast.success('Odkaz pro nastavení hesla zkopírován.');
+			} catch {
+				// genLink.onError already shows the error toast
+			}
 		},
 		onError: (e) => toast.error(e.message),
 	});
