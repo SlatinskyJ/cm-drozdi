@@ -63,7 +63,7 @@ Fetch the triggering `bot: resolve` comment (identified by the comment URL you r
 2. Verify the current branch is the PR feature branch (not `main` or `develop`) before pushing: `git branch --show-current`
 3. Run the verification gate:
    ```bash
-   yarn lint
+   SKIP_ENV_VALIDATION=1 yarn lint
    npx tsc --noEmit
    ```
 4. If verification fails:
