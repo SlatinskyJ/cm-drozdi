@@ -5,6 +5,10 @@ on:
     branches: [develop]
     types: [opened, synchronize, reopened, ready_for_review]
 
+# Suppress yarn engine check — project declares node 24.x but CI targets 22 LTS
+env:
+  YARN_IGNORE_ENGINES: "1"
+
 jobs:
   lint:
     runs-on: ubuntu-latest
