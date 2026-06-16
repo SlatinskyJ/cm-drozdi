@@ -131,8 +131,11 @@ export const memberRouter = createTRPCRouter({
 				where: { id: input.userId },
 				select: { role: true },
 			});
+			if (!target) {
+				throw new TRPCError({ code: 'NOT_FOUND', message: 'Uživatel nebyl nalezen.' });
+			}
 			if (
-				target?.role === UserRole.ADMIN &&
+				target.role === UserRole.ADMIN &&
 				(await activeAdminCount()) <= 1
 			) {
 				throw new TRPCError({
