@@ -17,6 +17,6 @@ This project is the source code of www.cmdrozdi.cz
     3. <b>TODO</b> Create mock authentication
 3. Make sure your db is running
 4. From root folder of this project run `npm run db:push`
-5. You are now ready to start dev env with `npm run dev`
+5. You are now ready to start dev env with `yarn dev`
 6. Happy coding
 
