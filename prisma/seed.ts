@@ -1,5 +1,4 @@
 import { auth } from '~/server/auth';
-import { generateSetPasswordUrl } from '~/server/auth-password-link';
 import { db } from '~/server/db';
 import { env } from '~/env';
 import { UserRole } from '~/enums/UserRole';
@@ -46,17 +45,14 @@ async function main() {
 		console.log(`Dev admin: ${env.BOOTSTRAP_ADMIN_EMAIL} / ${DEV_PASSWORD}`);
 	}
 
-	// Dev-only member (passwordless → exercise set-password flow)
+	// Dev-only member — password required in dev/test so E2E can sign in programmatically
 	if (!isProd) {
-		const member = await ensureUser({
+		await ensureUser({
 			email: 'member@cmdrozdi.cz',
 			name: 'Test Member',
 			role: UserRole.MEMBER,
+			password: DEV_PASSWORD,
 		});
-		if (member.created) {
-			const url = await generateSetPasswordUrl(member.id);
-			console.log('Dev member set-password link:', url);
-		}
 	}
 }
 
