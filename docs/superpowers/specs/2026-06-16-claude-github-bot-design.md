@@ -157,15 +157,14 @@ Full draft is written as part of the implementation.
 ```
 Read `.github/claude-bot.md` for project context and operating instructions.
 
-You have been triggered by an `@claude resolve` comment.
-PR number: {{pr_number}}
-Triggering comment URL: {{comment_url}}
+You have been triggered by an `@claude resolve` comment. Context:
 
-Find all @claude comments in this PR and process them per the instructions in `.github/claude-bot.md`.
-When done, reply to the triggering comment with a sweep summary.
+{{text}}
+
+Parse the PR number and triggering comment URL from the above, then proceed according to `.github/claude-bot.md`.
 ```
 
-> **Implementation note:** Verify whether the Routine API trigger injects the `text` field from the POST body as template variables (e.g. `{{pr_number}}`). If not, the prompt should instruct Claude to parse the raw `text` field payload instead.
+> **Note:** `{{text}}` injects the raw API trigger payload. The setup script handles checkout; Claude only needs to parse the comment URL from the payload to post the sweep summary reply. Verify `{{text}}` is substituted on first run — if it appears literally, update the prompt to instruct Claude to read the incoming context directly.
 
 ---
 
