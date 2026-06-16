@@ -51,7 +51,7 @@ export const memberRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input }) => {
-			const h = await headers();
+			const h = headers();
 			const result = await callAuth(() =>
 				auth.api.createUser({
 					body: {
@@ -108,7 +108,7 @@ export const memberRouter = createTRPCRouter({
 					});
 				}
 			}
-			const h = await headers();
+			const h = headers();
 			await callAuth(() =>
 				auth.api.setRole({
 					body: { userId: input.userId, role: input.role },
@@ -151,7 +151,7 @@ export const memberRouter = createTRPCRouter({
 			await ctx.db.account.deleteMany({
 				where: { userId: input.userId, providerId: 'credential' },
 			});
-			const h = await headers();
+			const h = headers();
 			await callAuth(() =>
 				auth.api.revokeUserSessions({
 					body: { userId: input.userId },
