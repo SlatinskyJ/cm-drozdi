@@ -1,0 +1,37 @@
+name: Claude Bot — Resolve PR Comments
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-resolve:
+    # Only fire when:
+    # - comment is by the repo owner
+    # - comment contains "bot: resolve"
+    # - the issue is actually a PR
+    # - the PR is open
+    if: >-
+      github.event.comment.user.login == 'SlatinskyJ' &&
+      contains(github.event.comment.body, 'bot: resolve') &&
+      github.event.issue.pull_request != null &&
+      github.event.issue.state == 'open'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fire Claude Routine
+        env:
+          PR_NUMBER: ${{ github.event.issue.number }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
+          ROUTINE_URL: ${{ secrets.CLAUDE_ROUTINE_URL }}
+          ROUTINE_TOKEN: ${{ secrets.CLAUDE_ROUTINE_TOKEN }}
+        run: |
+          payload=$(jq -n \
+            --arg pr "$PR_NUMBER" \
+            --arg url "$COMMENT_URL" \
+            '{"text": "PR number: \($pr)\nTriggering comment URL: \($url)"}')
+
+          curl -sfS -X POST "$ROUTINE_URL" \
+            -H "Authorization: Bearer $ROUTINE_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
