@@ -48,7 +48,7 @@ async function saveStorageState(email: string, password: string, outPath: string
 export default async function globalSetup() {
   // Migrate and seed — idempotent; safe to re-run even if CI steps already did this
   execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-  execSync('YARN_IGNORE_ENGINES=1 yarn db:seed', { stdio: 'inherit' });
+  execSync('yarn db:seed', { stdio: 'inherit' });
 
   const adminEmail = process.env['BOOTSTRAP_ADMIN_EMAIL'] ?? 'admin@cmdrozdi.cz';
 
