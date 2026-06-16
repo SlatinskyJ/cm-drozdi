@@ -5,53 +5,101 @@
 
 ## Overview
 
-A Claude Code Routine that sweeps `@claude` PR comments on demand, applying code fixes and answering questions, posting results as a dedicated bot GitHub account.
+A Claude Code Routine that sweeps `@claude` PR comments on demand, applying code fixes and answering questions, posting results as a dedicated bot GitHub account (`claude-bot`).
 
 ---
 
 ## Architecture
 
+```
+@claude resolve comment (posted by repo owner)
+       ↓
+GitHub Actions workflow (.github/workflows/claude-resolve.yml)
+  — issue_comment trigger, filtered to owner + "@claude resolve"
+  — checks PR is open
+  — POSTs to Routine /fire endpoint with PR number, comment body, comment URL
+       ↓
+Claude Code Routine (API trigger, runs on Anthropic cloud)
+  — reads .github/claude-bot.md for project context
+  — processes all pending @claude comments in the PR
+  — pushes fixes, posts replies as claude-bot account
+  — replies to @claude resolve with sweep summary
+```
+
 ### Claude Code Routine
 
-- **Trigger type:** GitHub — PR comment events
-- **Filter:** comment body matches `@claude resolve`
+- **Trigger type:** API — HTTP POST to per-routine `/fire` endpoint
 - **Repository:** cm-drozdi
-- **Prompt:** short (see below); references `.github/claude-bot.md` in the repo for project context
 - **Runs on:** Anthropic-managed cloud infrastructure (no local machine required)
+- **Prompt:** short (see below); Routine reads `.github/claude-bot.md` from repo at runtime
+
+> **Note:** GitHub triggers for Routines are research-preview and do not support private repositories. GitHub Actions is used as the event bridge instead.
 
 ### Bot GitHub Account
 
-A dedicated GitHub account (name TBD, e.g. `cmdrozdi-claude-bot`) with write access to cm-drozdi. All comments and commits the bot makes appear under this account, keeping the user's own comments visually distinct.
+- **Username:** `claude-bot` (verify availability; fall back to `claude-bot-cmdrozdi` if taken)
+- **Permissions:** write access to cm-drozdi repo
+- **PAT scope:** `repo` (covers commits, PR comments, branch push)
+- **PAT storage:** Routine environment variables section (never travels over the wire)
+- All comments and commits the bot makes appear under this account, keeping the user's own comments visually distinct
 
-- Generate a PAT for the bot account (scope: `repo` — covers commits, PR comments, and branch push)
-- Store the PAT as a secret accessible to the Routine (via MCP connector or Routine env var)
-- The Routine uses this PAT for all GitHub API calls (posting comments) and git operations (commit author + push)
+### GitHub Actions Secrets
+
+| Secret | Value |
+|--------|-------|
+| `CLAUDE_ROUTINE_URL` | Routine `/fire` endpoint URL |
+| `CLAUDE_ROUTINE_TOKEN` | Routine bearer token |
 
 ---
 
 ## Trigger Flow
 
-1. User leaves one or more `@claude <instruction>` comments on a PR (inline review threads or top-level)
+1. User leaves one or more `@claude <instruction>` comments on a PR
 2. When ready for a sweep, user posts `@claude resolve` in the PR
-3. Routine fires; Claude reads `.github/claude-bot.md` for project context
-4. Claude finds all `@claude` comments in the PR and processes them (see rules below)
-5. Claude replies to the `@claude resolve` comment with a sweep summary
+3. GitHub Actions fires on the `issue_comment` event:
+   - Filters to comments by the repo owner only
+   - Filters to comments containing `@claude resolve`
+   - Checks the PR is open (exits silently if closed/merged)
+   - POSTs to Routine `/fire` with: PR number, comment body, comment URL
+4. Routine fires; Claude reads `.github/claude-bot.md` for project context
+5. Claude checks if this specific `@claude resolve` comment already has a bot reply — if yes, this is a duplicate run, exit immediately
+6. Claude finds all `@claude` comments in the PR and processes them
+7. Claude replies to the `@claude resolve` comment with a sweep summary
+
+---
+
+## Sweep Startup
+
+At the start of every sweep, before processing any comments:
+
+```bash
+yarn install        # also runs prisma generate via postinstall
+```
+
+No `DATABASE_URL` needed — `prisma generate` reads `prisma/schema.prisma` only (no live DB). Lint and typecheck are static and also require no DB.
+
+Node version: trust Anthropic's cloud environment (repo requires >=20; Routine infra assumed to meet this).
 
 ---
 
 ## Comment Processing Rules
 
 **Skip (silently):**
-- Any `@claude` comment that already has a reply from the bot account → already handled in a prior sweep
-- Any `@claude resolve` comment that already has a bot reply → this Routine run is a duplicate, exit immediately
-- Outdated comments (comments on code lines that no longer exist in the current diff)
+- Any `@claude` comment that already has a reply from `claude-bot` → handled in a prior sweep
+- The `@claude resolve` trigger comment itself
+- Outdated comments (on code lines no longer in the current diff)
 
 **Fix request** (comment asks Claude to change code):
 1. Edit the relevant files
-2. Run verification gate: `yarn lint` + `npx tsc --noEmit`
-3. Commit to the PR branch (commit author = bot account)
-4. Push
-5. Reply to the comment with a summary of what was changed
+2. Run `yarn lint` + `npx tsc --noEmit`
+3. If verification fails → attempt to self-heal the failure
+   - If self-heal is clear → fix, re-verify, proceed
+   - If self-heal is ambiguous → post a reply comment asking for clarification, skip this fix
+4. Commit to PR branch with message: `fix: <description> (resolves @claude comment)`
+   - Commit author = `claude-bot`
+   - One commit per fixed comment
+5. Push
+6. Reply to the comment with a summary of what was changed
 
 **Question** (comment asks why/how something works):
 1. Post a reply comment with the answer
@@ -68,27 +116,39 @@ A dedicated GitHub account (name TBD, e.g. `cmdrozdi-claude-bot`) with write acc
 
 ## Sweep Completion
 
-After processing all comments, the bot replies to the `@claude resolve` comment with a summary, e.g.:
+After processing all comments, the bot replies to the `@claude resolve` comment:
 
 > Done. Fixed 2 issues, answered 1 question, skipped 1 outdated comment.
 
-This reply also serves as the duplicate-detection marker: a second `@claude resolve` with no bot reply is a fresh sweep; one with a bot reply is a duplicate and exits immediately.
+This reply is also the duplicate-detection marker for future runs. The user can post new `@claude` comments and trigger `@claude resolve` again for another sweep — each sweep is independent.
 
-The user can post new `@claude` comments after a sweep and trigger `@claude resolve` again for another pass.
+---
+
+## Git Authentication (in Routine)
+
+The Routine configures git using the bot PAT from its env vars before any commit/push:
+
+```bash
+git config user.name "claude-bot"
+git config user.email "claude-bot@users.noreply.github.com"
+git remote set-url origin https://claude-bot:${BOT_PAT}@github.com/SlatinskyJ/cm-drozdi.git
+```
 
 ---
 
 ## `.github/claude-bot.md` — Content Structure
 
-This file lives in the repo (versioned) and is read by the Routine at the start of every run. The Routine prompt itself is minimal; all project knowledge lives here.
+Lives in the repo (versioned). The Routine reads it at the start of every run. The Routine prompt itself is minimal; all project knowledge lives here.
 
 Sections:
-- **Project overview** — condensed from `CLAUDE.md`: T3 stack, branching rules (`develop` integration branch, `main` production-only), path aliases, tRPC/auth/Prisma notes
+- **Project overview** — condensed from `CLAUDE.md`: T3 stack, branching rules, path aliases, tRPC/auth/Prisma notes, verification gate
 - **Bot role** — process all pending `@claude` comments in the triggered PR
-- **Verification gate** — `yarn lint` + `npx tsc --noEmit` must pass before any push
-- **Commit conventions** — follow repo style; bot account as author; one commit per logical fix
-- **Constraints** — never touch `main`; don't apply fixes to outdated comments; don't resolve comments about future work (flag them)
-- **Trigger comment** — `@claude resolve` starts the sweep; the bot must not process this comment as a task
+- **Verification gate** — `yarn lint` + `npx tsc --noEmit`; self-heal failures; post comment if ambiguous
+- **Commit conventions** — `fix: <description> (resolves @claude comment)`; bot account as author; one commit per fix
+- **Constraints** — never touch `main`; skip outdated comments; skip already-answered comments; don't apply fixes to future-work comments (flag them)
+- **Trigger comment** — `@claude resolve` starts the sweep; do not process it as a task
+
+Full draft is written as part of the implementation.
 
 ---
 
@@ -97,18 +157,36 @@ Sections:
 ```
 Read `.github/claude-bot.md` for project context and operating instructions.
 
-You have been triggered by an `@claude resolve` comment on PR #{{pr_number}} in the cm-drozdi repo.
-Find all `@claude` comments in this PR and process them according to the instructions in `.github/claude-bot.md`.
-When done, reply to the `@claude resolve` comment with a sweep summary.
+You have been triggered by an `@claude resolve` comment.
+PR number: {{pr_number}}
+Triggering comment URL: {{comment_url}}
+Triggering comment body: {{comment_body}}
+
+Find all @claude comments in this PR and process them per the instructions in `.github/claude-bot.md`.
+When done, reply to the triggering comment with a sweep summary.
 ```
 
-> **Implementation note:** Verify whether the Routine GitHub trigger injects context variables (e.g. `{{pr_number}}`, `{{comment_body}}`). If not, the prompt will need to instruct Claude to discover the PR number from the triggering event payload instead.
+> **Implementation note:** Verify whether the Routine API trigger injects the `text` field from the POST body as template variables (e.g. `{{pr_number}}`). If not, the prompt should instruct Claude to parse the raw `text` field payload instead.
+
+---
+
+## GitHub Actions Workflow (`.github/workflows/claude-resolve.yml`)
+
+Trigger: `issue_comment` → `created`
+
+Steps:
+1. Filter: comment author must be repo owner (`SlatinskyJ`)
+2. Filter: comment body must contain `@claude resolve`
+3. Check PR is open via GitHub API; exit silently if closed/merged
+4. POST to `${{ secrets.CLAUDE_ROUTINE_URL }}` with bearer token `${{ secrets.CLAUDE_ROUTINE_TOKEN }}` and body containing PR number, comment URL, comment body
+
+No checkout needed — the Routine clones the repo itself.
 
 ---
 
 ## Out of Scope
 
-- Polling or always-on infrastructure — runs only when `@claude resolve` is posted
-- Support for other repos — design is cm-drozdi specific for now; `.github/claude-bot.md` pattern is reusable
-- GitHub Actions — Routines replace this entirely
-- Automatic scheduling — purely on-demand
+- Polling or always-on infrastructure
+- Support for other repos (`.github/claude-bot.md` pattern is portable when needed)
+- Automatic scheduling
+- GitHub Copilot or GitHub Actions as the AI executor (Routine handles all intelligence)
