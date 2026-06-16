@@ -31,9 +31,19 @@ e2e/
     members.spec.ts           # create member; list; delete (confirm modal); role change
 ```
 
+### Seed Changes
+
+Update `prisma/seed.ts`: give the dev/test member user a known password (same `DEV_PASSWORD` pattern as admin). Production seed behaviour is unchanged — admin remains passwordless in prod.
+
+Split the `db:seed` npm script:
+- `"db:seed"` — `tsx prisma/seed.ts` (no `--env-file`; used by Vercel release command and CI)
+- `"db:seed:local"` — `tsx --env-file=.env prisma/seed.ts` (local dev)
+
+Update CLAUDE.md commands section to reference `db:seed:local` for local use.
+
 ### Authentication
 
-`global-setup.ts` calls Better Auth's `signIn.email` API directly (programmatic — no browser) to obtain session cookies for two roles:
+`global-setup.ts` calls Better Auth's `signIn.email` API directly (programmatic — no browser; uses `auth.api.signInEmail` with `asResponse: true` to extract `set-cookie` header) to obtain session cookies for two roles:
 
 - `e2e/.auth/admin.json` — used by `events-calendar.spec.ts`, `event-crud.spec.ts`, `members.spec.ts`
 - `e2e/.auth/member.json` — used by `admin-gate.spec.ts`
@@ -44,10 +54,12 @@ e2e/
 
 `global-setup.ts` runs `prisma migrate deploy` + `yarn db:seed` once before the full suite.
 
-Each spec file runs `resetDb()` in `beforeAll`:
+Each spec file runs `resetDb()` in `beforeEach`:
 - Truncates domain tables: `Event`, `UsersOnEvents`, `InstrumentsOnUsers`
 - Re-seeds Better Auth user accounts (admin + member with known credentials)
 - Better Auth schema tables (`User`, `Session`, `Account`, `Verification`) are not truncated — managed via seeding only
+
+`members.spec.ts` creates its own throwaway users for edit/delete/role-change tests — never mutates the shared seeded admin or member.
 
 ### Spec Coverage
 
@@ -63,12 +75,21 @@ Each spec file runs `resetDb()` in `beforeAll`:
 
 Assert user-visible outcomes: text content, navigation, row presence, error messages. Never assert internal markup, CSS class names, or component structure — these will legitimately change in Phase 4 (shadcn migration).
 
+### Playwright Config
+
+- Browser: **Chromium only**
+- Workers: **1 (serial)** — DB is shared; parallelism requires per-worker DB isolation
+- `webServer`: `command: 'yarn start'` (always match prod build; CI runs `yarn build` before `yarn e2e`)
+- `use.baseURL`: `http://localhost:3000`
+
 ### Scripts
 
 ```json
 "e2e": "playwright test",
 "e2e:ui": "playwright test --ui"
 ```
+
+`e2e/.auth/` must be added to `.gitignore` — contains session cookies generated at runtime.
 
 ---
 
@@ -108,6 +129,7 @@ on:
 | `DATABASE_URL_TEST` | `postgresql://postgres:postgres@localhost:5432/test` (service container) |
 | `BETTER_AUTH_SECRET` | any fixed string |
 | `BETTER_AUTH_URL` | `http://localhost:3000` |
+| `BOOTSTRAP_ADMIN_EMAIL` | `admin@cmdrozdi.cz` (required because `next build` sets `NODE_ENV=production`, making this field required with no default) |
 
 **Branch protection:** all three jobs set as required status checks in GitHub branch protection settings for `develop`.
 
@@ -119,20 +141,28 @@ on:
 
 `@vercel/postgres` is in `package.json` but never imported anywhere in the codebase. Remove it.
 
-### Neon account setup
+### Neon account setup (manual steps — user performs these)
 
-Create a Neon account with two branches:
+1. Go to [neon.tech](https://neon.tech) and create a new account
+2. Create a new project named `cm-drozdi`
+3. Rename the default branch from `main` to `main` (keep as-is) — this will be the future production DB
+4. Create a second branch named `develop` from `main`
+5. Copy the connection string for the `develop` branch
+6. Run `DATABASE_URL=<develop-connection-string> prisma migrate deploy && DATABASE_URL=<develop-connection-string> yarn db:seed` to establish the baseline on `develop`
 
 | Branch | Purpose |
 |---|---|
 | `main` | Future production DB (unused until master plan complete) |
 | `develop` | Preview parent — migrated + seeded with dev data |
 
-Run `prisma migrate deploy && yarn db:seed` against the `develop` Neon branch once during setup to establish the baseline.
+### Vercel integration (manual steps — user performs these)
 
-### Vercel integration
+1. In Vercel project settings, go to **Integrations** → search for **Neon Postgres**
+2. Install the **Neon Postgres Previews Integration** and connect it to the `cm-drozdi` Neon project
+3. Set `develop` as the parent branch for preview deployments
+4. Verify that a new environment variable `DATABASE_URL` appears in Vercel preview environment settings (injected automatically by the integration)
 
-Install the **Neon Postgres Previews Integration** on Vercel. Configure `develop` as the parent branch for preview deployments. Vercel + Neon automatically:
+Vercel + Neon will then automatically:
 1. Create a new Neon branch from `develop` for each preview deployment
 2. Inject `DATABASE_URL` for that branch into the preview environment
 3. Clean up the branch when the PR is closed/merged
@@ -161,9 +191,9 @@ Add a comment noting the Neon connection string format for developers setting up
 
 ## 4. CLAUDE.md Update
 
-Add to the Branching section:
+The draft PR rule is already present in CLAUDE.md. No change needed.
 
-> **PRs must always be created as drafts** (`gh pr create --draft`). Only the user marks a PR ready for review. Never create a ready-for-review PR directly.
+Update the Commands section to reference `yarn db:seed:local` for local seeding (replacing the old `yarn db:seed` which no longer loads `.env`).
 
 ---
 

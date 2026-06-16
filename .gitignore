@@ -53,3 +53,6 @@ e2e/.auth/
 
 # Playwright test output (screenshots, traces, videos on failure)
 test-results/
+
+# Playwright HTML report (generated on test run)
+playwright-report/
