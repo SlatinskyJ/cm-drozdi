@@ -62,7 +62,7 @@ Claude Code Routine (API trigger, runs on Anthropic cloud)
    - Checks the PR is open (exits silently if closed/merged)
    - POSTs to Routine `/fire` with: PR number, comment body, comment URL
 4. Routine fires; Claude reads `.github/claude-bot.md` for project context
-5. Claude checks if this specific `@claude resolve` comment already has a bot reply — if yes, this is a duplicate run, exit immediately
+5. Claude checks if this specific `@claude resolve` comment already has a reply from `@claude-bot` — if yes, this is a duplicate run, exit immediately
 6. Claude finds all `@claude` comments in the PR and processes them
 7. Claude replies to the `@claude resolve` comment with a sweep summary
 
@@ -85,7 +85,7 @@ Node version: trust Anthropic's cloud environment (repo requires >=20; Routine i
 ## Comment Processing Rules
 
 **Skip (silently):**
-- Any `@claude` comment that already has a reply from `claude-bot` → handled in a prior sweep
+- Any `@claude` comment that already has a reply from `@claude-bot` → handled in a prior sweep
 - The `@claude resolve` trigger comment itself
 - Outdated comments (on code lines no longer in the current diff)
 
@@ -95,7 +95,7 @@ Node version: trust Anthropic's cloud environment (repo requires >=20; Routine i
 3. If verification fails → attempt to self-heal the failure
    - If self-heal is clear → fix, re-verify, proceed
    - If self-heal is ambiguous → post a reply comment asking for clarification, skip this fix
-4. Commit to PR branch with message: `fix: <description> (resolves @claude comment)`
+4. Commit to PR branch with message: `fix: <description> (resolves @claude-bot comment)`
    - Commit author = `claude-bot`
    - One commit per fixed comment
 5. Push
