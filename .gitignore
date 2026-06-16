@@ -50,3 +50,6 @@ docs/superpowers/handoffs/
 
 # Playwright auth storageState (generated at runtime — contains session cookies)
 e2e/.auth/
+
+# Playwright test output (screenshots, traces, videos on failure)
+test-results/
