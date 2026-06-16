@@ -1,4 +1,5 @@
 import { auth } from '~/server/auth';
+import { generateSetPasswordUrl } from '~/server/auth-password-link';
 import { db } from '~/server/db';
 import { env } from '~/env';
 import { UserRole } from '~/enums/UserRole';
