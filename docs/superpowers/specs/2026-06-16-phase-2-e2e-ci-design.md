@@ -137,55 +137,53 @@ on:
 
 ## 3. Neon + Preview DB
 
+> **Revised 2026-06-17:** First execution of this section wired a single shared Neon database (`cm-drozdi-postgres`) across Development, Preview, and Production — not the per-PR branching this section specifies, and not via the Previews Integration. That caused `prisma migrate deploy` to fail on every preview build with `P3005` (schema not empty / no migration history), since the shared DB's schema predates Prisma's migration tracking. The revision below creates a **new, separate Neon project dedicated to Preview only**, leaving the existing shared DB serving Production (and Development) untouched until the full master-plan migration (deferred to after Phase 9, per the original "Production" note below).
+
 ### Remove dead dependency
 
-`@vercel/postgres` is in `package.json` but never imported anywhere in the codebase. Remove it.
+`@vercel/postgres` is in `package.json` but never imported anywhere in the codebase. Remove it. *(Done — commit `6259191`.)*
 
-### Neon account setup (manual steps — user performs these)
+### Neon project setup (manual steps — user performs these)
 
-1. Go to [neon.tech](https://neon.tech) and create a new account
-2. Create a new project named `cm-drozdi`
-3. Rename the default branch from `main` to `main` (keep as-is) — this will be the future production DB
-4. Create a second branch named `develop` from `main`
-5. Copy the connection string for the `develop` branch
-6. Run `DATABASE_URL=<develop-connection-string> prisma migrate deploy && DATABASE_URL=<develop-connection-string> yarn db:seed` to establish the baseline on `develop`
+1. In the same Neon account, create a **new** project, e.g. `cm-drozdi-preview` (separate from the existing `cm-drozdi-postgres` project, which keeps serving Production/Development unchanged)
+2. Use the project's default branch as the preview parent branch — rename it to `develop` for clarity
+3. Copy the connection string for that branch
+4. Run `DATABASE_URL=<develop-connection-string> npx prisma migrate deploy && DATABASE_URL=<develop-connection-string> yarn db:seed` to establish the baseline (correct migration history + seed data) on `develop`
 
-| Branch | Purpose |
-|---|---|
-| `main` | Future production DB (unused until master plan complete) |
-| `develop` | Preview parent — migrated + seeded with dev data |
+No second/unused branch is created in this project — a future production migration target (if/when one is needed) is a decision for the later master-plan phase that actually cuts Production over to Neon, not this one (YAGNI).
 
 ### Vercel integration (manual steps — user performs these)
 
 1. In Vercel project settings, go to **Integrations** → search for **Neon Postgres**
-2. Install the **Neon Postgres Previews Integration** and connect it to the `cm-drozdi` Neon project
+2. Install the **Neon Postgres Previews Integration** and connect it to the new `cm-drozdi-preview` Neon project
 3. Set `develop` as the parent branch for preview deployments
-4. Verify that a new environment variable `DATABASE_URL` appears in Vercel preview environment settings (injected automatically by the integration)
+4. Scope the integration to the **Preview** environment only — Production and Development env vars must not change
+5. Verify that `DATABASE_URL` appears in Vercel's Preview environment settings (injected automatically by the integration) and that Production/Development `DATABASE_URL` are untouched
 
 Vercel + Neon will then automatically:
-1. Create a new Neon branch from `develop` for each preview deployment
-2. Inject `DATABASE_URL` for that branch into the preview environment
+1. Create a new Neon branch from `develop` for each preview deployment (inheriting its schema, migration history, and seed data)
+2. Inject that branch's `DATABASE_URL` into the preview environment
 3. Clean up the branch when the PR is closed/merged
 
-### Release command
+Because each preview branch forks from a properly `migrate deploy`'d `develop`, the `P3005` baseline error cannot recur on preview builds.
 
-Add `vercel.json` with a Release Command that runs after each deployment build, guarded to skip production:
+### Build-time migrate + seed
+
+`vercel.json`'s `releaseCommand` is **not a valid Vercel config key** (schema rejects it — discovered when this caused PR #13's Vercel build to fail). Instead, use a `vercel-build` script in `package.json`, which Vercel runs automatically in place of `next build`:
 
 ```json
-{
-  "releaseCommand": "if [ \"$VERCEL_ENV\" != \"production\" ]; then prisma migrate deploy && yarn db:seed; fi"
-}
+"vercel-build": "if [ \"$VERCEL_ENV\" != \"production\" ]; then npx prisma migrate deploy && yarn db:seed; fi && next build"
 ```
 
-This keeps each preview DB in sync with the branch's migrations and seed data.
+This keeps each preview DB in sync with the branch's migrations and seed data, with no `vercel.json` needed. *(Done — commit `806fc8b`.)*
 
 ### Production
 
-Production `DATABASE_URL` in Vercel is **unchanged** — stays on existing Vercel Postgres for the full duration of the master plan. The Neon `main` branch is created now but not wired to production until after Phase 9.
+Production `DATABASE_URL` in Vercel is **unchanged** — stays on the existing `cm-drozdi-postgres` Neon database for the full duration of the master plan, until a later phase explicitly migrates it.
 
 ### `.env.example`
 
-Add a comment noting the Neon connection string format for developers setting up a Neon-backed environment.
+Update the existing Neon comment to clarify it refers to the dedicated preview project (`cm-drozdi-preview`), not the shared Production database.
 
 ---
 
