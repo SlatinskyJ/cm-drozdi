@@ -3,6 +3,7 @@ import { generateSetPasswordUrl } from '~/server/auth-password-link';
 import { db } from '~/server/db';
 import { env } from '~/env';
 import { UserRole } from '~/enums/UserRole';
+import { hashPassword } from '@better-auth/utils/password';
 
 const DEV_PASSWORD = 'admin1234';
 
@@ -13,7 +14,30 @@ async function ensureUser(opts: {
 	password?: string;
 }) {
 	const existing = await db.user.findUnique({ where: { email: opts.email } });
-	if (existing) return { id: existing.id, created: false };
+	if (existing) {
+		// Ensure the credential account has the expected password (idempotent fix for
+		// users created without a password or whose password drifted from DEV_PASSWORD)
+		if (opts.password) {
+			const hashed = await hashPassword(opts.password);
+			const updated = await db.account.updateMany({
+				where: { userId: existing.id, providerId: 'credential' },
+				data: { password: hashed },
+			});
+			if (updated.count === 0) {
+				await db.account.create({
+					data: {
+						providerId: 'credential',
+						accountId: existing.id,
+						userId: existing.id,
+						password: hashed,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+				});
+			}
+		}
+		return { id: existing.id, created: false };
+	}
 	const res = await auth.api.createUser({
 		body: {
 			email: opts.email,
@@ -46,17 +70,14 @@ async function main() {
 		console.log(`Dev admin: ${env.BOOTSTRAP_ADMIN_EMAIL} / ${DEV_PASSWORD}`);
 	}
 
-	// Dev-only member (passwordless → exercise set-password flow)
+	// Dev-only member — password required in dev/test so E2E can sign in programmatically
 	if (!isProd) {
-		const member = await ensureUser({
+		await ensureUser({
 			email: 'member@cmdrozdi.cz',
 			name: 'Test Member',
 			role: UserRole.MEMBER,
+			password: DEV_PASSWORD,
 		});
-		if (member.created) {
-			const url = await generateSetPasswordUrl(member.id);
-			console.log('Dev member set-password link:', url);
-		}
 	}
 }
 

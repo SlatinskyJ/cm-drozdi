@@ -10,6 +10,7 @@ Source code for www.cmdrozdi.cz — a T3-stack app (Next.js 14 App Router + tRPC
 
 - `develop` is the integration branch — fork new work branches from `develop`, and target `develop` with PRs.
 - `main` is production-only. Never commit or push directly to `main`; it's updated only via release merges from `develop`.
+- **PRs must always be created as drafts** (`gh pr create --draft`). Only the user marks a PR ready for review. Never create a ready-for-review PR directly.
 
 ## Commands
 
@@ -21,11 +22,23 @@ Source code for www.cmdrozdi.cz — a T3-stack app (Next.js 14 App Router + tRPC
 - `npx tsc --noEmit` — typecheck (no dedicated script exists yet).
 - `./start-database.sh` — spins up a local Postgres container (`cm-drozdi-postgres`) for dev, reading/writing `DATABASE_URL` in `.env`.
 - `yarn db:push` — push Prisma schema to DB without a migration (used for first-time setup per README).
+- `yarn db:seed:local` — seed dev DB (loads `.env`). In CI/Vercel use `yarn db:seed` (env injected externally).
 - `yarn db:generate` — `prisma migrate dev` (create + apply a migration).
 - `yarn db:migrate` — `prisma migrate deploy`.
 - `yarn db:studio` — open Prisma Studio.
+- `yarn e2e` — run full Playwright E2E suite (requires `yarn build` first; needs DATABASE_URL + BETTER_AUTH_* in env).
+- `yarn e2e:ui` — open Playwright UI for interactive test running.
 
-**No test suite exists.** There are no `*.test.*`/`*.spec.*` files, no test runner, and no CI workflow. The only verification gate is `yarn lint`, `npx tsc --noEmit`, `yarn build`, and manual smoke testing via `yarn dev` (log in, view the events calendar, open an event detail modal, create/request/edit/delete an event).
+**Verification gate:**
+```bash
+yarn install
+npx prisma generate
+SKIP_ENV_VALIDATION=1 yarn lint
+yarn typecheck
+SKIP_ENV_VALIDATION=1 yarn build
+yarn e2e
+```
+All must pass clean. CI enforces this on every non-draft PR to `develop`.
 
 ## Architecture
 
