@@ -1,3 +1,0 @@
-{
-  "releaseCommand": "if [ \"$VERCEL_ENV\" != \"production\" ]; then npx prisma migrate deploy && yarn db:seed; fi"
-}
