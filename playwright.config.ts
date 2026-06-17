@@ -9,10 +9,12 @@ export default defineConfig({
   globalSetup: './e2e/global-setup.ts',
   fullyParallel: false,
   workers: 1, // Serial — tests share a single DB instance
-  reporter: process.env.CI ? 'github' : 'html',
+  retries: process.env.CI ? 1 : 0, // needed so trace: 'on-first-retry' actually captures a trace in CI
+  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'html',
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
   projects: [
     {
