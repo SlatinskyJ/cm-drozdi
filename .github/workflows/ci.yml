@@ -6,7 +6,26 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - '**'
+              - '!docs/**'
+              - '!.agents/**'
+              - '!.claude/**'
+              - '!**/*.md'
+
   lint:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,6 +37,8 @@ jobs:
       - run: SKIP_ENV_VALIDATION=1 yarn lint
 
   typecheck:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,8 +51,9 @@ jobs:
       - run: SKIP_ENV_VALIDATION=1 yarn typecheck
 
   e2e:
+    needs: changes
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
+    if: needs.changes.outputs.code == 'true' && github.event.pull_request.draft == false
     services:
       postgres:
         image: postgres:16
