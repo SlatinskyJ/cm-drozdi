@@ -231,15 +231,17 @@
 
 ## Tracking
 
-| Phase | PR | Status |
-|---|---|---|
-| 0 — Baseline | `chore/upgrade-phase-0-baseline` | merged |
-| 1 — Better Auth migration | `feat/upgrade-phase-1-better-auth` | merged |
-| 2 — E2E net + CI | `chore/upgrade-phase-2-e2e-ci` | in review |
-| 3 — Minor bumps | – | not started |
-| 4 — shadcn migration | – | not started |
-| 5 — React 19 / Next 16 | – | not started |
-| 6 — Tailwind 4 | – | not started |
-| 7 — Prisma 7 | – | not started |
-| 8 — Zod 4 | – | not started |
-| 9 — ESLint 10 | – | not started |
+Once a phase has an open PR, track that PR (`gh pr view <number>`) for live status instead of hand-editing a status column here. Only phases without a PR yet show "not started".
+
+| Phase | PR |
+|---|---|
+| 0 — Baseline | [#4](https://github.com/SlatinskyJ/cm-drozdi/pull/4) (merged) |
+| 1 — Better Auth migration | [#7](https://github.com/SlatinskyJ/cm-drozdi/pull/7) (merged) |
+| 2 — E2E net + CI | [#13](https://github.com/SlatinskyJ/cm-drozdi/pull/13) (merged) |
+| 3 — Minor bumps | not started |
+| 4 — shadcn migration | not started |
+| 5 — React 19 / Next 16 | not started |
+| 6 — Tailwind 4 | not started |
+| 7 — Prisma 7 | not started |
+| 8 — Zod 4 | not started |
+| 9 — ESLint 10 | not started |
