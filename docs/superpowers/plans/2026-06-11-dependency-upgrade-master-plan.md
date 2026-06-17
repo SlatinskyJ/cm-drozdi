@@ -35,7 +35,7 @@
    yarn lint
    npx tsc --noEmit
    yarn build
-   yarn e2e        # added once Phase 2 lands; before that, manual smoke only
+   yarn e2e
    ```
    All must pass clean. From Phase 2 on, CI enforces this on every PR.
 4. **No mixed concerns.** If a phase reveals an unrelated bug, fix in a separate PR.
@@ -71,7 +71,9 @@
 | typescript | ^5.5.3 | 5.x latest | minor |
 | @types/node | ^20 | 22.x | match runtime |
 
-**Explicit non-goals:** social/OAuth login (defer as nice-to-have), replacing @vercel/postgres, a full unit/integration suite, Yarn 1 → modern package manager. Candidate follow-ups after Phase 9.
+**Explicit non-goals:** social/OAuth login (defer as nice-to-have), a full unit/integration suite, Yarn 1 → modern package manager. Candidate follow-ups after Phase 9.
+
+**Post-Phase-9 cleanup:** remove `start-database.sh` (unused — local dev runs a native Postgres install, not Docker).
 
 ---
 
@@ -232,8 +234,8 @@
 | Phase | PR | Status |
 |---|---|---|
 | 0 — Baseline | `chore/upgrade-phase-0-baseline` | merged |
-| 1 — Better Auth migration | `feat/upgrade-phase-1-better-auth` | in review |
-| 2 — E2E net + CI | – | not started |
+| 1 — Better Auth migration | `feat/upgrade-phase-1-better-auth` | merged |
+| 2 — E2E net + CI | `chore/upgrade-phase-2-e2e-ci` | in review |
 | 3 — Minor bumps | – | not started |
 | 4 — shadcn migration | – | not started |
 | 5 — React 19 / Next 16 | – | not started |
