@@ -1,18 +1,7 @@
-import { getSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { UserRole } from "~/enums/UserRole";
+import { authClient } from '~/lib/auth-client';
+import { UserRole } from '~/enums/UserRole';
 
 export function useIsAdmin(): boolean {
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    async function getRole() {
-      const session = await getSession();
-      setIsAdmin(session?.user.role === UserRole.ADMIN);
-    }
-
-    void getRole();
-  }, []);
-
-  return isAdmin;
+	const { data } = authClient.useSession();
+	return (data?.user.role as UserRole) === UserRole.ADMIN;
 }

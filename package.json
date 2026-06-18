@@ -8,15 +8,20 @@
     "db:generate": "prisma migrate dev",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed:local": "tsx --env-file=.env prisma/seed.ts",
     "db:studio": "prisma studio",
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "vercel-build": "if [ \"$VERCEL_ENV\" != \"production\" ]; then npx prisma migrate deploy && yarn db:seed; fi && next build"
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.1",
-    "@auth/prisma-adapter": "^1.6.0",
     "@internationalized/date": "^3.5.6",
     "@nextui-org/card": "^2.0.34",
     "@nextui-org/chip": "^2.0.33",
@@ -37,13 +42,13 @@
     "@trpc/client": "^11.17.0",
     "@trpc/react-query": "^11.17.0",
     "@trpc/server": "^11.17.0",
-    "@vercel/postgres": "^0.10.0",
     "@vercel/speed-insights": "^1.3.1",
+    "better-auth": "^1.6.18",
     "framer-motion": "^11.11.8",
     "geist": "^1.7.2",
     "lodash": "^4.17.21",
+    "moment": "^2.30.1",
     "next": "^14.2.4",
-    "next-auth": "^4.24.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.79.0",
@@ -54,12 +59,14 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
     "@types/eslint": "^8.56.10",
     "@types/node": "^22",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.1.0",
     "@typescript-eslint/parser": "^8.1.0",
+    "dotenv": "^17.4.2",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.4",
     "postcss": "^8.4.39",
@@ -67,10 +74,14 @@
     "prettier-plugin-tailwindcss": "^0.8.0",
     "prisma": "^5.21.0",
     "tailwindcss": "^3.4.3",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3"
   },
   "ct3aMetadata": {
     "initVersion": "7.37.0"
+  },
+  "engines": {
+    "node": "22.x"
   },
   "packageManager": "yarn@1.22.19"
 }

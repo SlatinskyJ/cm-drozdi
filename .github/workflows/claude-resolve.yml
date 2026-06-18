@@ -1,0 +1,51 @@
+name: Claude Bot — Resolve PR Comments
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude-resolve:
+    # Only fire when:
+    # - comment/review is by the repo owner
+    # - comment/review body contains "bot: resolve"
+    # - the PR is open
+    # (issue_comment fires for regular PR conversation comments;
+    #  pull_request_review fires for comments left via "Review changes")
+    if: >-
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.comment.user.login == 'SlatinskyJ' &&
+        contains(github.event.comment.body, 'bot: resolve') &&
+        github.event.issue.pull_request != null &&
+        github.event.issue.state == 'open'
+      ) ||
+      (
+        github.event_name == 'pull_request_review' &&
+        github.event.review.user.login == 'SlatinskyJ' &&
+        contains(github.event.review.body, 'bot: resolve') &&
+        github.event.pull_request.state == 'open'
+      )
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fire Claude Routine
+        env:
+          PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          COMMENT_URL: ${{ github.event.comment.html_url || github.event.review.html_url }}
+          ROUTINE_URL: ${{ secrets.CLAUDE_ROUTINE_URL }}
+          ROUTINE_TOKEN: ${{ secrets.CLAUDE_ROUTINE_TOKEN }}
+        run: |
+          payload=$(jq -n \
+            --arg pr "$PR_NUMBER" \
+            --arg url "$COMMENT_URL" \
+            '{"text": "PR number: \($pr)\nTriggering comment URL: \($url)"}')
+
+          curl -sfS -X POST "$ROUTINE_URL" \
+            -H "Authorization: Bearer $ROUTINE_TOKEN" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "anthropic-beta: experimental-cc-routine-2026-04-01" \
+            -H "Content-Type: application/json" \
+            -d "$payload"

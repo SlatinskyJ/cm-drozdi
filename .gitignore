@@ -16,12 +16,11 @@ db.sqlite
 # next.js
 /.next/
 /out/
-next-env.d.ts
+# next-env.d.ts is committed — Next.js manages it, do not edit manually
 
 # production
 /build
 package-lock.json
-yarn.lock
 
 # misc
 .DS_Store
@@ -46,3 +45,14 @@ yarn-error.log*
 
 # idea files
 .idea
+# Local-only session handoffs
+docs/superpowers/handoffs/
+
+# Playwright auth storageState (generated at runtime — contains session cookies)
+e2e/.auth/
+
+# Playwright test output (screenshots, traces, videos on failure)
+test-results/
+
+# Playwright HTML report (generated on test run)
+playwright-report/
