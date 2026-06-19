@@ -1,11 +1,10 @@
 import { Button } from '@components/ui/button';
 import {
-	Modal,
-	ModalBody,
-	ModalContent,
-	ModalFooter,
-	ModalHeader,
-} from '@nextui-org/modal';
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+} from '@components/ui/dialog';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { type TEvent } from '~/app/_models/event';
@@ -52,25 +51,20 @@ export function EventDetailModal({
 	} = useEventForm(event, handleSaveSuccess);
 
 	return (
-		<Modal isOpen={isOpen} size="lg" backdrop="blur" hideCloseButton>
-			<ModalContent>
-				<ModalHeader className="flex">
+		<Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+			<DialogContent className="sm:max-w-2xl" showCloseButton={false}>
+				<DialogHeader className="flex flex-row items-center">
 					<div>{event.name}</div>
 					<div className="grow" />
 					<EditableState state={state} eventId={event.id} />
-				</ModalHeader>
-				<ModalBody>
-					{isEdit ? (
-						<EventForm control={control} />
-					) : (
-						<EventValues event={event} />
-					)}
-				</ModalBody>
-				<ModalFooter className="flex">
-					<Button
-						onClick={handleClose}
-						variant="destructive-ghost"
-					>
+				</DialogHeader>
+				{isEdit ? (
+					<EventForm control={control} />
+				) : (
+					<EventValues event={event} />
+				)}
+				<DialogFooter className="flex-row">
+					<Button onClick={handleClose} variant="destructive-ghost">
 						Zavřít
 					</Button>
 					<div className="grow" />
@@ -89,8 +83,8 @@ export function EventDetailModal({
 							Editovat
 						</Button>
 					)}
-				</ModalFooter>
-			</ModalContent>
-		</Modal>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	);
 }

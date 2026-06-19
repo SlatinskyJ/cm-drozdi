@@ -1,19 +1,19 @@
 import { Skeleton } from '@components/ui/skeleton';
-import { Card, CardBody, CardHeader } from '@nextui-org/card';
-import { Divider } from '@nextui-org/divider';
+import { Card, CardContent, CardHeader } from '@components/ui/card';
+import { Separator } from '@components/ui/separator';
 
 export async function EventSkeleton() {
 	return (
 		<Card className="w-[265px] bg-green-400 [&:nth-child(2)]:opacity-75 [&:nth-child(3)]:opacity-50">
-			<CardHeader className="flex">
+			<CardHeader className="flex flex-row items-center">
 				<Skeleton className="h-7 w-36 rounded-full" />
 				<div className="grow" />
 				<Skeleton className="h-7 w-10 rounded-full" />
 			</CardHeader>
-			<Divider />
-			<CardBody>
+			<Separator />
+			<CardContent>
 				<Skeleton className="h-[7.5rem] w-full rounded-xl" />
-			</CardBody>
+			</CardContent>
 		</Card>
 	);
 }
