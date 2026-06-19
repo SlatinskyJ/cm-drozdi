@@ -1,5 +1,5 @@
 'use client';
-import { Chip } from '@components/ui/Chip';
+import { Badge as Chip } from '@components/ui/badge';
 import {
 	Dropdown,
 	DropdownItem,
@@ -51,11 +51,9 @@ export default function EditableState({
 	return (
 		<Dropdown>
 			<DropdownTrigger>
-				<Chip
-					color={state.color}
-					endContent={<BiSolidDownArrow className="mr-2" />}
-				>
+				<Chip variant={state.color}>
 					{state.label}
+					<BiSolidDownArrow className="ml-2" />
 				</Chip>
 			</DropdownTrigger>
 			<DropdownMenu onAction={handleUpdate}>{...options}</DropdownMenu>

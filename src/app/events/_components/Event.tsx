@@ -1,5 +1,5 @@
 'use client';
-import { Chip } from '@components/ui/Chip';
+import { Badge as Chip } from '@components/ui/badge';
 import { Tooltip } from '@components/ui/tooltip';
 import { Card, CardBody, CardHeader } from '@nextui-org/card';
 import { Divider } from '@nextui-org/divider';
@@ -26,7 +26,7 @@ export default function Event({ event }: Readonly<{ event: TEvent }>) {
 						<span className="truncate text-xl">{event.name}</span>
 					</Tooltip>
 					<div className="grow" />
-					<Chip color={stateData.color}>{stateData.label}</Chip>
+					<Chip variant={stateData.color}>{stateData.label}</Chip>
 				</CardHeader>
 				<Divider />
 				<CardBody>
