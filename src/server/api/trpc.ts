@@ -15,7 +15,7 @@ import { ZodError } from 'zod';
 import { UserRole } from '~/enums/UserRole';
 import { getServerAuthSession } from '~/server/auth';
 import { db } from '~/server/db';
-import { addMinutes } from '~/utils/date';
+import { addMinutes } from 'date-fns';
 import { mapValuesDeep } from '~/utils/object';
 
 /**
