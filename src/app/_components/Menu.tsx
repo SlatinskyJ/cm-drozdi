@@ -2,11 +2,12 @@
 
 import { Button } from '@components/ui/button';
 import {
-	Dropdown,
-	DropdownItem,
 	DropdownMenu,
-	DropdownTrigger,
-} from '@components/ui/Dropdown';
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '@components/ui/dropdown-menu';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut } from '~/lib/auth-client';
 import { useIsAdmin } from '~/utils/permissions';
@@ -22,31 +23,31 @@ export default function Menu() {
 	}
 
 	return (
-		<Dropdown>
-			<DropdownTrigger>
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
 				<Button
 					variant="primary"
 					className="rounded-full bg-opacity-60 font-bold hover:bg-opacity-100"
 				>
 					Menu
 				</Button>
-			</DropdownTrigger>
-			<DropdownMenu>
-				<DropdownItem key="home" href="/">
-					Domů
-				</DropdownItem>
-				<DropdownItem key="events" href="/events">
-					Události
-				</DropdownItem>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent>
+				<DropdownMenuItem asChild>
+					<Link href="/">Domů</Link>
+				</DropdownMenuItem>
+				<DropdownMenuItem asChild>
+					<Link href="/events">Události</Link>
+				</DropdownMenuItem>
 				{isAdmin ? (
-					<DropdownItem key="members" href="/members">
-						Členové
-					</DropdownItem>
+					<DropdownMenuItem asChild>
+						<Link href="/members">Členové</Link>
+					</DropdownMenuItem>
 				) : null}
-				<DropdownItem key="signout" onPress={handleSignOut}>
+				<DropdownMenuItem onSelect={handleSignOut}>
 					Odhlásit
-				</DropdownItem>
-			</DropdownMenu>
-		</Dropdown>
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 }

@@ -1,12 +1,11 @@
 'use client';
-import { Badge as Chip } from '@components/ui/badge';
+import { Badge } from '@components/ui/badge';
 import {
-	Dropdown,
-	DropdownItem,
 	DropdownMenu,
-	DropdownTrigger,
-} from '@components/ui/Dropdown';
-import { toNumber } from 'lodash';
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '@components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { BiSolidDownArrow } from 'react-icons/bi';
@@ -14,6 +13,15 @@ import { type TEvent } from '~/app/_models/event';
 import { type TFormatEventStateReturn } from '~/app/events/_utils/formatEventState';
 import { EventState } from '~/enums/EventState';
 import { api } from '~/trpc/react';
+
+const STATE_ITEM_CLASSNAMES: Record<
+	EventState.PENDING | EventState.CONFIRMED | EventState.CANCELED,
+	string
+> = {
+	[EventState.PENDING]: 'text-warning',
+	[EventState.CONFIRMED]: 'text-success',
+	[EventState.CANCELED]: 'text-danger',
+};
 
 export default function EditableState({
 	state,
@@ -23,9 +31,9 @@ export default function EditableState({
 	const utils = api.useUtils();
 	const router = useRouter();
 
-	const handleUpdate = (newState: string | number) => {
+	const handleUpdate = (newState: EventState) => {
 		mutate(
-			{ id: eventId, state: toNumber(newState) as EventState },
+			{ id: eventId, state: newState },
 			{
 				onSuccess: () => {
 					void utils.event.getUpcoming.refetch();
@@ -36,27 +44,35 @@ export default function EditableState({
 		);
 	};
 
-	const options = [
-		<DropdownItem key={EventState.PENDING} color="warning">
-			Nerozhodnuto
-		</DropdownItem>,
-		<DropdownItem key={EventState.CONFIRMED} color="success">
-			Potvrzeno
-		</DropdownItem>,
-		<DropdownItem key={EventState.CANCELED} color="danger">
-			Zrušeno
-		</DropdownItem>,
-	].filter((com) => (com.key as unknown) != state.value);
+	const options: { state: EventState; label: string }[] = [
+		{ state: EventState.PENDING, label: 'Nerozhodnuto' },
+		{ state: EventState.CONFIRMED, label: 'Potvrzeno' },
+		{ state: EventState.CANCELED, label: 'Zrušeno' },
+	].filter((option) => option.state !== state.value);
 
 	return (
-		<Dropdown>
-			<DropdownTrigger>
-				<Chip variant={state.color}>
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<Badge variant={state.color} className="cursor-pointer">
 					{state.label}
 					<BiSolidDownArrow className="ml-2" />
-				</Chip>
-			</DropdownTrigger>
-			<DropdownMenu onAction={handleUpdate}>{...options}</DropdownMenu>
-		</Dropdown>
+				</Badge>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent>
+				{options.map((option) => (
+					<DropdownMenuItem
+						key={option.state}
+						className={
+							STATE_ITEM_CLASSNAMES[
+								option.state as EventState.PENDING | EventState.CONFIRMED | EventState.CANCELED
+							]
+						}
+						onSelect={() => handleUpdate(option.state)}
+					>
+						{option.label}
+					</DropdownMenuItem>
+				))}
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 }
