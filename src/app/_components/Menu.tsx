@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@components/ui/Button';
+import { Button } from '@components/ui/button';
 import {
 	Dropdown,
 	DropdownItem,
@@ -25,7 +25,7 @@ export default function Menu() {
 		<Dropdown>
 			<DropdownTrigger>
 				<Button
-					color="primary"
+					variant="primary"
 					className="rounded-full bg-opacity-60 font-bold hover:bg-opacity-100"
 				>
 					Menu

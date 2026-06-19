@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@components/ui/Button';
+import { Button } from '@components/ui/button';
 import {
 	Modal,
 	ModalBody,
@@ -106,7 +106,7 @@ export default function MembersPage() {
 										Kopírovat odkaz
 									</Button>
 									<Button
-										color="danger"
+										variant="destructive"
 										onClick={() => setPendingDelete({ id: m.id, name: m.name })}
 									>
 										Smazat
@@ -136,7 +136,7 @@ export default function MembersPage() {
 							Zrušit
 						</Button>
 						<Button
-							color="danger"
+							variant="destructive"
 							onClick={confirmDelete}
 							isLoading={del.isPending}
 						>

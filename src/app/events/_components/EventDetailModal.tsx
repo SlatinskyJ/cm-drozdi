@@ -1,4 +1,4 @@
-import { Button } from '@components/ui/Button';
+import { Button } from '@components/ui/button';
 import {
 	Modal,
 	ModalBody,
@@ -69,8 +69,7 @@ export function EventDetailModal({
 				<ModalFooter className="flex">
 					<Button
 						onClick={handleClose}
-						color="danger"
-						variant="ghost"
+						variant="destructive-ghost"
 					>
 						Zavřít
 					</Button>
@@ -78,7 +77,7 @@ export function EventDetailModal({
 					<DeleteEvent eventId={event.id} onSuccess={handleClose} />
 					{isEdit ? (
 						<Button
-							color="primary"
+							variant="primary"
 							onClick={handleSubmit}
 							isLoading={isPending}
 							isDisabled={!isValid}
@@ -86,7 +85,7 @@ export function EventDetailModal({
 							Uložit
 						</Button>
 					) : (
-						<Button color="primary" onClick={handleEdit}>
+						<Button variant="primary" onClick={handleEdit}>
 							Editovat
 						</Button>
 					)}

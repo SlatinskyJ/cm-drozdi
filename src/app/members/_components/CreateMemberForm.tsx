@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@components/ui/Button';
+import { Button } from '@components/ui/button';
 import { CreateMemberFields } from '~/app/members/_components/CreateMemberFields';
 import { useCreateMemberForm } from '~/app/members/_utils/useCreateMemberForm';
 
@@ -12,7 +12,7 @@ export function CreateMemberForm() {
 			className="mb-8 flex flex-wrap items-end gap-2"
 		>
 			<CreateMemberFields control={control} />
-			<Button type="submit" color="primary" disabled={isPending}>
+			<Button type="submit" variant="primary" disabled={isPending}>
 				Vytvořit
 			</Button>
 		</form>

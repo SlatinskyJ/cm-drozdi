@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@components/ui/Button';
+import { Button } from '@components/ui/button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { ResetPasswordFormFields } from '~/app/reset-password/ResetPasswordFormFields';
@@ -27,7 +27,7 @@ function ResetPasswordForm() {
 						{errors.password?.message ?? errors.root?.message}
 					</p>
 				)}
-				<Button type="submit" color="primary" disabled={isPending}>
+				<Button type="submit" variant="primary" disabled={isPending}>
 					Nastavit heslo
 				</Button>
 			</form>

@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@components/ui/Button';
+import { Button } from '@components/ui/button';
 import {
 	Modal,
 	ModalBody,
@@ -34,9 +34,8 @@ export default function RequestEvent() {
 	return (
 		<>
 			<Button
-				className="fixed bottom-12 right-3 z-50 text-2xl shadow-lg lg:bottom-14 lg:right-5"
-				radius="full"
-				color="primary"
+				className="fixed bottom-12 right-3 z-50 rounded-full text-2xl shadow-lg lg:bottom-14 lg:right-5"
+				variant="primary"
 				size="xl"
 				onClick={onOpen}
 			>
@@ -55,8 +54,7 @@ export default function RequestEvent() {
 							<Button
 								onClick={onClose}
 								isLoading={isPending}
-								color="danger"
-								variant="ghost"
+								variant="destructive-ghost"
 							>
 								Zrušit
 							</Button>
@@ -65,7 +63,7 @@ export default function RequestEvent() {
 								type="submit"
 								isLoading={isPending}
 								isDisabled={!isValid}
-								color="primary"
+								variant="primary"
 							>
 								Potvrdit
 							</Button>
