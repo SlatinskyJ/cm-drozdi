@@ -1,4 +1,4 @@
-import { Skeleton } from '@components/ui/Skeleton';
+import { Skeleton } from '@components/ui/skeleton';
 import { Card, CardBody, CardHeader } from '@nextui-org/card';
 import { Divider } from '@nextui-org/divider';
 
