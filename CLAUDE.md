@@ -12,6 +12,15 @@ Source code for www.cmdrozdi.cz — a T3-stack app (Next.js 14 App Router + tRPC
 - `main` is production-only. Never commit or push directly to `main`; it's updated only via release merges from `develop`.
 - **PRs must always be created as drafts** (`gh pr create --draft`). Only the user marks a PR ready for review. Never create a ready-for-review PR directly.
 
+## Worktrees
+
+Use plain `git worktree` (not Claude's native worktree feature) to isolate phase/feature work:
+
+- Worktrees live at `../cm-drozdi-worktrees/<dir-name>/`, a sibling of this repo checkout.
+- `<dir-name>` = the branch name with every `/` replaced by `--` (e.g. branch `chore/upgrade-phase-3-minor-bumps` → dir `chore--upgrade-phase-3-minor-bumps`). The branch itself keeps the `/`.
+- Create: `git worktree add ../cm-drozdi-worktrees/<dir-name> -b <branch-name>`
+- Remove after merge: `git worktree remove ../cm-drozdi-worktrees/<dir-name>`
+
 ## Commands
 
 - `yarn install` — installs deps; `postinstall` runs `prisma generate` automatically.
