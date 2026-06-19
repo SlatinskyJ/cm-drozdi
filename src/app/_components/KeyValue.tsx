@@ -1,4 +1,4 @@
-import { Tooltip } from '@nextui-org/tooltip';
+import { Tooltip } from '@components/ui/tooltip';
 
 export default function KeyValue({
 	label,

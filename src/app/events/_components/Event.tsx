@@ -1,6 +1,6 @@
 'use client';
 import { Chip } from '@components/ui/Chip';
-import { Tooltip } from '@components/ui/Tooltip';
+import { Tooltip } from '@components/ui/tooltip';
 import { Card, CardBody, CardHeader } from '@nextui-org/card';
 import { Divider } from '@nextui-org/divider';
 import { useDisclosure } from '@nextui-org/modal';
