@@ -1,6 +1,6 @@
 import KeyValue from '@components/KeyValue';
 import { type TEvent } from '~/app/_models/event';
-import { formatDateToTime, formatTime, getTimeDiff } from '~/utils/date';
+import { formatDateToTime, formatDuration } from '~/utils/date';
 
 export default function EventValues({
 	event,
@@ -9,9 +9,10 @@ export default function EventValues({
 	event: TEvent;
 	withHover?: boolean;
 }>) {
-	const timeDiff =
-		(!!event.start && !!event.end && getTimeDiff(event.start, event.end)) ??
-		null;
+	const duration =
+		!!event.start && !!event.end
+			? formatDuration(event.start, event.end)
+			: null;
 
 	return (
 		<>
@@ -30,11 +31,7 @@ export default function EventValues({
 				value={!!event.start ? formatDateToTime(event.start) : null}
 				withHover={withHover}
 			/>
-			<KeyValue
-				label="Délka"
-				value={!!timeDiff ? formatTime(timeDiff) : null}
-				withHover={withHover}
-			/>
+			<KeyValue label="Délka" value={duration} withHover={withHover} />
 			<KeyValue
 				label="Lokace"
 				value={event.location}

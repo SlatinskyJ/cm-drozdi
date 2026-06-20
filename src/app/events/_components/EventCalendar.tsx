@@ -1,5 +1,5 @@
 import '../../EventCalendar.css';
-import { CalendarWithDates } from '@components/ui/Calendar';
+import { CalendarWithDates } from '@components/ui/CalendarWithDates';
 import CalendarSkeleton from '@components/ui/skeletons/CalendarSkeleton';
 import { Suspense } from 'react';
 import { api } from '~/trpc/server';

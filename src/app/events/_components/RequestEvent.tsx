@@ -1,28 +1,27 @@
 'use client';
-import { Button } from '@components/ui/Button';
+import { Button } from '@components/ui/button';
 import {
-	Modal,
-	ModalBody,
-	ModalContent,
-	ModalFooter,
-	ModalHeader,
-	useDisclosure,
-} from '@nextui-org/modal';
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@components/ui/dialog';
 import { useRouter } from 'next/navigation';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
 import { EventForm } from '~/app/events/_components/EventForm';
 import { useEventForm } from '~/app/events/_utils/useEventForm';
 
 export default function RequestEvent() {
-	const { isOpen, onOpen, onClose } = useDisclosure();
+	const [isOpen, setIsOpen] = useState(false);
 	const router = useRouter();
 
 	const onSaveSuccess = useCallback(() => {
 		router.refresh();
-		onClose();
+		setIsOpen(false);
 		toast.success('Rezervace vytvořena');
-	}, [onClose, router]);
+	}, [router]);
 
 	const {
 		handleSubmit,
@@ -34,29 +33,28 @@ export default function RequestEvent() {
 	return (
 		<>
 			<Button
-				className="fixed bottom-12 right-3 z-50 text-2xl shadow-lg lg:bottom-14 lg:right-5"
-				radius="full"
-				color="primary"
+				className="fixed bottom-12 right-3 z-50 rounded-full text-2xl shadow-lg lg:bottom-14 lg:right-5"
+				variant="primary"
 				size="xl"
-				onClick={onOpen}
+				onClick={() => setIsOpen(true)}
 			>
 				Rezervovat
 			</Button>
-			<Modal isOpen={isOpen} size="xl" hideCloseButton backdrop="blur">
-				<ModalContent>
-					<ModalHeader className="flex justify-center">
-						Nová rezervace
-					</ModalHeader>
+			<Dialog open={isOpen} onOpenChange={setIsOpen}>
+				<DialogContent className="sm:max-w-3xl" showCloseButton={false}>
+					<DialogHeader>
+						<DialogTitle className="text-center">
+							Nová rezervace
+						</DialogTitle>
+					</DialogHeader>
 					<form onSubmit={handleSubmit}>
-						<ModalBody>
-							<EventForm control={control} />
-						</ModalBody>
-						<ModalFooter className="flex">
+						<EventForm control={control} />
+						<DialogFooter className="mt-4 flex-row">
 							<Button
-								onClick={onClose}
+								type="button"
+								onClick={() => setIsOpen(false)}
 								isLoading={isPending}
-								color="danger"
-								variant="ghost"
+								variant="destructive-ghost"
 							>
 								Zrušit
 							</Button>
@@ -65,14 +63,14 @@ export default function RequestEvent() {
 								type="submit"
 								isLoading={isPending}
 								isDisabled={!isValid}
-								color="primary"
+								variant="primary"
 							>
 								Potvrdit
 							</Button>
-						</ModalFooter>
+						</DialogFooter>
 					</form>
-				</ModalContent>
-			</Modal>
+				</DialogContent>
+			</Dialog>
 		</>
 	);
 }

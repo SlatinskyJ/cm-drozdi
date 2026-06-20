@@ -1,12 +1,9 @@
-import { nextui } from "@nextui-org/theme";
 import { type Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
-  content: [
-    "./src/**/*.tsx",
-    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./src/**/*.tsx"],
   theme: {
     extend: {
       screens: {
@@ -97,19 +94,5 @@ export default {
       },
     },
   },
-  darkMode: "class",
-  plugins: [
-    nextui({
-      themes: {
-        dark: {},
-      },
-      layout: {
-        radius: {
-          small: "2px",
-          medium: "4px",
-          large: "8px",
-        },
-      },
-    }),
-  ],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

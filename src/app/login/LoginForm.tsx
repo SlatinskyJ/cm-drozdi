@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@components/ui/Button';
+import { Button } from '@components/ui/button';
 import { LoginFormFields } from '~/app/login/LoginFormFields';
 import { useLoginForm } from '~/app/login/_utils/useLoginForm';
 
@@ -14,7 +14,7 @@ export default function LoginForm() {
 				{errors.root && (
 					<p className="text-sm text-red-500">{errors.root.message}</p>
 				)}
-				<Button type="submit" color="primary" disabled={isSubmitting}>
+				<Button type="submit" variant="primary" disabled={isSubmitting}>
 					Přihlásit
 				</Button>
 			</form>

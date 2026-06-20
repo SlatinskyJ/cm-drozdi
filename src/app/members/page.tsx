@@ -1,13 +1,13 @@
 'use client';
 
-import { Button } from '@components/ui/Button';
+import { Button } from '@components/ui/button';
 import {
-	Modal,
-	ModalBody,
-	ModalContent,
-	ModalFooter,
-	ModalHeader,
-} from '@nextui-org/modal';
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@components/ui/dialog';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { UserRole } from '~/enums/UserRole';
@@ -106,7 +106,7 @@ export default function MembersPage() {
 										Kopírovat odkaz
 									</Button>
 									<Button
-										color="danger"
+										variant="destructive"
 										onClick={() => setPendingDelete({ id: m.id, name: m.name })}
 									>
 										Smazat
@@ -118,33 +118,29 @@ export default function MembersPage() {
 				</table>
 			)}
 
-			<Modal
-				isOpen={pendingDelete !== null}
-				onClose={() => setPendingDelete(null)}
-				size="sm"
+			<Dialog
+				open={pendingDelete !== null}
+				onOpenChange={(open) => !open && setPendingDelete(null)}
 			>
-				<ModalContent>
-					<ModalHeader>Smazat člena</ModalHeader>
-					<ModalBody>
-						<p>Opravdu smazat člena {pendingDelete?.name}?</p>
-					</ModalBody>
-					<ModalFooter>
-						<Button
-							variant="ghost"
-							onClick={() => setPendingDelete(null)}
-						>
+				<DialogContent className="sm:max-w-sm">
+					<DialogHeader>
+						<DialogTitle>Smazat člena</DialogTitle>
+					</DialogHeader>
+					<p>Opravdu smazat člena {pendingDelete?.name}?</p>
+					<DialogFooter>
+						<Button variant="ghost" onClick={() => setPendingDelete(null)}>
 							Zrušit
 						</Button>
 						<Button
-							color="danger"
+							variant="destructive"
 							onClick={confirmDelete}
 							isLoading={del.isPending}
 						>
 							Smazat
 						</Button>
-					</ModalFooter>
-				</ModalContent>
-			</Modal>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
