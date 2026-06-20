@@ -239,7 +239,7 @@ Once a phase has an open PR, track that PR (`gh pr view <number>`) for live stat
 | 1 — Better Auth migration | [#7](https://github.com/SlatinskyJ/cm-drozdi/pull/7) (merged) |
 | 2 — E2E net + CI | [#13](https://github.com/SlatinskyJ/cm-drozdi/pull/13) (merged) |
 | 3 — Minor bumps | [#18](https://github.com/SlatinskyJ/cm-drozdi/pull/18) |
-| 4 — shadcn migration | not started |
+| 4 — shadcn migration | [#20](https://github.com/SlatinskyJ/cm-drozdi/pull/20) |
 | 5 — React 19 / Next 16 | not started |
 | 6 — Tailwind 4 | not started |
 | 7 — Prisma 7 | not started |
