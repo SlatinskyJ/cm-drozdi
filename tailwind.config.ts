@@ -10,9 +10,31 @@ export default {
         sm: "460px",
       },
       colors: {
-        primary: "#9c7243",
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        foreground: "hsl(var(--foreground))",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        primary: {
+          DEFAULT: "#9c7243",
+          foreground: "hsl(var(--primary-foreground))",
+        },
         secondary: "#bdd086",
-        accent: "#85a042",
+        accent: {
+          DEFAULT: "#85a042",
+          foreground: "hsl(var(--accent-foreground))",
+        },
         dark: "#5a3d2d",
         background: "#E6DFC4",
         white: "#FAF8E8",
