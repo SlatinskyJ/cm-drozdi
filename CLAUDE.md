@@ -52,7 +52,7 @@ yarn typecheck
 SKIP_ENV_VALIDATION=1 yarn build
 yarn e2e
 ```
-All must pass clean. CI enforces this on every non-draft PR to `develop`.
+All must pass clean. CI runs lint + typecheck on every PR to `develop` and adds e2e once the PR is non-draft (docs-only PRs skip all three).
 
 ## Architecture
 

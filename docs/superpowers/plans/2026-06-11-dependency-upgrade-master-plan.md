@@ -24,7 +24,8 @@
 
 ## Decisions (added 2026-10-12)
 
-- **Merge authority:** Claude may merge any PR it creates into `develop` (phase PRs and any other) itself, gated by an agent review: an `opus` reviewer agent posts `[review-agent]` PR comments, fixer agents resolve every `[must-fix]`, and once the verdict is `READY TO MERGE` Claude marks the PR ready, waits for all CI checks to finish green (on docs-only PRs the skipped jobs count as passing), and squash-merges. If CI fails after `gh pr ready`, Claude runs `gh pr ready --undo`, fixes, and the reviewer re-reviews. `main` is never touched. **Exception:** a PR that embodies a big decision (architecture, a scope change versus this plan, dropping or adding a phase, a data-loss risk, anything the user hasn't already approved) needs the user's OK before merge. See `CLAUDE.md` → Branching.
+- **Merge authority:** Claude may merge any PR it creates into `develop` (phase PRs and any other) itself, gated by an agent review: an `opus` reviewer agent posts `[review-agent]` PR comments, fixer agents resolve every `[must-fix]`, and once the verdict is `READY TO MERGE` Claude marks the PR ready, waits for all CI checks to finish green (on docs-only PRs the skipped jobs count as passing), and squash-merges. If CI fails after `gh pr ready`, Claude runs `gh pr ready --undo`, fixes, and the reviewer re-reviews. `main` is never touched. **Exception:** a PR that embodies a big decision (architecture, a scope change versus this plan, dropping or adding a phase, a data-loss risk, a change to workflow/governance rules, anything the user hasn't already approved) needs the user's OK before merge. See `CLAUDE.md` → Branching.
+- **ESLint target (Phase 9):** when Phase 9 starts, re-check peer support of `eslint-plugin-react` / `eslint-plugin-import` / `eslint-plugin-jsx-a11y` (pulled in by `eslint-config-next@16`). If they support ESLint 10, go to 10; otherwise do ESLint 9 flat config and note 10 as a follow-up. Phase 5 keeps legacy lint working by pinning `eslint-config-next@15.5` and running `eslint` directly (`next lint` is removed in Next 16).
 - **Version targets refreshed** (npm, 2026-10-12) — see the version gap table. Two adjustments:
   - **Prisma:** target latest **7.x stable** (7.10 at refresh). npm's `latest` tag points at `8.0.0-rc.*`; a release candidate is not "latest stable", so Prisma 8 is out of scope.
   - **TypeScript:** 6.0 and 7.0 are now released. `typescript-eslint` (8.71) supports only `<6.1`, so target **TypeScript 6.0.x**, bumped in Phase 9 alongside the ESLint tooling. TS 7 is deferred until `typescript-eslint` supports it.
@@ -76,7 +77,7 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 | @tanstack/react-query | ^5.101.0 | 5.10x | done (Phase 3) |
 | framer-motion | ^11 | **removed** | dies with NextUI |
 | @nextui-org/* (13 pkgs) | 2.x | **removed** | replaced by shadcn |
-| @vercel/postgres | ^0.10.0 | keep (deprecated upstream) | migration deferred, see Phase 7 |
+| @vercel/postgres | ^0.10.0 | **removed** | done (Phase 2) |
 | typescript | ^5.9.3 | 6.0.x (not 7 — typescript-eslint caps at <6.1) | 1 major (Phase 9) |
 | @types/node | ^22 | 22.x | done (Phase 3) |
 
@@ -196,7 +197,7 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 **Step B — 6 → 7:** the real work. During spec, read the v7 guide and decide on:
 - New `prisma.config.ts` (replaces `package.json#prisma`/schema-folder conventions).
 - Generator `prisma-client-js` → new `prisma-client` (explicit output path, import from generated path — touches `src/server/db.ts`, possibly `postinstall`).
-- Driver adapters now default — choose `@prisma/adapter-pg` vs current; evaluate dropping deprecated `@vercel/postgres` here (only used for the connection — check `src/server/db.ts`). Fold the swap in if trivial, else defer + note.
+- Driver adapters now default — choose `@prisma/adapter-pg` vs current (`@vercel/postgres` was already removed in Phase 2 — check `src/server/db.ts` for the current connection setup).
 - **Verify Better Auth's Prisma adapter is compatible with Prisma 7 client** before committing Step B; block on it if not (check during spec). *(2026-10-12: `better-auth` 1.6.x (installed, 1.6.18) and 1.7.x (latest, 1.7.7) both list `prisma`/`@prisma/client` `^5 || ^6 || ^7` as peer deps, so no better-auth bump is needed first — confirm at runtime.)*
 - Run `prisma migrate dev` against a dev/test DB, never prod. Verify `db:*` scripts.
 
