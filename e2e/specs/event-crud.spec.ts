@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { TZDate } from '@date-fns/tz';
 import { ADMIN_AUTH } from '../helpers/auth';
 import {
   resetDb,
@@ -9,6 +10,7 @@ import {
 } from '../helpers/db';
 import {
   addDays,
+  APP_TZ,
   type CalendarDay,
   dayButtonName,
   displayDate,
@@ -88,6 +90,33 @@ test.describe('Event CRUD', () => {
     await expect(form).not.toBeVisible();
     await page.goto('/events');
     await expect(page.getByText('Nová Akce E2E')).toBeVisible();
+  });
+
+  test('shows a validation error for a start time in the past', async ({ page }) => {
+    const today = todayInAppTz();
+    // Freeze the browser clock at today 12:00 Prague, so 00:00 today is always
+    // in the past, even during the first minute of the day. The past-start
+    // rule is client-side only (event.create has no such check), so the
+    // server's clock doesn't matter.
+    await page.clock.setFixedTime(
+      new TZDate(today.year, today.month - 1, today.day, 12, 0, 0, APP_TZ),
+    );
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Rezervovat' }).click();
+    const form = page.getByRole('dialog', { name: 'Nová rezervace' });
+    // Every other field is valid, so only the start keeps the form invalid.
+    await form.getByLabel('Název události').fill('Minulá Akce E2E');
+    await form.getByLabel('Email').fill('akce@example.com');
+    await form.getByLabel('Délka (HH:MM)').fill('1:00');
+    // Inline instead of pickStart: today's day button is named "Dnes, …".
+    await form.getByRole('button', { name: /^Datum a čas/ }).click();
+    const picker = page.getByRole('dialog', { name: 'Výběr data a času' });
+    await picker.getByRole('button', { name: `Dnes, ${dayButtonName(today)}`, exact: true }).click();
+    await picker.getByLabel('Čas', { exact: true }).fill('00:00');
+    await page.keyboard.press('Escape');
+    await expect(picker).not.toBeVisible();
+    await expect(form.getByText('Začátek nesmí být v minulosti')).toBeVisible();
+    await expect(form.getByRole('button', { name: 'Potvrdit' })).toBeDisabled();
   });
 
   test('displays the start date and time exactly as entered', async ({ page }) => {

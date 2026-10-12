@@ -6,7 +6,16 @@ type TrpcBatchItem = {
   error?: SuperJSONResult;
 };
 
-type TrpcErrorShape = { message: string; data: { code: string; httpStatus: number } };
+/** The `zodError` the tRPC `errorFormatter` adds (`src/server/api/trpc.ts`). */
+export type TrpcZodError = {
+  formErrors: string[];
+  fieldErrors: Record<string, string[] | undefined>;
+};
+
+type TrpcErrorShape = {
+  message: string;
+  data: { code: string; httpStatus: number; zodError: TrpcZodError | null };
+};
 
 export type TrpcCallResult = {
   status: number;
@@ -14,6 +23,8 @@ export type TrpcCallResult = {
   data?: unknown;
   /** tRPC error code (e.g. `UNAUTHORIZED`), when the call failed. */
   errorCode?: string;
+  /** Flattened input-validation error, when the call failed; null for non-input errors. */
+  zodError?: TrpcZodError | null;
 };
 
 async function parseBatch(
@@ -23,7 +34,11 @@ async function parseBatch(
   if (!item) throw new Error(`Empty tRPC batch response (HTTP ${response.status()})`);
   if (item.error) {
     const shape = superjson.deserialize<TrpcErrorShape>(item.error);
-    return { status: response.status(), errorCode: shape.data.code };
+    return {
+      status: response.status(),
+      errorCode: shape.data.code,
+      zodError: shape.data.zodError,
+    };
   }
   return {
     status: response.status(),

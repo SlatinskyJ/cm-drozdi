@@ -94,6 +94,13 @@ All must pass clean. CI runs lint + typecheck on every PR to `develop` and adds 
 
 All env vars are validated via `@t3-oss/env-nextjs` in `src/env.js`. Adding a new env var requires updating both the `server`/`client` zod schemas and the `runtimeEnv` map there, plus `.env.example`.
 
+### Validation (Zod 4)
+
+- All Zod is server-side: `src/env.js` and the tRPC router inputs. Client forms validate with react-hook-form `rules`, not Zod (no `@hookform/resolvers`).
+- Use Zod 4 idioms only: top-level formats (`z.email()`, `z.url()`, `z.cuid()`), `z.enum(TsEnum)` instead of `z.nativeEnum`, `{ error: '…' }` instead of `{ message: '…' }`, and `z.flattenError(err)` instead of `err.flatten()`. Never check `instanceof ZodRealError` (it matches any `Error`); use `instanceof ZodError`.
+- `z.coerce.*` schemas need an input generic (`z.coerce.date<Date>()`); without it the tRPC client input type becomes `unknown`.
+- The tRPC `errorFormatter` exposes `data.zodError = { formErrors, fieldErrors }` for input errors (null otherwise). `e2e/specs/input-validation.spec.ts` pins this shape and the accept/reject boundaries.
+
 ### Date/calendar utilities
 
 The app has a single display timezone, `APP_TIME_ZONE = 'Europe/Prague'` in `src/utils/date.ts` (all users are in Czechia). Dates are stored and sent over the API as UTC instants; they are converted to Prague wall-clock time only at the edges, with `@date-fns/tz`, independent of the server's (UTC on Vercel) or the browser's timezone:
