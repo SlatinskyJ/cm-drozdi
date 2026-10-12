@@ -13,7 +13,7 @@
     "db:studio": "prisma studio",
     "dev": "next dev",
     "postinstall": "prisma generate",
-    "lint": "next lint",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test",
