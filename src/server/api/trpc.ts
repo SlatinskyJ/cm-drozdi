@@ -145,3 +145,16 @@ export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 	}
 	return next({ ctx });
 });
+
+/**
+ * Member-level procedure. Builds on `protectedProcedure` and asserts the
+ * session user is a MEMBER or ADMIN — the same roles the `/events` layout lets
+ * in (GUEST gets the access-forbidden page there).
+ */
+export const memberProcedure = protectedProcedure.use(({ ctx, next }) => {
+	const { role } = ctx.session.user;
+	if (role !== UserRole.MEMBER && role !== UserRole.ADMIN) {
+		throw new TRPCError({ code: 'FORBIDDEN' });
+	}
+	return next({ ctx });
+});

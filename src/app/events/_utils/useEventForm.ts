@@ -40,7 +40,12 @@ function transformInitValues(data?: TEvent): Partial<TEventInputs> {
 }
 
 export function useEventForm(initValues?: TEvent, onSuccess?: () => void) {
-	const { mutate: createEvent, isPending } = api.event.create.useMutation();
+	const { mutate: createEvent, isPending: isCreatePending } =
+		api.event.create.useMutation();
+	const { mutate: updateEvent, isPending: isUpdatePending } =
+		api.event.update.useMutation();
+	const isPending = isCreatePending || isUpdatePending;
+	const eventId = initValues?.id;
 
 	const transformedInitValues = transformInitValues(initValues);
 
@@ -58,11 +63,13 @@ export function useEventForm(initValues?: TEvent, onSuccess?: () => void) {
 				start,
 				end: addMinutes(start, parseDurationMinutes(duration)),
 			};
-			createEvent(req, {
-				onSuccess,
-			});
+			if (eventId) {
+				updateEvent({ ...req, id: eventId }, { onSuccess });
+			} else {
+				createEvent(req, { onSuccess });
+			}
 		},
-		[createEvent, onSuccess],
+		[createEvent, updateEvent, eventId, onSuccess],
 	);
 
 	return { ...restForm, handleSubmit: handleSubmit(onSubmit), isPending };
