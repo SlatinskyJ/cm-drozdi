@@ -49,9 +49,13 @@ test('event.changeState accepts EventState values and rejects anything else', as
     expect(Object.keys(res.zodError?.fieldErrors ?? {})).toEqual(['state']);
   }
 
-  const ok = await trpcMutation(page.request, 'event.changeState', { id: event.id, state: 2 });
-  expect(ok.status).toBe(200);
-  expect((await getEventByName('Zod State E2E')).state).toBe(2);
+  // The edges first: a regression in how z.enum filters a numeric TS enum's
+  // reverse-mapping keys would most likely hit 0 (falsy) or the last member.
+  for (const state of [0, 3, 2]) {
+    const ok = await trpcMutation(page.request, 'event.changeState', { id: event.id, state });
+    expect(ok.status).toBe(200);
+    expect((await getEventByName('Zod State E2E')).state).toBe(state);
+  }
 });
 
 test('event.changeState rejects a malformed id', async ({ page }) => {
@@ -73,4 +77,18 @@ test('member.create keeps the custom Czech role message', async ({ page }) => {
 
   expect(res.status).toBe(400);
   expect(res.zodError?.fieldErrors.role).toEqual(['Lze přiřadit pouze roli Člen nebo Admin.']);
+});
+
+test('non-input errors carry zodError: null', async ({ page }) => {
+  // Input is valid, so the self-delete guard throws a plain TRPCError after
+  // validation. Pins the errorFormatter's `instanceof ZodError` check: a
+  // `ZodRealError` check would match any Error and break this.
+  const session = await page.request.get('/api/auth/get-session');
+  const { user } = (await session.json()) as { user: { id: string } };
+
+  const res = await trpcMutation(page.request, 'member.delete', { userId: user.id });
+
+  expect(res.status).toBe(400);
+  expect(res.errorCode).toBe('BAD_REQUEST');
+  expect(res.zodError).toBeNull();
 });
