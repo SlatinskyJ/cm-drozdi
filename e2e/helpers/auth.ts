@@ -7,7 +7,7 @@ export const ADMIN_AUTH = path.join(AUTH_DIR, 'admin.json');
 export const MEMBER_AUTH = path.join(AUTH_DIR, 'member.json');
 
 /** Origin header for Better Auth POSTs — it rejects null/missing origins (CSRF protection). */
-export const AUTH_ORIGIN = process.env['BETTER_AUTH_URL'] ?? 'http://localhost:3000';
+export const AUTH_ORIGIN = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
 
 /**
  * Signs in through Better Auth's email endpoint. Session cookies land in the

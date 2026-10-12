@@ -23,7 +23,7 @@ test.afterAll(async () => {
 
 test.describe('Members', () => {
   test('members list renders seeded admin and member', async ({ page }) => {
-    const adminEmail = process.env['BOOTSTRAP_ADMIN_EMAIL'] ?? 'admin@cmdrozdi.cz';
+    const adminEmail = process.env.BOOTSTRAP_ADMIN_EMAIL ?? 'admin@cmdrozdi.cz';
     await page.goto('/members');
     await expect(page.getByText('Členové')).toBeVisible();
     await expect(page.getByText(adminEmail)).toBeVisible();

@@ -72,18 +72,18 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 | prisma + @prisma/client | ^5.21 / ^5.14 | 7.x stable (7.10 at refresh; not 8.0 rc) | 2 majors |
 | tailwindcss | ^4.3.3 (4.3.3) | 4.x (4.3 at refresh) | done (Phase 6) |
 | zod | ^3.25 | 4.x (4.6 at refresh) | 1 major |
-| eslint | ^8.57 | 10.x (or 9.x, see Decisions 2026-10-12; 10.12 at refresh) | 1-2 majors (flat config) |
+| eslint | ^9.39.5 (flat config) | 10.x (or 9.x, see Decisions 2026-10-12; 10.12 at refresh) | done (Phase 9) — 10 pending plugin peers |
 | @trpc/* | ^11.17.0 | 11.x stable | done (Phase 3) |
 | @tanstack/react-query | ^5.101.0 | 5.10x | done (Phase 3) |
 | framer-motion | ^11 | **removed** | dies with NextUI |
 | @nextui-org/* (13 pkgs) | 2.x | **removed** | replaced by shadcn |
 | @vercel/postgres | — (removed) | **removed** | done (Phase 2) |
-| typescript | ^5.9.3 | 6.0.x (not 7 — typescript-eslint caps at <6.1) | 1 major (Phase 9) |
+| typescript | ~6.0.3 | 6.0.x (not 7 — typescript-eslint caps at <6.1) | done (Phase 9) — TS 7 deferred |
 | @types/node | ^22 | 22.x | done (Phase 3) |
 
 **Explicit non-goals:** social/OAuth login (defer as nice-to-have), a full unit/integration suite, Yarn 1 → modern package manager. Candidate follow-ups after Phase 9.
 
-**Post-Phase-9 cleanup:** remove `start-database.sh` (unused — local dev runs a native Postgres install, not Docker).
+**Post-Phase-9 cleanup:** remove `start-database.sh` (unused — local dev runs a native Postgres install, not Docker). Phase 9 follow-ups: **ESLint 10** once `eslint-plugin-react`, `eslint-plugin-import` and `eslint-plugin-jsx-a11y` declare `^10` in their `eslint` peer (ESLint 9 is already out of support); **TypeScript 7** once `typescript-eslint` supports it; **Prettier config shadowing** — `.prettierrc.js` takes precedence over `prettier.config.js`, so `prettier-plugin-tailwindcss` is inactive; merging them reformats the codebase, so it is its own PR, which also removes `.prettierrc.js` from `tsconfig.json#include`.
 
 ---
 
@@ -228,6 +228,7 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 - Widen lint scope from `src` to the whole repo (`e2e/`, `prisma/`, root config files) and fix the new hits.
 - `eslint-config-next@16` enables the React Compiler rules from `eslint-plugin-react-hooks@7` (`set-state-in-effect`, `refs`, `purity`, `immutability`, `incompatible-library` …) — budget for app-code fixes.
 - `typescript` → 6.0.x (see Decisions 2026-10-12): fix new TS 6 deprecation errors rather than silencing them with `ignoreDeprecations`.
+- Outcome: ESLint 9 (`eslint-plugin-react` / `import` / `jsx-a11y` peers capped at `^9` on 2026-10-12), `eslint.config.mjs`, `eslint .`, TS 6.0.3; see spec `docs/superpowers/specs/2026-10-12-phase-9-eslint-flat-ts6.md`.
 
 **Exit criteria:** `yarn lint` passes with equivalent-or-stricter ruleset; CI/Vercel build unaffected.
 
@@ -257,4 +258,4 @@ Once a phase has an open PR, track that PR (`gh pr view <number>`) for live stat
 | 6 — Tailwind 4 | [#26](https://github.com/SlatinskyJ/cm-drozdi/pull/26) |
 | 7 — Prisma 7 | [#27](https://github.com/SlatinskyJ/cm-drozdi/pull/27) |
 | 8 — Zod 4 | [#29](https://github.com/SlatinskyJ/cm-drozdi/pull/29) |
-| 9 — ESLint 10 (or 9) flat config | not started |
+| 9 — ESLint 10 (or 9) flat config | [#30](https://github.com/SlatinskyJ/cm-drozdi/pull/30) |

@@ -28,7 +28,8 @@ async function isImpersonatorDeleted(
 		where: { id: impersonatedBy },
 		select: { deletedAt: true },
 	});
-	return !admin || admin.deletedAt !== null;
+	if (!admin) return true;
+	return admin.deletedAt !== null;
 }
 
 const userDeletedError = () =>

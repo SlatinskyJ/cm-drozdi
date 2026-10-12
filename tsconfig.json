@@ -28,8 +28,10 @@
       }
     ],
     "incremental": true,
+    "types": [
+      "node"
+    ],
     /* Path Aliases */
-    "baseUrl": ".",
     "paths": {
       "~/*": [
         "./src/*"
@@ -43,7 +45,8 @@
     }
   },
   "include": [
-    ".eslintrc.cjs",
+    "eslint.config.mjs",
+    ".prettierrc.js",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
