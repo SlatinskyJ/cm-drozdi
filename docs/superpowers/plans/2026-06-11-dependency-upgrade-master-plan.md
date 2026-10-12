@@ -14,7 +14,7 @@
 
 - **Branch base:** ALL phases fork from `develop` and PR back into `develop`. Ignore `main` unless told otherwise. `main` stays production-only (release merges from develop).
 - **Prior attempts:** Discard all previous upgrade work — remote branches `feature/upgrade-to-NextJS15`, `chore/update-prisma`, and the local shadcn stash/`chore/migrate-to-shadcn` branch. Nothing is salvaged.
-- **Version target:** latest stable across the board (Next 16, React 19, Prisma 7, Tailwind 4, Zod 4, ESLint 10). Early-adopter risk accepted; the phased approach + E2E net absorbs it.
+- **Version target:** latest stable across the board (Next 16, React 19, Prisma 7, Tailwind 4, Zod 4, ESLint 10 — or 9 if plugins lag, see ESLint target below). Early-adopter risk accepted; the phased approach + E2E net absorbs it.
 - **Auth:** migrate off NextAuth v4 to **Better Auth** (actively maintained, free/self-hosted, first-class email+password, DB sessions, optional social later). NextAuth v5/Auth.js is maintenance-mode and OAuth-focused — rejected.
   - **Account model:** per-member, **admin-created** (no open self-registration). Better Auth `admin` plugin for create-member + role management.
   - **Social login:** dropped as a requirement; nice-to-have to add later.
@@ -72,12 +72,12 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 | prisma + @prisma/client | ^5.21 / ^5.14 | 7.x stable (7.10 at refresh; not 8.0 rc) | 2 majors |
 | tailwindcss | ^3.4.3 | 4.x (4.3 at refresh) | 1 major (config rewrite) |
 | zod | ^3.25 | 4.x (4.6 at refresh) | 1 major |
-| eslint | ^8.57 | 10.x (10.12 at refresh) | 2 majors (flat config) |
+| eslint | ^8.57 | 10.x (or 9.x, see Decisions 2026-10-12; 10.12 at refresh) | 1-2 majors (flat config) |
 | @trpc/* | ^11.17.0 | 11.x stable | done (Phase 3) |
 | @tanstack/react-query | ^5.101.0 | 5.10x | done (Phase 3) |
 | framer-motion | ^11 | **removed** | dies with NextUI |
 | @nextui-org/* (13 pkgs) | 2.x | **removed** | replaced by shadcn |
-| @vercel/postgres | ^0.10.0 | **removed** | done (Phase 2) |
+| @vercel/postgres | — (removed) | **removed** | done (Phase 2) |
 | typescript | ^5.9.3 | 6.0.x (not 7 — typescript-eslint caps at <6.1) | 1 major (Phase 9) |
 | @types/node | ^22 | 22.x | done (Phase 3) |
 
@@ -169,8 +169,8 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 - Verify gate + full smoke before Step B.
 
 **Step B — Next 16:**
-- `npx @next/codemod@canary upgrade` to 16. Review: Turbopack-by-default (check tailwind/postcss compat on TW3), `middleware.ts` conventions (confirm matcher unchanged for the timezone-offset + Better Auth gate), removed legacy APIs, `next lint` behavior (note for Phase 9), image defaults.
-- `eslint-config-next` → 16-compatible (still legacy config until Phase 9 — confirm it loads under eslint 8; **if Next 16 hard-drops eslintrc, fold Phase 9 in here** — verify in this phase's spec).
+- `npx @next/codemod@canary upgrade` to 16. Review: Turbopack-by-default (check tailwind/postcss compat on TW3), `middleware.ts` conventions (confirm matcher unchanged for the timezone-offset + Better Auth gate), removed legacy APIs, `next lint` removal (handled in the next bullet), image defaults.
+- Lint (see Decisions 2026-10-12 → ESLint target): pin `eslint-config-next@15.5` (its peer range still accepts eslint 8; `16.x` requires eslint >=9) and switch the `lint` script from `next lint` (removed in Next 16) to running `eslint` directly (e.g. `eslint .`). Keep the legacy `.eslintrc.cjs` on eslint 8 — flat config and `eslint-config-next@16` stay in Phase 9.
 
 **Exit criteria:** gate passes on Next 16/React 19; auth flow, middleware redirects, event CRUD, calendar all e2e + smoke-tested; `yarn build` route table compared against Phase 0 baseline for unexpected dynamic/static changes.
 
@@ -215,15 +215,15 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 
 **Exit criteria:** gate passes; form validation errors still render (submit invalid event form); env validation still fails-fast on a missing var.
 
-## Phase 9 — ESLint 8 → 10 flat config
+## Phase 9 — ESLint 8 → 10 (or 9) flat config
 
 **Branch:** `chore/upgrade-phase-9-eslint10`
 **Risk:** low (tooling only). **Size:** small-medium.
 
 - `.eslintrc.cjs` → `eslint.config.mjs` flat config.
-- `eslint` → 10.x, `@typescript-eslint/*` → latest (flat-native `typescript-eslint` meta-package), `eslint-config-next` flat preset, drop `@types/eslint`.
+- `eslint` → 10.x if `eslint-plugin-react` / `eslint-plugin-import` / `eslint-plugin-jsx-a11y` support it by then, else 9.x with 10 noted as a follow-up (see Decisions 2026-10-12 → ESLint target). `@typescript-eslint/*` → latest (flat-native `typescript-eslint` meta-package), `eslint-config-next` unpinned from 15.5 → 16 flat preset, drop `@types/eslint`.
 - Preserve current rule customizations (audit full `.eslintrc.cjs` during spec — only top 30 lines reviewed so far): type-checked presets, `array-type` off, `consistent-type-definitions` off, inline type-imports, `no-unused-vars` argsIgnorePattern, etc.
-- `next lint` removed in Next 16 — switch `lint` script to `eslint .` per Next 16 docs.
+- The `lint` script already runs `eslint` directly (switched off `next lint` in Phase 5) — only move it onto the flat config.
 - Fix or explicitly-comment new violations; no blanket disables.
 - `typescript` → 6.0.x (see Decisions 2026-10-12): fix new TS 6 deprecation errors rather than silencing them with `ignoreDeprecations`.
 
@@ -238,7 +238,7 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 - **4 before 5:** NextUI 2.x is flaky on React 19 and pins framer-motion 11 — migrate UI first so Phase 5 debugs only framework breakage.
 - **5 before 6:** Tailwind 4 + shadcn TW4 guide assume current React; Next 16 Turbopack interacts with PostCSS — land framework first.
 - **7/8 after 5:** independent of UI churn; kept late so the riskiest data-layer change lands on a quiet codebase. 7 and 8 can swap if needed.
-- **9 last:** pure tooling, depends on Next 16 being settled. Exception: if Next 16 hard-drops eslintrc, fold into Phase 5.
+- **9 last:** pure tooling, depends on Next 16 being settled. No fold-in needed: Phase 5 keeps legacy lint working by pinning `eslint-config-next@15.5` and running `eslint` directly on eslint 8.
 
 ## Tracking
 
@@ -255,4 +255,4 @@ Once a phase has an open PR, track that PR (`gh pr view <number>`) for live stat
 | 6 — Tailwind 4 | not started |
 | 7 — Prisma 7 | not started |
 | 8 — Zod 4 | not started |
-| 9 — ESLint 10 | not started |
+| 9 — ESLint 10 (or 9) flat config | not started |
