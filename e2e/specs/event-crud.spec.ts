@@ -90,6 +90,27 @@ test.describe('Event CRUD', () => {
     await expect(page.getByText('Nová Akce E2E')).toBeVisible();
   });
 
+  test('shows a validation error for a start time in the past', async ({ page }) => {
+    const today = todayInAppTz();
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Rezervovat' }).click();
+    const form = page.getByRole('dialog', { name: 'Nová rezervace' });
+    // Every other field is valid, so only the start keeps the form invalid.
+    await form.getByLabel('Název události').fill('Minulá Akce E2E');
+    await form.getByLabel('Email').fill('akce@example.com');
+    await form.getByLabel('Délka (HH:MM)').fill('1:00');
+    // Inline instead of pickStart: today's day button is named "Dnes, …".
+    await form.getByRole('button', { name: /^Datum a čas/ }).click();
+    const picker = page.getByRole('dialog', { name: 'Výběr data a času' });
+    await picker.getByRole('button', { name: `Dnes, ${dayButtonName(today)}`, exact: true }).click();
+    // Cannot fail meaningfully between 00:00 and 00:01 Prague time, when 00:00 is not yet past.
+    await picker.getByLabel('Čas', { exact: true }).fill('00:00');
+    await page.keyboard.press('Escape');
+    await expect(picker).not.toBeVisible();
+    await expect(form.getByText('Začátek nesmí být v minulosti')).toBeVisible();
+    await expect(form.getByRole('button', { name: 'Potvrdit' })).toBeDisabled();
+  });
+
   test('displays the start date and time exactly as entered', async ({ page }) => {
     const day = addDays(todayInAppTz(), 7);
     await page.goto('/');
