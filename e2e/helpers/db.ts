@@ -1,8 +1,19 @@
 import { randomUUID } from 'node:crypto';
-import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { hashPassword } from '@better-auth/utils/password';
+import { PrismaClient } from '../../src/generated/prisma/client';
 
-const prisma = new PrismaClient();
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL is required for e2e DB helpers');
+}
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({
+    connectionString: databaseUrl,
+    connectionTimeoutMillis: 5_000,
+  }),
+});
 
 /**
  * Truncates domain tables (preserves auth tables) and ensures seed users exist.

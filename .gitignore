@@ -8,6 +8,9 @@
 # testing
 /coverage
 
+# prisma generated client
+/src/generated/
+
 # database
 /prisma/db.sqlite
 /prisma/db.sqlite-journal
