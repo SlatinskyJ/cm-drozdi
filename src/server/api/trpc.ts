@@ -8,15 +8,12 @@
  */
 
 import { initTRPC, TRPCError } from '@trpc/server';
-import _ from 'lodash';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
 
 import { UserRole } from '~/enums/UserRole';
 import { getServerAuthSession } from '~/server/auth';
 import { db } from '~/server/db';
-import { addMinutes } from 'date-fns';
-import { mapValuesDeep } from '~/utils/object';
 
 /**
  * 1. CONTEXT
@@ -107,27 +104,6 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 	return result;
 });
 
-const dateMiddleware = t.middleware(async ({ next }) => {
-	const result = await next();
-
-	const data = result.ok
-		? mapValuesDeep(result.data, (value) => {
-				if (_.isDate(value)) {
-					// Use the offset in effect at `value` itself (not at "now"), so a
-					// date on the other side of a DST switch still lands on its
-					// server-local wall-clock time.
-					return addMinutes(value, -1 * value.getTimezoneOffset());
-				}
-				return value;
-			})
-		: undefined;
-
-	return {
-		...result,
-		data,
-	};
-});
-
 /**
  * Public (unauthenticated) procedure
  *
@@ -135,9 +111,7 @@ const dateMiddleware = t.middleware(async ({ next }) => {
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure
-	.use(timingMiddleware)
-	.use(dateMiddleware);
+export const publicProcedure = t.procedure.use(timingMiddleware);
 
 /**
  * Protected (authenticated) procedure
@@ -149,7 +123,6 @@ export const publicProcedure = t.procedure
  */
 export const protectedProcedure = t.procedure
 	.use(timingMiddleware)
-	.use(dateMiddleware)
 	.use(({ ctx, next }) => {
 		if (!ctx.session || !ctx.session.user) {
 			throw new TRPCError({ code: 'UNAUTHORIZED' });
