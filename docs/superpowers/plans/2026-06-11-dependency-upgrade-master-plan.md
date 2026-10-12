@@ -24,7 +24,7 @@
 
 ## Decisions (added 2026-10-12)
 
-- **Merge authority:** Claude may merge phase PRs into `develop` itself, gated by an agent review: an `opus` reviewer agent posts `[review-agent]` PR comments, fixer agents resolve every `[must-fix]`, and once the verdict is `READY TO MERGE` Claude marks the PR ready, waits for full CI (incl. e2e), and squash-merges. `main` is never touched. Big decisions still go to the user. See `CLAUDE.md` → Branching.
+- **Merge authority:** Claude may merge any PR it creates into `develop` (phase PRs and any other) itself, gated by an agent review: an `opus` reviewer agent posts `[review-agent]` PR comments, fixer agents resolve every `[must-fix]`, and once the verdict is `READY TO MERGE` Claude marks the PR ready, waits for all CI checks to finish green (on docs-only PRs the skipped jobs count as passing), and squash-merges. If CI fails after `gh pr ready`, Claude runs `gh pr ready --undo`, fixes, and the reviewer re-reviews. `main` is never touched. **Exception:** a PR that embodies a big decision (architecture, a scope change versus this plan, dropping or adding a phase, a data-loss risk, anything the user hasn't already approved) needs the user's OK before merge. See `CLAUDE.md` → Branching.
 - **Version targets refreshed** (npm, 2026-10-12) — see the version gap table. Two adjustments:
   - **Prisma:** target latest **7.x stable** (7.10 at refresh). npm's `latest` tag points at `8.0.0-rc.*`; a release candidate is not "latest stable", so Prisma 8 is out of scope.
   - **TypeScript:** 6.0 and 7.0 are now released. `typescript-eslint` (8.71) supports only `<6.1`, so target **TypeScript 6.0.x**, bumped in Phase 9 alongside the ESLint tooling. TS 7 is deferred until `typescript-eslint` supports it.
@@ -65,20 +65,20 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 
 | Package | Current | Target | Jump |
 |---|---|---|---|
-| next-auth + @auth/prisma-adapter | ^4.24 / ^1.6 | **removed** → better-auth | auth migration (Phase 1) |
+| next-auth + @auth/prisma-adapter | — (removed; better-auth ^1.6.18) | **removed** → better-auth | done (Phase 1) |
 | next | ^14.2.4 | 16.x (16.4 at refresh) | 2 majors |
 | react / react-dom | ^18.3.1 | 19.x (19.3 at refresh) | 1 major |
 | prisma + @prisma/client | ^5.21 / ^5.14 | 7.x stable (7.10 at refresh; not 8.0 rc) | 2 majors |
 | tailwindcss | ^3.4.3 | 4.x (4.3 at refresh) | 1 major (config rewrite) |
 | zod | ^3.25 | 4.x (4.6 at refresh) | 1 major |
 | eslint | ^8.57 | 10.x (10.12 at refresh) | 2 majors (flat config) |
-| @trpc/* | 11.0.0-rc.446 | 11.x stable | rc → stable |
-| @tanstack/react-query | ^5.50 | 5.10x | minors |
+| @trpc/* | ^11.17.0 | 11.x stable | done (Phase 3) |
+| @tanstack/react-query | ^5.101.0 | 5.10x | done (Phase 3) |
 | framer-motion | ^11 | **removed** | dies with NextUI |
 | @nextui-org/* (13 pkgs) | 2.x | **removed** | replaced by shadcn |
 | @vercel/postgres | ^0.10.0 | keep (deprecated upstream) | migration deferred, see Phase 7 |
-| typescript | ^5.x | 6.0.x (not 7 — typescript-eslint caps at <6.1) | 1 major (Phase 9) |
-| @types/node | ^20 | 22.x | match runtime |
+| typescript | ^5.9.3 | 6.0.x (not 7 — typescript-eslint caps at <6.1) | 1 major (Phase 9) |
+| @types/node | ^22 | 22.x | done (Phase 3) |
 
 **Explicit non-goals:** social/OAuth login (defer as nice-to-have), a full unit/integration suite, Yarn 1 → modern package manager. Candidate follow-ups after Phase 9.
 
@@ -197,7 +197,7 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 - New `prisma.config.ts` (replaces `package.json#prisma`/schema-folder conventions).
 - Generator `prisma-client-js` → new `prisma-client` (explicit output path, import from generated path — touches `src/server/db.ts`, possibly `postinstall`).
 - Driver adapters now default — choose `@prisma/adapter-pg` vs current; evaluate dropping deprecated `@vercel/postgres` here (only used for the connection — check `src/server/db.ts`). Fold the swap in if trivial, else defer + note.
-- **Verify Better Auth's Prisma adapter is compatible with Prisma 7 client** before committing Step B; block on it if not (check during spec). *(2026-10-12: `better-auth@1.7` peer deps list `prisma`/`@prisma/client` `^5 || ^6 || ^7` — confirm at runtime.)*
+- **Verify Better Auth's Prisma adapter is compatible with Prisma 7 client** before committing Step B; block on it if not (check during spec). *(2026-10-12: `better-auth` 1.6.x (installed, 1.6.18) and 1.7.x (latest, 1.7.7) both list `prisma`/`@prisma/client` `^5 || ^6 || ^7` as peer deps, so no better-auth bump is needed first — confirm at runtime.)*
 - Run `prisma migrate dev` against a dev/test DB, never prod. Verify `db:*` scripts.
 
 **Exit criteria:** gate passes; all CRUD + auth e2e + smoke-tested against dev DB; migrate-deploy dry-run documented; Vercel build (postinstall generate) works.
