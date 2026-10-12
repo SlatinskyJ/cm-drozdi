@@ -2,11 +2,20 @@ import { format } from 'date-fns';
 import { cs } from 'date-fns/locale';
 
 /**
- * Timezone the app server and the browser run in during e2e (see
- * playwright.config.ts). Deliberately not UTC: with a zero offset, bugs that
- * apply or drop the tRPC `dateMiddleware` shift are invisible.
+ * The app's display timezone: every date must be shown as Prague wall-clock
+ * time, whatever timezone the server or the browser runs in.
  */
 export const APP_TZ = 'Europe/Prague';
+
+/**
+ * Timezones the app server and the browser run in during e2e (see
+ * playwright.config.ts). By default the server runs in UTC (as on Vercel) and
+ * the browser in a non-Prague zone, so neither matches APP_TZ and any date
+ * logic that leaks the runtime's timezone shows up as a wrong time or day.
+ * Override with E2E_SERVER_TZ / E2E_BROWSER_TZ, e.g. both `Europe/Prague`.
+ */
+export const SERVER_TZ = process.env['E2E_SERVER_TZ'] ?? 'UTC';
+export const BROWSER_TZ = process.env['E2E_BROWSER_TZ'] ?? 'America/New_York';
 
 export type CalendarDay = { year: number; month: number; day: number };
 
