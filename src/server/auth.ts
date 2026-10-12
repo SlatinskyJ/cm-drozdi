@@ -1,7 +1,12 @@
 import { headers } from 'next/headers';
 import { betterAuth } from 'better-auth';
-import { APIError } from 'better-auth/api';
+import {
+	APIError,
+	createAuthMiddleware,
+	getSessionFromCtx,
+} from 'better-auth/api';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { deleteSessionCookie } from 'better-auth/cookies';
 import { admin } from 'better-auth/plugins';
 
 import { ac, roles } from '~/server/auth-access';
@@ -45,6 +50,48 @@ export const auth = betterAuth({
 			},
 		},
 	},
+	hooks: {
+		// A session can outlive its user's soft delete (e.g. a row left behind
+		// by a failed delete). Better Auth's own endpoints — notably the admin
+		// plugin's `/admin/*` — read the session via `getSessionFromCtx`, not
+		// `getServerAuthSession`, so enforce the rule here too.
+		before: createAuthMiddleware(async (ctx) => {
+			// Sign-in must work from a browser that still holds a deleted
+			// user's cookie (session creation is guarded by the database hook
+			// above), sign-out must always work, and `/get-session` is handled
+			// by the after hook without an extra session lookup.
+			if (
+				ctx.path.startsWith('/sign-in') ||
+				ctx.path === '/sign-out' ||
+				ctx.path === '/get-session'
+			) {
+				return;
+			}
+			// `disableRefresh`: this lookup is cached in `ctx.context.session`
+			// and reused by the endpoint, so it must not write a refreshed
+			// session the endpoint's response would not carry a cookie for.
+			const session = await getSessionFromCtx(ctx, { disableRefresh: true });
+			if (session?.user.deletedAt) {
+				throw new APIError('FORBIDDEN', {
+					message: 'User is deleted',
+					code: 'USER_DELETED',
+				});
+			}
+		}),
+		after: createAuthMiddleware(async (ctx) => {
+			if (ctx.path !== '/get-session') return;
+			const returned = ctx.context.returned as
+				| { user?: { deletedAt?: Date | null } }
+				| null
+				| undefined;
+			if (returned?.user?.deletedAt) {
+				// Treat a deleted user's session as signed out everywhere,
+				// including the client-side `useSession()`.
+				deleteSessionCookie(ctx);
+				return ctx.json(null);
+			}
+		}),
+	},
 	plugins: [admin({ ac, roles, adminRoles: ['admin'], defaultRole: 'guest' })],
 });
 
@@ -60,7 +107,9 @@ export type AppSession = {
  * the sync return is a no-op) and is forward-compatible with Next 15+ where
  * `headers()` becomes async (Phase 5). Returns `null` when unauthenticated,
  * including when a session somehow outlived its user's soft delete — every
- * server-side guard (layouts, tRPC context) goes through here.
+ * server-side guard (layouts, tRPC context) goes through here. The
+ * `/get-session` after hook already nulls such sessions; the `deletedAt`
+ * check below is defense in depth and must be kept.
  */
 export const getServerAuthSession = async (): Promise<AppSession | null> => {
 	// eslint-disable-next-line @typescript-eslint/await-thenable -- headers() is sync on Next 14 but becomes async on Next 15+; awaiting now is forward-compatible.
