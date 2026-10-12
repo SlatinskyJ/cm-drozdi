@@ -1,7 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
-import { ADMIN_AUTH, signInViaApi } from '../helpers/auth';
+import { ADMIN_AUTH, AUTH_ORIGIN, signInViaApi } from '../helpers/auth';
 import {
   cleanupTestUsers,
+  countSessions,
   countSetPasswordTokens,
   createSetPasswordToken,
   createTestUser,
@@ -19,6 +20,8 @@ const EMAILS = {
   staleLink: 'deleted-stale-link@e2e.example.com',
   signIn: 'deleted-sign-in@e2e.example.com',
   session: 'deleted-session@e2e.example.com',
+  impersonator: 'deleted-impersonator@e2e.example.com',
+  impersonated: 'impersonated-member@e2e.example.com',
 };
 
 test.beforeAll(async () => {
@@ -32,6 +35,15 @@ test.beforeEach(async () => {
 test.afterAll(async () => {
   await cleanupTestUsers(Object.values(EMAILS));
 });
+
+/** Deletes a member through the admin UI and waits for the delete to land. */
+async function deleteViaAdminUi(page: Page, name: string, userId: string) {
+  await page.goto('/members');
+  await page.locator('tr').filter({ hasText: name }).getByRole('button', { name: 'Smazat' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Smazat' }).click();
+  await expect(page.getByRole('cell', { name })).not.toBeVisible();
+  await expect.poll(() => getDeletedAt(userId)).not.toBeNull();
+}
 
 /** Submits a new password through the public set-password page. */
 async function submitPasswordLink(page: Page, token: string) {
@@ -62,11 +74,7 @@ test.describe('Deleted member', () => {
     // Admin deletes the member through the UI
     const adminContext = await browser.newContext({ baseURL, storageState: ADMIN_AUTH });
     const adminPage = await adminContext.newPage();
-    await adminPage.goto('/members');
-    await adminPage.locator('tr').filter({ hasText: 'Deleted Via UI' }).getByRole('button', { name: 'Smazat' }).click();
-    await adminPage.getByRole('dialog').getByRole('button', { name: 'Smazat' }).click();
-    await expect(adminPage.getByRole('cell', { name: 'Deleted Via UI' })).not.toBeVisible();
-    await expect.poll(() => getDeletedAt(user.id)).not.toBeNull();
+    await deleteViaAdminUi(adminPage, 'Deleted Via UI', user.id);
 
     // The pending set-password link was removed and no longer works
     expect(await countSetPasswordTokens(user.id)).toBe(0);
@@ -77,7 +85,8 @@ test.describe('Deleted member', () => {
     // The old session is gone and signing in again fails
     await memberPage.goto('/events');
     await expect(memberPage).toHaveURL('/login');
-    expect((await signInViaApi(memberContext.request, EMAILS.adminDelete, PASSWORD)).ok()).toBe(false);
+    // The credential was deleted, so this is a plain wrong-credentials refusal
+    expect((await signInViaApi(memberContext.request, EMAILS.adminDelete, PASSWORD)).status()).toBe(401);
 
     await memberContext.close();
     await adminContext.close();
@@ -130,17 +139,73 @@ test.describe('Deleted member', () => {
     const page = await context.newPage();
     expect((await signInViaApi(context.request, EMAILS.session, PASSWORD)).status()).toBe(200);
 
-    // Control: the session grants access to pages and admin tRPC procedures
+    // Control: the session grants access to pages, admin tRPC procedures,
+    // Better Auth's admin API and get-session
     await page.goto('/members');
     await expect(page.getByText('Členové')).toBeVisible();
     expect((await context.request.get('/api/trpc/member.list')).status()).toBe(200);
+    const listUrl = '/api/auth/admin/list-users';
+    expect((await context.request.get(listUrl, { headers: { Origin: AUTH_ORIGIN } })).status()).toBe(200);
+    const before = await context.request.get('/api/auth/get-session');
+    expect(before.status()).toBe(200);
+    expect((await before.json())?.user?.id).toBe(user.id);
 
     // Soft-delete only — the session row stays in the DB
     await softDeleteUser(user.id);
+    expect(await countSessions({ userId: user.id })).toBeGreaterThan(0);
     await page.goto('/members');
     await expect(page).toHaveURL('/login');
     expect((await context.request.get('/api/trpc/member.list')).status()).toBe(401);
 
+    // Better Auth's own endpoints refuse the leftover session too
+    const list = await context.request.get(listUrl, { headers: { Origin: AUTH_ORIGIN } });
+    expect(list.status()).toBe(403);
+    expect((await list.json()).code).toBe('USER_DELETED');
+    // ...and get-session reports no session (this also expires the cookie)
+    const after = await context.request.get('/api/auth/get-session');
+    expect(after.status()).toBe(200);
+    expect(await after.json()).toBeNull();
+
     await context.close();
+  });
+
+  test('deleting an admin also ends the impersonation sessions they started', async ({
+    browser,
+    baseURL,
+  }) => {
+    const impersonator = await createTestUser({
+      email: EMAILS.impersonator,
+      name: 'Impersonating Admin',
+      role: 'admin',
+      password: PASSWORD,
+    });
+    const target = await createTestUser({ email: EMAILS.impersonated, name: 'Impersonated Member' });
+
+    // The admin signs in and impersonates a member; the impersonation
+    // session belongs to the member, with impersonatedBy = the admin
+    const context = await browser.newContext({ baseURL });
+    const page = await context.newPage();
+    expect((await signInViaApi(context.request, EMAILS.impersonator, PASSWORD)).status()).toBe(200);
+    const impersonate = await context.request.post('/api/auth/admin/impersonate-user', {
+      data: { userId: target.id },
+      headers: { Origin: AUTH_ORIGIN },
+    });
+    expect(impersonate.status()).toBe(200);
+    expect(await countSessions({ impersonatedBy: impersonator.id })).toBe(1);
+    await page.goto('/events');
+    await expect(page).toHaveURL('/events');
+
+    // Another admin deletes the impersonating admin
+    const adminContext = await browser.newContext({ baseURL, storageState: ADMIN_AUTH });
+    await deleteViaAdminUi(await adminContext.newPage(), 'Impersonating Admin', impersonator.id);
+
+    // Every session of the deleted admin is gone, the impersonation included
+    expect(await countSessions({ userId: impersonator.id })).toBe(0);
+    expect(await countSessions({ impersonatedBy: impersonator.id })).toBe(0);
+    await page.goto('/events');
+    await expect(page).toHaveURL('/login');
+
+    await context.close();
+    await adminContext.close();
   });
 });

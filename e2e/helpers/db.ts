@@ -128,3 +128,8 @@ export async function getPasswordHash(userId: string) {
   });
   return account?.password ?? null;
 }
+
+/** Number of session rows owned by a user or impersonations they started. */
+export async function countSessions(where: { userId?: string; impersonatedBy?: string }) {
+  return prisma.session.count({ where });
+}
