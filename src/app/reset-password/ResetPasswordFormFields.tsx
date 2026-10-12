@@ -22,7 +22,7 @@ export function ResetPasswordFormFields({
 					type="password"
 					placeholder="Nové heslo (min. 8 znaků)"
 					required
-					className="rounded border px-3 py-2"
+					className="rounded-sm border px-3 py-2"
 				/>
 			)}
 		/>
