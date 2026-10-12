@@ -26,7 +26,7 @@ export function EmailInput<T extends FieldValues>({
 					type="email"
 					placeholder="E-mail"
 					required
-					className="rounded border px-3 py-2"
+					className="rounded-sm border px-3 py-2"
 				/>
 			)}
 		/>

@@ -1,4 +1,3 @@
-import { headers } from 'next/headers';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -10,6 +9,7 @@ import {
 import { auth } from '~/server/auth';
 import {
 	generateSetPasswordUrl,
+	setPasswordTokensWhere,
 	setPasswordWithToken,
 } from '~/server/auth-password-link';
 import { db } from '~/server/db';
@@ -50,8 +50,7 @@ export const memberRouter = createTRPCRouter({
 				role: assignableRole,
 			}),
 		)
-		.mutation(async ({ input }) => {
-			const h = headers();
+		.mutation(async ({ ctx, input }) => {
 			const result = await callAuth(() =>
 				auth.api.createUser({
 					body: {
@@ -60,7 +59,7 @@ export const memberRouter = createTRPCRouter({
 						role: input.role,
 						data: { emailVerified: true },
 					},
-					headers: h,
+					headers: ctx.headers,
 				}),
 			);
 			return { userId: result.user.id };
@@ -108,11 +107,10 @@ export const memberRouter = createTRPCRouter({
 					});
 				}
 			}
-			const h = headers();
 			await callAuth(() =>
 				auth.api.setRole({
 					body: { userId: input.userId, role: input.role },
-					headers: h,
+					headers: ctx.headers,
 				}),
 			);
 			return { ok: true };
@@ -143,21 +141,32 @@ export const memberRouter = createTRPCRouter({
 					message: 'Nelze smazat posledního administrátora.',
 				});
 			}
-			// Soft-delete: mark, remove password (credential), revoke sessions.
-			await ctx.db.user.update({
-				where: { id: input.userId },
-				data: { deletedAt: new Date() },
-			});
-			await ctx.db.account.deleteMany({
-				where: { userId: input.userId, providerId: 'credential' },
-			});
-			const h = headers();
-			await callAuth(() =>
-				auth.api.revokeUserSessions({
-					body: { userId: input.userId },
-					headers: h,
+			// Soft-delete in one transaction: mark, remove password (credential)
+			// and pending set-password links, and kill every session of the
+			// user — including impersonation sessions they started, which
+			// belong to the impersonated member (`impersonatedBy`). No
+			// secondary storage is configured, so deleting rows is a full
+			// session revoke.
+			await ctx.db.$transaction([
+				ctx.db.user.update({
+					where: { id: input.userId },
+					data: { deletedAt: new Date() },
 				}),
-			);
+				ctx.db.account.deleteMany({
+					where: { userId: input.userId, providerId: 'credential' },
+				}),
+				ctx.db.verification.deleteMany({
+					where: setPasswordTokensWhere(input.userId),
+				}),
+				ctx.db.session.deleteMany({
+					where: {
+						OR: [
+							{ userId: input.userId },
+							{ impersonatedBy: input.userId },
+						],
+					},
+				}),
+			]);
 			return { ok: true };
 		}),
 

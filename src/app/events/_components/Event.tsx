@@ -27,7 +27,7 @@ export default function Event({ event }: Readonly<{ event: TEvent }>) {
 			<Card
 				role="button"
 				tabIndex={0}
-				className="w-[265px] cursor-pointer bg-green-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				className="w-[265px] cursor-pointer bg-green-400 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
 				onClick={() => setIsOpen(true)}
 				onKeyDown={handleKeyDown}
 			>

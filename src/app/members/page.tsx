@@ -85,7 +85,7 @@ export default function MembersPage() {
 												role: e.target.value as UserRole,
 											})
 										}
-										className="rounded border px-2 py-1"
+										className="rounded-sm border px-2 py-1"
 									>
 										{ASSIGNABLE.map((r) => (
 											<option key={r.value} value={r.value}>
@@ -94,7 +94,7 @@ export default function MembersPage() {
 										))}
 									</select>
 									{!m.hasPassword && (
-										<span className="ml-2 rounded bg-yellow-200 px-2 py-0.5 text-xs text-yellow-900">
+										<span className="ml-2 rounded-sm bg-yellow-200 px-2 py-0.5 text-xs text-yellow-900">
 											čeká na heslo
 										</span>
 									)}

@@ -4,7 +4,6 @@ import { useCallback } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import { type TCreateEvent, type TEvent } from '~/app/_models/event';
 import { api } from '~/trpc/react';
-import { toWallClockDate } from '~/utils/date';
 
 export type TEventInputs = Omit<TCreateEvent, 'start' | 'end'> & {
 	start: Date;
@@ -33,18 +32,20 @@ function transformInitValues(data?: TEvent): Partial<TEventInputs> {
 		!!start && !!end
 			? formatDurationMinutes(differenceInMinutes(end, start))
 			: undefined;
-	// `start` arrives shifted by `dateMiddleware`; rebuild the wall-clock time as
-	// a local Date so the picker shows it and a no-op save sends back the same
-	// instant (see `toWallClockDate`).
 	return {
 		...omitBy(rest, isNil),
-		start: start ? toWallClockDate(start) : undefined,
+		start: start ?? undefined,
 		duration,
 	};
 }
 
 export function useEventForm(initValues?: TEvent, onSuccess?: () => void) {
-	const { mutate: createEvent, isPending } = api.event.create.useMutation();
+	const { mutate: createEvent, isPending: isCreatePending } =
+		api.event.create.useMutation();
+	const { mutate: updateEvent, isPending: isUpdatePending } =
+		api.event.update.useMutation();
+	const isPending = isCreatePending || isUpdatePending;
+	const eventId = initValues?.id;
 
 	const transformedInitValues = transformInitValues(initValues);
 
@@ -62,11 +63,13 @@ export function useEventForm(initValues?: TEvent, onSuccess?: () => void) {
 				start,
 				end: addMinutes(start, parseDurationMinutes(duration)),
 			};
-			createEvent(req, {
-				onSuccess,
-			});
+			if (eventId) {
+				updateEvent({ ...req, id: eventId }, { onSuccess });
+			} else {
+				createEvent(req, { onSuccess });
+			}
 		},
-		[createEvent, onSuccess],
+		[createEvent, updateEvent, eventId, onSuccess],
 	);
 
 	return { ...restForm, handleSubmit: handleSubmit(onSubmit), isPending };

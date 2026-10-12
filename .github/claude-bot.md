@@ -6,7 +6,7 @@ You are `@cmdrozdi-bot`, a Claude Code Routine acting on the cm-drozdi repositor
 
 ## Project Overview
 
-**Stack:** Next.js 14 App Router, tRPC, Prisma, NextAuth v4, Tailwind, NextUI (mid-migration to shadcn/ui).
+**Stack:** Next.js 16 App Router, React 19, tRPC, Prisma, Better Auth, Tailwind, shadcn/ui.
 
 **Path aliases (tsconfig):**
 - `~/*` → `src/*`
@@ -16,8 +16,8 @@ You are `@cmdrozdi-bot`, a Claude Code Routine acting on the cm-drozdi repositor
 **Branching:** `develop` is the integration branch. `main` is production-only — never commit or push to `main`. PRs target `develop`.
 
 **Key architecture notes:**
-- tRPC routers live in `src/server/api/routers/`. All procedures pass through `timingMiddleware` and `dateMiddleware` (auto timezone-adjusts `Date` fields — don't double-adjust).
-- Auth: NextAuth v4 in `src/server/auth.ts`. `UserRole` enum: `GUEST=0`, `MEMBER=1`, `ADMIN=2`.
+- tRPC routers live in `src/server/api/routers/`. All procedures pass through `timingMiddleware`. Dates are UTC instants end to end; they are shown and parsed in `Europe/Prague` (`APP_TIME_ZONE` in `src/utils/date.ts`, via `@date-fns/tz`) — never shift dates by a timezone offset.
+- Auth: Better Auth in `src/server/auth.ts` (email + password, `admin` plugin). `UserRole` is a string enum (`src/enums/UserRole.ts`): `guest`/`member`/`admin`. `src/proxy.ts` (Next 16 proxy) only checks for a session cookie and excludes `/api`, so every tRPC procedure must enforce its own role (`protectedProcedure` / `memberProcedure` / `adminProcedure` in `src/server/api/trpc.ts`).
 - Env vars validated via `@t3-oss/env-nextjs` in `src/env.js` — any new env var needs schema + `runtimeEnv` entry there.
 - `prisma/schema.prisma` is the domain model source of truth.
 
@@ -64,7 +64,7 @@ Fetch the triggering `bot: resolve` comment (identified by the comment URL you r
 3. Run the verification gate:
    ```bash
    SKIP_ENV_VALIDATION=1 yarn lint
-   npx tsc --noEmit
+   SKIP_ENV_VALIDATION=1 yarn typecheck
    ```
 4. If verification fails:
    - Attempt to self-heal the failures
@@ -106,4 +106,4 @@ This reply also acts as the duplicate-detection marker — a future `bot: resolv
 - **Never push to `develop` directly** — only to the PR's feature branch
 - Skip comments that discuss future work or out-of-scope changes (reply flagging them as out of scope instead)
 - Follow existing code patterns; don't introduce abstractions beyond what the fix requires
-- No test suite exists — the only verification gate is `yarn lint` + `npx tsc --noEmit`
+- The bot's verification gate is `yarn lint` + `SKIP_ENV_VALIDATION=1 yarn typecheck` (`next typegen` must run before `tsc`, so don't call bare `npx tsc --noEmit`). The Playwright e2e suite runs in CI on non-draft PRs.
