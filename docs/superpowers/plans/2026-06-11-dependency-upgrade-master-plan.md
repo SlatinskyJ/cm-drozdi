@@ -169,8 +169,8 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 - Verify gate + full smoke before Step B.
 
 **Step B — Next 16:**
-- `npx @next/codemod@canary upgrade` to 16. Review: Turbopack-by-default (check tailwind/postcss compat on TW3), `middleware.ts` conventions (confirm matcher unchanged for the timezone-offset + Better Auth gate), removed legacy APIs, `next lint` removal (handled in the next bullet), image defaults.
-- Lint (see Decisions 2026-10-12 → ESLint target): pin `eslint-config-next@15.5` (its peer range still accepts eslint 8; `16.x` requires eslint >=9) and switch the `lint` script from `next lint` (removed in Next 16) to running `eslint` directly (e.g. `eslint .`). Keep the legacy `.eslintrc.cjs` on eslint 8 — flat config and `eslint-config-next@16` stay in Phase 9.
+- `npx @next/codemod@canary upgrade` to 16. Review: Turbopack-by-default (check tailwind/postcss compat on TW3), `middleware.ts` → `proxy.ts` (Node runtime; matcher unchanged for the Better Auth cookie gate), removed legacy APIs, `next lint` removal (handled in the next bullet), image defaults.
+- Lint (see Decisions 2026-10-12 → ESLint target): pin `eslint-config-next@15.5` (its peer range still accepts eslint 8; `16.x` requires eslint >=9) and switch the `lint` script from `next lint` (removed in Next 16) to running `eslint` directly (`next typegen && eslint src --ext .js,.jsx,.ts,.tsx` — same coverage as `next lint`; widening is Phase 9). Keep the legacy `.eslintrc.cjs` on eslint 8 — flat config and `eslint-config-next@16` stay in Phase 9.
 
 **Exit criteria:** gate passes on Next 16/React 19; auth flow, middleware redirects, event CRUD, calendar all e2e + smoke-tested; `yarn build` route table compared against Phase 0 baseline for unexpected dynamic/static changes.
 
@@ -225,6 +225,8 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 - Preserve current rule customizations (audit full `.eslintrc.cjs` during spec — only top 30 lines reviewed so far): type-checked presets, `array-type` off, `consistent-type-definitions` off, inline type-imports, `no-unused-vars` argsIgnorePattern, etc.
 - The `lint` script already runs `eslint` directly (switched off `next lint` in Phase 5) — only move it onto the flat config.
 - Fix or explicitly-comment new violations; no blanket disables.
+- Widen lint scope from `src` to the whole repo (`e2e/`, `prisma/`, root config files) and fix the new hits.
+- `eslint-config-next@16` enables the React Compiler rules from `eslint-plugin-react-hooks@7` (`set-state-in-effect`, `refs`, `purity`, `immutability`, `incompatible-library` …) — budget for app-code fixes.
 - `typescript` → 6.0.x (see Decisions 2026-10-12): fix new TS 6 deprecation errors rather than silencing them with `ignoreDeprecations`.
 
 **Exit criteria:** `yarn lint` passes with equivalent-or-stricter ruleset; CI/Vercel build unaffected.
@@ -251,7 +253,7 @@ Once a phase has an open PR, track that PR (`gh pr view <number>`) for live stat
 | 2 — E2E net + CI | [#13](https://github.com/SlatinskyJ/cm-drozdi/pull/13) (merged) |
 | 3 — Minor bumps | [#18](https://github.com/SlatinskyJ/cm-drozdi/pull/18) |
 | 4 — shadcn migration | [#20](https://github.com/SlatinskyJ/cm-drozdi/pull/20) |
-| 5 — React 19 / Next 16 | not started |
+| 5 — React 19 / Next 16 | [#24](https://github.com/SlatinskyJ/cm-drozdi/pull/24) |
 | 6 — Tailwind 4 | not started |
 | 7 — Prisma 7 | not started |
 | 8 — Zod 4 | not started |

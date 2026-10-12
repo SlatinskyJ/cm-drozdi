@@ -5,6 +5,9 @@
 await import("./src/env.js");
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+	// Stop `next dev` (16.3+) from generating a root AGENTS.md; agent guidance lives in CLAUDE.md.
+	agentRules: false,
+};
 
 export default config;
