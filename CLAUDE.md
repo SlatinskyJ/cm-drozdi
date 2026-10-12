@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-Source code for www.cmdrozdi.cz — a T3-stack app (Next.js 16 App Router + React 19 + tRPC + Prisma + Better Auth + Tailwind + shadcn/ui). Manages event scheduling/booking for a music ensemble, with member/admin roles, an events calendar, and instrument assignments.
+Source code for www.cmdrozdi.cz — a T3-stack app (Next.js 16 App Router + React 19 + tRPC + Prisma + Better Auth + Tailwind 4 + shadcn/ui). Manages event scheduling/booking for a music ensemble, with member/admin roles, an events calendar, and instrument assignments.
 
 ## Branching
 
@@ -95,6 +95,12 @@ The app has a single display timezone, `APP_TIME_ZONE = 'Europe/Prague'` in `src
 - Form input (`EventForm`): the picked day and time are interpreted as Prague wall-clock time; the form keeps a plain `Date` instant. Past days are blocked relative to today in Prague (`startOfTodayInAppTz`).
 
 E2E runs the server with `TZ=UTC` and the browser in `America/New_York` (override via `E2E_SERVER_TZ` / `E2E_BROWSER_TZ`) to prove this.
+
+### Styling (Tailwind 4, CSS-first)
+
+- No `tailwind.config.*`: the theme lives in `src/styles/globals.css` — brand palette in `@theme` (hex), shadcn variables in a top-level `:root` (`hsl(...)` values) mapped via `@theme inline`, `tw-animate-css` for shadcn animations, PostCSS via `@tailwindcss/postcss`. `components.json` has `"tailwind.config": ""`.
+- Sources are limited to `src/**/*.tsx` (`@import 'tailwindcss' source(none)` + `@source`).
+- Tailwind 3 compat shims kept on purpose (Phase 6): v3 preflight defaults in `@layer base`, the `v3-space:` variant instead of `space-x/y-*` (use `v3-space:mt-N`), and v3 hex pins for the default-palette shades in use. Don't remove them without a visual check.
 
 ## Active initiative: modernization & dependency upgrade
 
