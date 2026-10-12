@@ -1,4 +1,3 @@
-import { headers } from 'next/headers';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -51,8 +50,7 @@ export const memberRouter = createTRPCRouter({
 				role: assignableRole,
 			}),
 		)
-		.mutation(async ({ input }) => {
-			const h = headers();
+		.mutation(async ({ ctx, input }) => {
 			const result = await callAuth(() =>
 				auth.api.createUser({
 					body: {
@@ -61,7 +59,7 @@ export const memberRouter = createTRPCRouter({
 						role: input.role,
 						data: { emailVerified: true },
 					},
-					headers: h,
+					headers: ctx.headers,
 				}),
 			);
 			return { userId: result.user.id };
@@ -109,11 +107,10 @@ export const memberRouter = createTRPCRouter({
 					});
 				}
 			}
-			const h = headers();
 			await callAuth(() =>
 				auth.api.setRole({
 					body: { userId: input.userId, role: input.role },
-					headers: h,
+					headers: ctx.headers,
 				}),
 			);
 			return { ok: true };

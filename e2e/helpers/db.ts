@@ -20,11 +20,14 @@ export async function createTestEvent(overrides?: {
   email?: string;
   start?: Date;
   end?: Date;
+  isPrivate?: boolean;
+  location?: string;
 }) {
   return prisma.event.create({
     data: {
       name: overrides?.name ?? 'Test Event',
-      isPrivate: false,
+      isPrivate: overrides?.isPrivate ?? false,
+      location: overrides?.location,
       state: 0,
       email: overrides?.email ?? 'test@example.com',
       start: overrides?.start,
@@ -36,6 +39,16 @@ export async function createTestEvent(overrides?: {
 /** Reads an event straight from the DB (bypassing tRPC and the UI). */
 export async function getEventByName(name: string) {
   return prisma.event.findFirstOrThrow({ where: { name } });
+}
+
+/** Reads an event by id straight from the DB, or null if it doesn't exist. */
+export async function findEventById(id: string) {
+  return prisma.event.findUnique({ where: { id } });
+}
+
+/** Counts all events in the DB. */
+export async function countEvents() {
+  return prisma.event.count();
 }
 
 /**

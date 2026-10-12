@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-Source code for www.cmdrozdi.cz — a T3-stack app (Next.js 14 App Router + tRPC + Prisma + NextAuth v4 + Tailwind + NextUI, the latter mid-migration to shadcn/ui). Manages event scheduling/booking for a music ensemble, with member/admin roles, an events calendar, and instrument assignments.
+Source code for www.cmdrozdi.cz — a T3-stack app (Next.js 16 App Router + React 19 + tRPC + Prisma + Better Auth + Tailwind + shadcn/ui). Manages event scheduling/booking for a music ensemble, with member/admin roles, an events calendar, and instrument assignments.
 
 ## Branching
 
@@ -29,12 +29,12 @@ Use plain `git worktree` (not Claude's native worktree feature) to isolate phase
 ## Commands
 
 - `yarn install` — installs deps; `postinstall` runs `prisma generate` automatically.
-- `yarn dev` — start dev server.
+- `yarn dev` — start dev server (Turbopack).
 - `yarn build` — production build (`next build`).
 - `yarn start` — run production build.
-- `yarn lint` — `next lint` using legacy `.eslintrc.cjs`.
-- `npx tsc --noEmit` — typecheck (no dedicated script exists yet).
-- `./start-database.sh` — spins up a local Postgres container (`cm-drozdi-postgres`) for dev, reading/writing `DATABASE_URL` in `.env`.
+- `yarn lint` — `next typegen` then ESLint 8 CLI on `src/` with legacy `.eslintrc.cjs` (`eslint-config-next` pinned to 15.5 until Phase 9).
+- `yarn typecheck` — `next typegen` then `tsc --noEmit`. If it reports a missing `src/app/**/page.js` from `.next/dev/types` (stale after renaming/deleting a route while `next dev` was stopped), run `rm -rf .next/dev`.
+- `./start-database.sh` — unused locally (Postgres runs natively). Slated for removal after Phase 9.
 - `yarn db:push` — push Prisma schema to DB without a migration (used for first-time setup per README).
 - `yarn db:seed:local` — seed dev DB (loads `.env`). In CI/Vercel use `yarn db:seed` (env injected externally).
 - `yarn db:generate` — `prisma migrate dev` (create + apply a migration).
@@ -65,21 +65,22 @@ All must pass clean. CI runs lint + typecheck on every PR to `develop` and adds 
 ### tRPC layer
 
 - `src/server/api/root.ts` defines `appRouter`; sub-routers live in `src/server/api/routers/` and are re-exported through `src/server/api/routers/index.ts`.
-- `src/server/api/trpc.ts` defines `publicProcedure` / `protectedProcedure` / `adminProcedure`. Every procedure goes through `timingMiddleware` (logs execution time and adds an artificial delay in dev).
+- `src/server/api/trpc.ts` defines `publicProcedure` / `protectedProcedure` / `memberProcedure` (asserts `UserRole.MEMBER` or `UserRole.ADMIN`) / `adminProcedure` (asserts `UserRole.ADMIN`). Every procedure goes through `timingMiddleware` (logs execution time and adds an artificial delay in dev).
 - Dates are passed through unchanged: every `Date`/`DateTime` a procedure returns (or receives) is a true UTC instant, serialized by SuperJSON. Never shift dates by a timezone offset in routers or components — convert to Prague time only when formatting or parsing (see Date/calendar utilities).
-- Client setup in `src/trpc/react.tsx` (React Query + `unstable_httpBatchStreamLink` + SuperJSON transformer); server-side caller via `createCaller` in `root.ts`.
+- Client setup in `src/trpc/react.tsx` (React Query + `httpBatchStreamLink` + SuperJSON transformer); server-side caller via `createCaller` in `root.ts`.
 
 ### Auth & authorization
 
-- NextAuth v4 (`src/server/auth.ts`) with `@auth/prisma-adapter`, Discord and Facebook providers. `User.role` (Int in DB) is mapped through the `jwt`/`session` callbacks into `session.user.role`, typed via module augmentation as `UserRole` (`src/enums/UserRole.ts`: `GUEST=0`, `MEMBER=1`, `ADMIN=2`).
-- `src/middleware.ts` gates the entire site behind an auth cookie check (matcher excludes `api`, `auth`, static assets, `sitemap.xml`, `robots.txt`, and `/`).
-- `src/utils/permissions.ts` (`useIsAdmin`) does a client-side session check against `UserRole.ADMIN` for admin-only UI.
+- Better Auth (`src/server/auth.ts`): email + password, sign-up disabled, Prisma adapter, `admin` plugin with access control in `src/server/auth-access.ts`. Roles are the string enum `UserRole` (`src/enums/UserRole.ts`: `guest`/`member`/`admin`). Server access via `getServerAuthSession()`; client via `authClient` (`src/lib/auth-client.ts`); route handler `src/app/api/auth/[...all]/route.ts` (`toNextJsHandler`).
+- `src/proxy.ts` (Next 16 proxy, Node runtime) redirects to `/login` when no Better Auth session cookie is present (`getSessionCookie`, presence-only, no DB). Matcher excludes `api`, `_next/static`, `_next/image`, `auth`, `login`, `reset-password`, `favicon.ico`, `images`, `sitemap.xml`, `robots.txt`, and `/`. Real checks: `events`/`members` layouts and `protectedProcedure`/`memberProcedure`/`adminProcedure`.
+- `src/utils/permissions.ts` (`useIsAdmin`) — client-side admin check via `authClient.useSession()`.
 
 ### Domain model (`prisma/schema.prisma`)
 
-- `Event`: core entity with `state: Int` mapped to `EventState` (`src/enums/EventState.ts`: `PROPOSED`, `PENDING`, `CONFIRMED`, `CANCELED`), plus scheduling/contact fields and `isPrivate`.
+- `Event`: core entity with `state: Int` mapped to `EventState` (`src/enums/EventState.ts`: `PROPOSED=0`, `PENDING=1`, `CONFIRMED=2`, `CANCELED=3`), plus scheduling/contact fields and `isPrivate`.
 - `UsersOnEvents` / `InstrumentsOnUsers`: explicit many-to-many join tables linking `User` ↔ `Event` and `User` ↔ `Instrument`.
-- `src/server/api/routers/event.ts`: `create` (upsert, **public**), `getUpcoming` / `changeState` / `deleteById` (**protected**), `getForCalendar` (public, limited field selection for the public calendar view).
+- `src/server/api/routers/event.ts`: `create` (**public** "request an event": takes no id, always creates as PROPOSED, returns only `{ id }`), `update` / `getUpcoming` / `changeState` (**member**: MEMBER or ADMIN), `deleteById` (**admin**), `getForCalendar` (public; private events come back with `name`/`location` nulled). `/api/trpc` is excluded from the auth proxy (`src/proxy.ts` matcher), so every procedure must enforce its own role — match the UI's gate (`memberProcedure` / `adminProcedure` in `trpc.ts`).
+- `src/server/api/routers/member.ts`: `create` / `list` / `setRole` / `delete` / `generatePasswordLink` (**admin-only**), `setPassword` (**public**, token-based).
 
 ### Env vars
 

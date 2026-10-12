@@ -103,16 +103,14 @@ export type AppSession = {
 };
 
 /**
- * Server-side session accessor. `await headers()` works on Next 14 (awaiting
- * the sync return is a no-op) and is forward-compatible with Next 15+ where
- * `headers()` becomes async (Phase 5). Returns `null` when unauthenticated,
- * including when a session somehow outlived its user's soft delete — every
- * server-side guard (layouts, tRPC context) goes through here. The
- * `/get-session` after hook already nulls such sessions; the `deletedAt`
- * check below is defense in depth and must be kept.
+ * Server-side session accessor for server components and route handlers.
+ * Returns `null` when unauthenticated, including when a session somehow
+ * outlived its user's soft delete — every server-side guard (layouts, tRPC
+ * context) goes through here. The `/get-session` after hook already nulls
+ * such sessions; the `deletedAt` check below is defense in depth and must be
+ * kept.
  */
 export const getServerAuthSession = async (): Promise<AppSession | null> => {
-	// eslint-disable-next-line @typescript-eslint/await-thenable -- headers() is sync on Next 14 but becomes async on Next 15+; awaiting now is forward-compatible.
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session || session.user.deletedAt) return null;
 	return session as AppSession;
