@@ -22,6 +22,8 @@ const EMAILS = {
   session: 'deleted-session@e2e.example.com',
   impersonator: 'deleted-impersonator@e2e.example.com',
   impersonated: 'impersonated-member@e2e.example.com',
+  staleImpersonator: 'deleted-stale-impersonator@e2e.example.com',
+  staleImpersonated: 'stale-impersonated-member@e2e.example.com',
 };
 
 test.beforeAll(async () => {
@@ -161,10 +163,17 @@ test.describe('Deleted member', () => {
     const list = await context.request.get(listUrl, { headers: { Origin: AUTH_ORIGIN } });
     expect(list.status()).toBe(403);
     expect((await list.json()).code).toBe('USER_DELETED');
-    // ...and get-session reports no session (this also expires the cookie)
+    // ...and get-session reports no session and expires the cookie
     const after = await context.request.get('/api/auth/get-session');
     expect(after.status()).toBe(200);
     expect(await after.json()).toBeNull();
+    const setCookie = after
+      .headersArray()
+      .filter((h) => h.name.toLowerCase() === 'set-cookie')
+      .map((h) => h.value)
+      .join('\n');
+    expect(setCookie).toMatch(/(?:__Secure-)?better-auth\.session_token=;[^\n]*Max-Age=0/i);
+    expect((await context.cookies()).some((c) => c.name.endsWith('session_token'))).toBe(false);
 
     await context.close();
   });
@@ -207,5 +216,56 @@ test.describe('Deleted member', () => {
 
     await context.close();
     await adminContext.close();
+  });
+
+  test('an impersonation session that outlived its admin stops working', async ({
+    browser,
+    baseURL,
+  }) => {
+    const impersonator = await createTestUser({
+      email: EMAILS.staleImpersonator,
+      name: 'Stale Impersonating Admin',
+      role: 'admin',
+      password: PASSWORD,
+    });
+    const target = await createTestUser({
+      email: EMAILS.staleImpersonated,
+      name: 'Stale Impersonated Member',
+    });
+
+    const context = await browser.newContext({ baseURL });
+    const page = await context.newPage();
+    expect((await signInViaApi(context.request, EMAILS.staleImpersonator, PASSWORD)).status()).toBe(
+      200,
+    );
+    const impersonate = await context.request.post('/api/auth/admin/impersonate-user', {
+      data: { userId: target.id },
+      headers: { Origin: AUTH_ORIGIN },
+    });
+    expect(impersonate.status()).toBe(200);
+
+    // Control: the impersonation session works while the admin is active
+    await page.goto('/events');
+    await expect(page).toHaveURL('/events');
+    expect((await context.request.get('/api/trpc/event.getUpcoming')).status()).toBe(200);
+    const listSessions = '/api/auth/list-sessions';
+    expect((await context.request.get(listSessions, { headers: { Origin: AUTH_ORIGIN } })).status()).toBe(200);
+
+    // Soft-delete only the admin — the impersonation session (owned by the
+    // live member) stays in the DB, as when its insert races the delete
+    await softDeleteUser(impersonator.id);
+    expect(await countSessions({ impersonatedBy: impersonator.id })).toBe(1);
+
+    await page.goto('/events');
+    await expect(page).toHaveURL('/login');
+    expect((await context.request.get('/api/trpc/event.getUpcoming')).status()).toBe(401);
+    const list = await context.request.get(listSessions, { headers: { Origin: AUTH_ORIGIN } });
+    expect(list.status()).toBe(403);
+    expect((await list.json()).code).toBe('USER_DELETED');
+    const after = await context.request.get('/api/auth/get-session');
+    expect(after.status()).toBe(200);
+    expect(await after.json()).toBeNull();
+
+    await context.close();
   });
 });
