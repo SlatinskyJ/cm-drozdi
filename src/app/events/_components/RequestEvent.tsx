@@ -41,7 +41,11 @@ export default function RequestEvent() {
 				Rezervovat
 			</Button>
 			<Dialog open={isOpen} onOpenChange={setIsOpen}>
-				<DialogContent className="sm:max-w-3xl" showCloseButton={false}>
+				<DialogContent
+					className="sm:max-w-3xl"
+					showCloseButton={false}
+					aria-describedby={undefined}
+				>
 					<DialogHeader>
 						<DialogTitle className="text-center">
 							Nová rezervace

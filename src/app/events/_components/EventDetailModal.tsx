@@ -4,6 +4,7 @@ import {
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
+	DialogTitle,
 } from '@components/ui/dialog';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -52,9 +53,13 @@ export function EventDetailModal({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-			<DialogContent className="sm:max-w-2xl" showCloseButton={false}>
+			<DialogContent
+				className="sm:max-w-2xl"
+				showCloseButton={false}
+				aria-describedby={undefined}
+			>
 				<DialogHeader className="flex flex-row items-center">
-					<div>{event.name}</div>
+					<DialogTitle>{event.name}</DialogTitle>
 					<div className="grow" />
 					<EditableState state={state} eventId={event.id} />
 				</DialogHeader>

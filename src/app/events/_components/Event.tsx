@@ -3,7 +3,7 @@ import { Badge } from '@components/ui/badge';
 import { Card, CardContent, CardHeader } from '@components/ui/card';
 import { Separator } from '@components/ui/separator';
 import { Tooltip } from '@components/ui/tooltip';
-import { useState } from 'react';
+import { type KeyboardEvent, useState } from 'react';
 import { type TEvent } from '~/app/_models/event';
 import EventValues from '~/app/events/_components/EventValues';
 import formatEventState from '~/app/events/_utils/formatEventState';
@@ -14,11 +14,22 @@ export default function Event({ event }: Readonly<{ event: TEvent }>) {
 
 	const stateData = formatEventState(event.state);
 
+	const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+		if (e.target !== e.currentTarget) return;
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			setIsOpen(true);
+		}
+	};
+
 	return (
 		<>
 			<Card
-				className="w-[265px] cursor-pointer bg-green-400"
+				role="button"
+				tabIndex={0}
+				className="w-[265px] cursor-pointer bg-green-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				onClick={() => setIsOpen(true)}
+				onKeyDown={handleKeyDown}
 			>
 				<CardHeader className="flex flex-row items-center">
 					<Tooltip content={event.name} delay={500} size="xl">

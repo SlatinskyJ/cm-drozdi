@@ -1,5 +1,5 @@
 'use client';
-import { Badge } from '@components/ui/badge';
+import { badgeVariants } from '@components/ui/badge';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -12,6 +12,7 @@ import { BiSolidDownArrow } from 'react-icons/bi';
 import { type TEvent } from '~/app/_models/event';
 import { type TFormatEventStateReturn } from '~/app/events/_utils/formatEventState';
 import { EventState } from '~/enums/EventState';
+import { cn } from '~/lib/utils';
 import { api } from '~/trpc/react';
 
 const STATE_ITEM_CLASSNAMES: Record<
@@ -52,11 +53,14 @@ export default function EditableState({
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Badge variant={state.color} className="cursor-pointer">
-					{state.label}
-					<BiSolidDownArrow className="ml-2" />
-				</Badge>
+			<DropdownMenuTrigger
+				className={cn(
+					badgeVariants({ variant: state.color }),
+					'cursor-pointer focus-visible:ring-2 focus-visible:ring-ring',
+				)}
+			>
+				{state.label}
+				<BiSolidDownArrow className="ml-2" />
 			</DropdownMenuTrigger>
 			<DropdownMenuContent>
 				{options.map((option) => (

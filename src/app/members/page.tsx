@@ -4,6 +4,7 @@ import { Button } from '@components/ui/button';
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -126,7 +127,9 @@ export default function MembersPage() {
 					<DialogHeader>
 						<DialogTitle>Smazat člena</DialogTitle>
 					</DialogHeader>
-					<p>Opravdu smazat člena {pendingDelete?.name}?</p>
+					<DialogDescription>
+						Opravdu smazat člena {pendingDelete?.name}?
+					</DialogDescription>
 					<DialogFooter>
 						<Button variant="ghost" onClick={() => setPendingDelete(null)}>
 							Zrušit
