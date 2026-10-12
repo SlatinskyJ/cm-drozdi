@@ -15,9 +15,9 @@ import {
 import { db } from '~/server/db';
 import { UserRole } from '~/enums/UserRole';
 
-const assignableRole = z.nativeEnum(UserRole).refine(
+const assignableRole = z.enum(UserRole).refine(
 	(r) => r === UserRole.MEMBER || r === UserRole.ADMIN,
-	{ message: 'Lze přiřadit pouze roli Člen nebo Admin.' },
+	{ error: 'Lze přiřadit pouze roli Člen nebo Admin.' },
 );
 
 async function activeAdminCount() {
@@ -45,7 +45,7 @@ export const memberRouter = createTRPCRouter({
 	create: adminProcedure
 		.input(
 			z.object({
-				email: z.string().email(),
+				email: z.email(),
 				name: z.string().min(1),
 				role: assignableRole,
 			}),

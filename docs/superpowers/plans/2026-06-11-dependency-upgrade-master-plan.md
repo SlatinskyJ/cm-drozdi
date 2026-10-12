@@ -256,5 +256,5 @@ Once a phase has an open PR, track that PR (`gh pr view <number>`) for live stat
 | 5 — React 19 / Next 16 | [#24](https://github.com/SlatinskyJ/cm-drozdi/pull/24) |
 | 6 — Tailwind 4 | [#26](https://github.com/SlatinskyJ/cm-drozdi/pull/26) |
 | 7 — Prisma 7 | [#27](https://github.com/SlatinskyJ/cm-drozdi/pull/27) |
-| 8 — Zod 4 | not started |
+| 8 — Zod 4 | [#29](https://github.com/SlatinskyJ/cm-drozdi/pull/29) |
 | 9 — ESLint 10 (or 9) flat config | not started |

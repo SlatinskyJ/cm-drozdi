@@ -14,9 +14,9 @@ import {
  */
 const eventFields = z.object({
 	name: z.string(),
-	start: z.coerce.date().optional(),
-	end: z.coerce.date().optional(),
-	email: z.string().email().optional(),
+	start: z.coerce.date<Date>().optional(),
+	end: z.coerce.date<Date>().optional(),
+	email: z.email().optional(),
 	phone: z.string().optional(),
 	description: z.string().optional(),
 	isPrivate: z.boolean(),
@@ -41,7 +41,7 @@ export const eventRouter = createTRPCRouter({
 
 	/** Edits an existing event. Members and admins, as in the `/events` UI. */
 	update: memberProcedure
-		.input(eventFields.extend({ id: z.string().cuid() }))
+		.input(eventFields.extend({ id: z.cuid() }))
 		.mutation(async ({ ctx, input }) => {
 			const { id, ...data } = input;
 			await ctx.db.event.update({
@@ -101,8 +101,8 @@ export const eventRouter = createTRPCRouter({
 	changeState: memberProcedure
 		.input(
 			z.object({
-				id: z.string().cuid(),
-				state: z.nativeEnum(EventState),
+				id: z.cuid(),
+				state: z.enum(EventState),
 			}),
 		)
 		.mutation(({ ctx, input }) => {
@@ -118,7 +118,7 @@ export const eventRouter = createTRPCRouter({
 
 	/** Admin-only, as in the UI (`DeleteEvent` renders only for admins). */
 	deleteById: adminProcedure
-		.input(z.object({ id: z.string().cuid() }))
+		.input(z.object({ id: z.cuid() }))
 		.mutation(({ ctx, input }) => {
 			return ctx.db.event.delete({
 				where: {
