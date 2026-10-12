@@ -28,16 +28,16 @@ Use plain `git worktree` (not Claude's native worktree feature) to isolate phase
 
 ## Commands
 
-- `yarn install` — installs deps; `postinstall` runs `prisma generate` automatically.
+- `yarn install` — installs deps; `postinstall` runs `prisma generate`, which writes the client to `src/generated/prisma` (gitignored).
 - `yarn dev` — start dev server (Turbopack).
 - `yarn build` — production build (`next build`).
 - `yarn start` — run production build.
 - `yarn lint` — `next typegen` then ESLint 8 CLI on `src/` with legacy `.eslintrc.cjs` (`eslint-config-next` pinned to 15.5 until Phase 9).
 - `yarn typecheck` — `next typegen` then `tsc --noEmit`. If it reports a missing `src/app/**/page.js` from `.next/dev/types` (stale after renaming/deleting a route while `next dev` was stopped), run `rm -rf .next/dev`.
 - `./start-database.sh` — unused locally (Postgres runs natively). Slated for removal after Phase 9.
-- `yarn db:push` — push Prisma schema to DB without a migration (used for first-time setup per README).
+- `yarn db:push` — `prisma db push && prisma generate`: push Prisma schema to DB without a migration (used for first-time setup per README).
 - `yarn db:seed:local` — seed dev DB (loads `.env`). In CI/Vercel use `yarn db:seed` (env injected externally).
-- `yarn db:generate` — `prisma migrate dev` (create + apply a migration).
+- `yarn db:generate` — `prisma migrate dev && prisma generate` (create + apply a migration). Prisma 7 no longer auto-generates or auto-seeds; seed explicitly with `yarn db:seed:local`.
 - `yarn db:migrate` — `prisma migrate deploy`.
 - `yarn db:studio` — open Prisma Studio.
 - `yarn e2e` — run full Playwright E2E suite (requires `yarn build` first; needs DATABASE_URL + BETTER_AUTH_* in env).
@@ -75,6 +75,13 @@ All must pass clean. CI runs lint + typecheck on every PR to `develop` and adds 
 - `src/proxy.ts` (Next 16 proxy, Node runtime) redirects to `/login` when no Better Auth session cookie is present (`getSessionCookie`, presence-only, no DB). Matcher excludes `api`, `_next/static`, `_next/image`, `auth`, `login`, `reset-password`, `favicon.ico`, `images`, `sitemap.xml`, `robots.txt`, and `/`. Real checks: `events`/`members` layouts and `protectedProcedure`/`memberProcedure`/`adminProcedure`.
 - Deleted members: `member.delete` soft-deletes (`User.deletedAt`) in one `$transaction` that also drops the credential, set-password tokens and all sessions (incl. `impersonatedBy`). Deleted users get no access via any path: `databaseHooks.session.create.before` refuses new sessions, the global `hooks.before` rejects Better Auth endpoints with `USER_DELETED`, the `/get-session` after hook returns `null` and clears the cookie, `getServerAuthSession()` returns `null`, and set-password links (`src/server/auth-password-link.ts`) are rejected. Keep every layer; each is defense in depth.
 - `src/utils/permissions.ts` (`useIsAdmin`) — client-side admin check via `authClient.useSession()`.
+
+### Prisma (v7)
+
+- CLI config lives in `prisma.config.ts`, which loads `.env` via dotenv and uses `DATABASE_URL`.
+- Import the client from `~/generated/prisma/client`, never `@prisma/client`. Client components use `~/generated/prisma/browser`.
+- The runtime connects through `@prisma/adapter-pg` in `src/server/db.ts`.
+- Never `yarn add prisma@latest`: `latest` is an 8.0 release candidate.
 
 ### Domain model (`prisma/schema.prisma`)
 
