@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { TRPCError } from '@trpc/server';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '~/generated/prisma/client';
 
 import { auth } from '~/server/auth';
 import { env } from '~/env';
