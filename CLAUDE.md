@@ -10,7 +10,12 @@ Source code for www.cmdrozdi.cz — a T3-stack app (Next.js 14 App Router + tRPC
 
 - `develop` is the integration branch — fork new work branches from `develop`, and target `develop` with PRs.
 - `main` is production-only. Never commit or push directly to `main`; it's updated only via release merges from `develop`.
-- **PRs must always be created as drafts** (`gh pr create --draft`). Only the user marks a PR ready for review. Never create a ready-for-review PR directly.
+- **PRs are always created as drafts** (`gh pr create --draft`).
+- **Agent review gate (replaces "only the user merges", 2026-10-12):** applies to every PR Claude creates into `develop` (phase PRs and any other). Before a PR leaves draft, an `opus` reviewer agent reviews it and posts findings as PR review comments prefixed `[review-agent] [must-fix]` / `[review-agent] [nit]`, ending with `VERDICT: CHANGES NEEDED` or `VERDICT: READY TO MERGE`. Fixer agents address every `[must-fix]` comment (push fix + reply on the thread), then the reviewer re-reviews. Once the verdict is `READY TO MERGE`, Claude may mark the PR ready (`gh pr ready`), wait for all CI checks to finish green, and squash-merge into `develop`.
+  - **Docs-only PRs:** CI skips its lint/typecheck/e2e jobs via the `changes` paths filter, so "green" means no failing checks (skipped jobs count as passing).
+  - **CI failure after `gh pr ready`:** convert back to draft (`gh pr ready --undo`), fix, and have the reviewer re-review before trying again. Same for any push made after the `READY TO MERGE` verdict.
+  - **Big-decision exception:** if the PR embodies a big decision (architecture, a scope change versus the master plan, dropping or adding a phase, a data-loss risk, a change to workflow/governance rules like this one, or anything else the user hasn't already approved), Claude stops at `READY TO MERGE` and asks the user before merging.
+- Claude never targets, pushes to, or merges into `main`.
 
 ## Worktrees
 
@@ -47,7 +52,7 @@ yarn typecheck
 SKIP_ENV_VALIDATION=1 yarn build
 yarn e2e
 ```
-All must pass clean. CI enforces this on every non-draft PR to `develop`.
+All must pass clean. CI runs lint + typecheck on every PR to `develop` and adds e2e once the PR is non-draft (docs-only PRs skip all three).
 
 ## Architecture
 
@@ -93,10 +98,8 @@ All env vars are validated via `@t3-oss/env-nextjs` in `src/env.js`. Adding a ne
 
 ## Model routing
 
-Subagent tiers: **Haiku explores, Sonnet builds, Opus orchestrates + reviews.**
+Subagent models: **`opus` or `haiku` only, never `sonnet`** (matches the user's global rule). Always set `model` explicitly on Agent / workflow `agent()` calls.
 
-- Default to `sonnet` for all implementation work.
-- Use `haiku` subagents for read-only search/exploration only; they must write findings to disk (not SendMessage — Haiku goes idle instead of returning via message-passing).
-- Escalate to `opus` only for: planning, architectural decisions, final code review.
-- Do not use `opus` for commit messages, formatting, grep/search, or trivial one-liner edits.
-- Three named agents in `~/.claude/agents/`: `explorer` (haiku), `implementor` (sonnet), `reviewer` (opus).
+- `haiku` for mechanical, well-scoped, easily verified work (read-only search/exploration, version lookups, trivial edits). Haiku subagents must write findings to disk (not SendMessage — Haiku goes idle instead of returning via message-passing).
+- `opus` for everything else: planning, architectural decisions, implementation, PR review, fixing review comments.
+- Named agents in `~/.claude/agents/`: `explorer` (haiku), `implementor` and `reviewer` — run both with `model: opus`.
