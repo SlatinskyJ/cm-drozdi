@@ -135,3 +135,33 @@
 		var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
 		'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Tailwind 3 compat: v3's space-x/space-y selector (spec D6). v3-space:mt-N = v3 space-y-N, v3-space:ml-N = v3 space-x-N. */
+@custom-variant v3-space (& > :not([hidden]) ~ :not([hidden]));
+
+/* Tailwind 3 preflight compat (spec D5). Literal v3 values — not v4's OKLCH palette. */
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: #e5e7eb;
+	}
+
+	input::placeholder,
+	textarea::placeholder {
+		color: #9ca3af;
+	}
+
+	button:not(:disabled),
+	[role='button']:not(:disabled) {
+		cursor: pointer;
+	}
+
+	input:where(:not([type='button'], [type='reset'], [type='submit'])),
+	select,
+	textarea {
+		background-color: Field;
+	}
+}

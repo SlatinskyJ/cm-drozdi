@@ -93,7 +93,7 @@ function StartDateTimeField({
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent
-				className="w-auto space-y-2 p-3"
+				className="w-auto v3-space:mt-2 p-3"
 				aria-label="Výběr data a času"
 			>
 				<Calendar
@@ -121,8 +121,8 @@ export function EventForm({
 	control,
 }: Readonly<{ control: Control<TEventInputs> }>) {
 	return (
-		<div className="space-y-4">
-			<div className="space-y-1">
+		<div className="v3-space:mt-4">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="name">Název události</Label>
 				<Controller
 					name="name"
@@ -147,7 +147,7 @@ export function EventForm({
 					</div>
 				)}
 			/>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label id="start-label" htmlFor="start">
 					Datum a čas
 				</Label>
@@ -178,7 +178,7 @@ export function EventForm({
 					)}
 				/>
 			</div>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="duration">Délka (HH:MM)</Label>
 				<Controller
 					name="duration"
@@ -194,7 +194,7 @@ export function EventForm({
 					)}
 				/>
 			</div>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="email">Email</Label>
 				<Controller
 					name="email"
@@ -211,7 +211,7 @@ export function EventForm({
 					)}
 				/>
 			</div>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="phone">Telefon</Label>
 				<Controller
 					name="phone"
@@ -221,7 +221,7 @@ export function EventForm({
 					)}
 				/>
 			</div>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="location">Lokace</Label>
 				<Controller
 					name="location"
@@ -231,7 +231,7 @@ export function EventForm({
 					)}
 				/>
 			</div>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="description">Popis</Label>
 				<Controller
 					name="description"
