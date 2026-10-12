@@ -7,7 +7,7 @@ export const env = createEnv({
 	 * isn't built with invalid env vars.
 	 */
 	server: {
-		DATABASE_URL: z.string().url(),
+		DATABASE_URL: z.url(),
 		NODE_ENV: z
 			.enum(['development', 'test', 'production'])
 			.default('development'),
@@ -20,13 +20,13 @@ export const env = createEnv({
 				process.env.VERCEL_URL
 					? `https://${process.env.VERCEL_URL}`
 					: str,
-			z.string().url(),
+			z.url(),
 		),
 		// Required in production (no default); dev/test fall back to 'admin@cmdrozdi.cz'.
 		BOOTSTRAP_ADMIN_EMAIL:
 			process.env.NODE_ENV === 'production'
-				? z.string().email()
-				: z.string().email().default('admin@cmdrozdi.cz'),
+				? z.email()
+				: z.email().default('admin@cmdrozdi.cz'),
 	},
 
 	/**
