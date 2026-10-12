@@ -65,9 +65,8 @@ All must pass clean. CI runs lint + typecheck on every PR to `develop` and adds 
 ### tRPC layer
 
 - `src/server/api/root.ts` defines `appRouter`; sub-routers live in `src/server/api/routers/` and are re-exported through `src/server/api/routers/index.ts`.
-- `src/server/api/trpc.ts` defines `publicProcedure` / `protectedProcedure`. Every procedure goes through two global middlewares — **important when adding new procedures**:
-  - `timingMiddleware` — logs execution time and adds an artificial delay in dev.
-  - `dateMiddleware` — recursively walks the response (via `mapValuesDeep`) and shifts every `Date` value by the server's local timezone offset (`addMinutes`). This means any `Date`/`DateTime` field returned from a tRPC procedure is automatically timezone-adjusted before reaching the client — don't double-adjust dates in routers or components.
+- `src/server/api/trpc.ts` defines `publicProcedure` / `protectedProcedure` / `adminProcedure`. Every procedure goes through `timingMiddleware` (logs execution time and adds an artificial delay in dev).
+- Dates are passed through unchanged: every `Date`/`DateTime` a procedure returns (or receives) is a true UTC instant, serialized by SuperJSON. Never shift dates by a timezone offset in routers or components — convert to Prague time only when formatting or parsing (see Date/calendar utilities).
 - Client setup in `src/trpc/react.tsx` (React Query + `unstable_httpBatchStreamLink` + SuperJSON transformer); server-side caller via `createCaller` in `root.ts`.
 
 ### Auth & authorization
@@ -88,7 +87,13 @@ All env vars are validated via `@t3-oss/env-nextjs` in `src/env.js`. Adding a ne
 
 ### Date/calendar utilities
 
-`src/utils/date.ts` mixes `@internationalized/date` (calendar UI, e.g. NextUI date pickers) and `moment` (duration math) — used by the events calendar and event form.
+The app has a single display timezone, `APP_TIME_ZONE = 'Europe/Prague'` in `src/utils/date.ts` (all users are in Czechia). Dates are stored and sent over the API as UTC instants; they are converted to Prague wall-clock time only at the edges, with `@date-fns/tz`, independent of the server's (UTC on Vercel) or the browser's timezone:
+
+- Display: use the `formatDate` / `formatDateToTime` / `formatDateTime` helpers, or pass `{ in: appTz }` to date-fns. Never call date-fns `format`/`getHours`/`startOfDay`/... on an event date without `{ in: appTz }` — they would use the runtime's timezone and cause wrong times and hydration mismatches.
+- Calendars (shadcn `Calendar` / react-day-picker): pass `timeZone={APP_TIME_ZONE}` so days, "today" and matchers are Prague calendar days.
+- Form input (`EventForm`): the picked day and time are interpreted as Prague wall-clock time; the form keeps a plain `Date` instant. Past days are blocked relative to today in Prague (`startOfTodayInAppTz`).
+
+E2E runs the server with `TZ=UTC` and the browser in `America/New_York` (override via `E2E_SERVER_TZ` / `E2E_BROWSER_TZ`) to prove this.
 
 ## Active initiative: modernization & dependency upgrade
 
