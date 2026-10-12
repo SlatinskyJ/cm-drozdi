@@ -1,6 +1,6 @@
 import KeyValue from '@components/KeyValue';
 import { type TEvent } from '~/app/_models/event';
-import { formatDateToTime, formatDuration } from '~/utils/date';
+import { formatDate, formatDateToTime, formatDuration } from '~/utils/date';
 
 export default function EventValues({
 	event,
@@ -23,7 +23,7 @@ export default function EventValues({
 			/>
 			<KeyValue
 				label="Datum"
-				value={event.start?.toLocaleDateString('cs-CZ')}
+				value={!!event.start ? formatDate(event.start) : null}
 				withHover={withHover}
 			/>
 			<KeyValue
