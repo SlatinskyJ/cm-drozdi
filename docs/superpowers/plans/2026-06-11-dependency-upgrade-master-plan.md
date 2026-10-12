@@ -83,7 +83,9 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 
 **Explicit non-goals:** social/OAuth login (defer as nice-to-have), a full unit/integration suite, Yarn 1 → modern package manager. Candidate follow-ups after Phase 9.
 
-**Post-Phase-9 cleanup:** remove `start-database.sh` (unused — local dev runs a native Postgres install, not Docker). Phase 9 follow-ups: **ESLint 10** once `eslint-plugin-react`, `eslint-plugin-import` and `eslint-plugin-jsx-a11y` declare `^10` in their `eslint` peer (ESLint 9 is already out of support); **TypeScript 7** once `typescript-eslint` supports it; **Prettier config shadowing** — `.prettierrc.js` takes precedence over `prettier.config.js`, so `prettier-plugin-tailwindcss` is inactive; merging them reformats the codebase, so it is its own PR, which also removes `.prettierrc.js` from `tsconfig.json#include`.
+**Post-Phase-9 cleanup:** done — `start-database.sh` removed (local dev runs a native Postgres install, not Docker). Phase 9 follow-ups: **ESLint 10** once `eslint-plugin-react`, `eslint-plugin-import` and `eslint-plugin-jsx-a11y` declare `^10` in their `eslint` peer (ESLint 9 is already out of support); **TypeScript 7** once `typescript-eslint` supports it; **Prettier config shadowing** — `.prettierrc.js` takes precedence over `prettier.config.js`, so `prettier-plugin-tailwindcss` is inactive; merging them reformats the codebase, so it is its own PR, which also removes `.prettierrc.js` from `tsconfig.json#include`.
+
+**Open follow-ups found during the run (not yet fixed):** `EventForm`'s start picker derives "today" and the blocked past days from the browser-local date instead of Europe/Prague, so 4 `event-crud` e2e specs fail roughly 00:00–06:00 Prague when the browser TZ is not Prague (CI default); `deletes an event` flakes ~1/130 after ~2 min of repeated runs (admin delete button missing, i.e. the session role is not seen); the proxy matcher does not exclude `_vercel`; consider pg `sslmode=verify-full` and `attachDatabasePool`; feature-branch Vercel previews fail with "Resource provisioning failed" before building, while `develop` previews build.
 
 ---
 
