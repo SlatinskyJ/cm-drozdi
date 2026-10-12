@@ -136,7 +136,9 @@
 		'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-/* Tailwind 3 compat: v3's space-x/space-y selector (spec D6). v3-space:mt-N = v3 space-y-N, v3-space:ml-N = v3 space-x-N. */
+/* Tailwind 3 compat: v3's space-x/space-y selector (spec D6). v3-space:mt-N = v3 space-y-N, v3-space:ml-N = v3 space-x-N.
+   Only the leading margin is set: v3 also zeroed margin-bottom (space-y) / margin-right (space-x) on these children,
+   so don't pair it with mb-* or mr-* on the children and expect v3 semantics. */
 @custom-variant v3-space (& > :not([hidden]) ~ :not([hidden]));
 
 /* Tailwind 3 preflight compat (spec D5). Literal v3 values — not v4's OKLCH palette. */

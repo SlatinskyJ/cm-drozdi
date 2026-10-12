@@ -182,7 +182,7 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 - Run `npx @tailwindcss/upgrade`.
 - Config moves: `tailwind.config.ts` theme → CSS `@theme` in `src/styles/globals.css`; `@tailwind ...` → `@import "tailwindcss"`; PostCSS plugin → `@tailwindcss/postcss`.
 - shadcn TW4 conversion: CSS vars → `@theme inline`, `tailwindcss-animate` → `tw-animate-css`, per shadcn's official TW4 guide; verify `components.json`.
-- `prettier-plugin-tailwindcss` → TW4-compatible.
+- `prettier-plugin-tailwindcss` → TW4-compatible (config added; plugin inactive until the two Prettier configs `.prettierrc.js` / `prettier.config.js` are merged — follow-up).
 - Hunt codemod-flagged renames: `shadow-sm`→`shadow-xs`, `outline-none`→`outline-hidden`, ring width + border color default changes.
 
 **Exit criteria:** gate passes; Playwright screenshot diff of every screen vs the pre-upgrade build (see the Phase 6 spec).
