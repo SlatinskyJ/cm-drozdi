@@ -49,6 +49,13 @@ export function dayButtonName(date: CalendarDay): string {
   });
 }
 
+/** The Czech accessible name react-day-picker gives a month's grid. */
+export function monthGridName(date: CalendarDay): string {
+  return format(new Date(date.year, date.month - 1, 1), 'LLLL y', {
+    locale: cs,
+  });
+}
+
 /** `d. M. yyyy`, as the app displays dates. */
 export function displayDate(date: CalendarDay): string {
   return `${date.day}. ${date.month}. ${date.year}`;
