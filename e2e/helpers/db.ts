@@ -3,8 +3,16 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { hashPassword } from '@better-auth/utils/password';
 import { PrismaClient } from '../../src/generated/prisma/client';
 
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL is required for e2e DB helpers');
+}
+
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+  adapter: new PrismaPg({
+    connectionString: databaseUrl,
+    connectionTimeoutMillis: 5_000,
+  }),
 });
 
 /**
