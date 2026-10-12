@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { EventState } from '~/enums/EventState';
 import {
+	adminProcedure,
 	createTRPCRouter,
 	memberProcedure,
-	protectedProcedure,
 	publicProcedure,
 } from '~/server/api/trpc';
 
@@ -52,7 +52,7 @@ export const eventRouter = createTRPCRouter({
 			return { id };
 		}),
 
-	getUpcoming: protectedProcedure.query(({ ctx }) => {
+	getUpcoming: memberProcedure.query(({ ctx }) => {
 		return ctx.db.event.findMany({
 			where: {
 				OR: [
@@ -89,7 +89,7 @@ export const eventRouter = createTRPCRouter({
 		});
 	}),
 
-	changeState: protectedProcedure
+	changeState: memberProcedure
 		.input(
 			z.object({
 				id: z.string().cuid(),
@@ -107,7 +107,8 @@ export const eventRouter = createTRPCRouter({
 			});
 		}),
 
-	deleteById: protectedProcedure
+	/** Admin-only, as in the UI (`DeleteEvent` renders only for admins). */
+	deleteById: adminProcedure
 		.input(z.object({ id: z.string().cuid() }))
 		.mutation(({ ctx, input }) => {
 			return ctx.db.event.delete({
