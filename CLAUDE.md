@@ -65,7 +65,7 @@ All must pass clean. CI runs lint + typecheck on every PR to `develop` and adds 
 ### tRPC layer
 
 - `src/server/api/root.ts` defines `appRouter`; sub-routers live in `src/server/api/routers/` and are re-exported through `src/server/api/routers/index.ts`.
-- `src/server/api/trpc.ts` defines `publicProcedure` / `protectedProcedure` / `adminProcedure`. Every procedure goes through `timingMiddleware` (logs execution time and adds an artificial delay in dev).
+- `src/server/api/trpc.ts` defines `publicProcedure` / `protectedProcedure` / `memberProcedure` / `adminProcedure`. Every procedure goes through `timingMiddleware` (logs execution time and adds an artificial delay in dev).
 - Dates are passed through unchanged: every `Date`/`DateTime` a procedure returns (or receives) is a true UTC instant, serialized by SuperJSON. Never shift dates by a timezone offset in routers or components — convert to Prague time only when formatting or parsing (see Date/calendar utilities).
 - Client setup in `src/trpc/react.tsx` (React Query + `unstable_httpBatchStreamLink` + SuperJSON transformer); server-side caller via `createCaller` in `root.ts`.
 
@@ -79,7 +79,7 @@ All must pass clean. CI runs lint + typecheck on every PR to `develop` and adds 
 
 - `Event`: core entity with `state: Int` mapped to `EventState` (`src/enums/EventState.ts`: `PROPOSED`, `PENDING`, `CONFIRMED`, `CANCELED`), plus scheduling/contact fields and `isPrivate`.
 - `UsersOnEvents` / `InstrumentsOnUsers`: explicit many-to-many join tables linking `User` ↔ `Event` and `User` ↔ `Instrument`.
-- `src/server/api/routers/event.ts`: `create` (upsert, **public**), `getUpcoming` / `changeState` / `deleteById` (**protected**), `getForCalendar` (public, limited field selection for the public calendar view).
+- `src/server/api/routers/event.ts`: `create` (**public** "request an event": takes no id, always creates as PROPOSED, returns only `{ id }`), `update` / `getUpcoming` / `changeState` (**member**: MEMBER or ADMIN), `deleteById` (**admin**), `getForCalendar` (public; private events come back with `name`/`location` nulled). `/api/trpc` is outside the auth middleware, so every procedure must enforce its own role — match the UI's gate (`memberProcedure` / `adminProcedure` in `trpc.ts`).
 
 ### Env vars
 
