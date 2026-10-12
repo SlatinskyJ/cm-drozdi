@@ -2,7 +2,7 @@ import { Skeleton } from '@components/ui/skeleton';
 
 export default function CalendarSkeleton() {
 	return (
-		<div className="w-[256px] rounded-lg bg-default-50 shadow-sm">
+		<div className="w-[256px] rounded-lg bg-default-50 shadow-xs">
 			<Skeleton className="mx-16 my-2 h-[32px] rounded-full" />
 			<div className="mb-2 flex h-[22px] w-full justify-center text-sm font-medium text-default-400">
 				<span className="w-8 text-center">P</span>

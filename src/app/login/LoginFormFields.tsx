@@ -19,7 +19,7 @@ export function LoginFormFields({
 						type="password"
 						placeholder="Heslo"
 						required
-						className="rounded border px-3 py-2"
+						className="rounded-sm border px-3 py-2"
 					/>
 				)}
 			/>

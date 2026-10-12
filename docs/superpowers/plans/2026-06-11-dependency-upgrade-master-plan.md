@@ -70,7 +70,7 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 | next | ^14.2.4 | 16.x (16.4 at refresh) | 2 majors |
 | react / react-dom | ^18.3.1 | 19.x (19.3 at refresh) | 1 major |
 | prisma + @prisma/client | ^5.21 / ^5.14 | 7.x stable (7.10 at refresh; not 8.0 rc) | 2 majors |
-| tailwindcss | ^3.4.3 | 4.x (4.3 at refresh) | 1 major (config rewrite) |
+| tailwindcss | ^4.3.3 (4.3.3) | 4.x (4.3 at refresh) | done (Phase 6) |
 | zod | ^3.25 | 4.x (4.6 at refresh) | 1 major |
 | eslint | ^8.57 | 10.x (or 9.x, see Decisions 2026-10-12; 10.12 at refresh) | 1-2 majors (flat config) |
 | @trpc/* | ^11.17.0 | 11.x stable | done (Phase 3) |
@@ -182,10 +182,10 @@ Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at eac
 - Run `npx @tailwindcss/upgrade`.
 - Config moves: `tailwind.config.ts` theme → CSS `@theme` in `src/styles/globals.css`; `@tailwind ...` → `@import "tailwindcss"`; PostCSS plugin → `@tailwindcss/postcss`.
 - shadcn TW4 conversion: CSS vars → `@theme inline`, `tailwindcss-animate` → `tw-animate-css`, per shadcn's official TW4 guide; verify `components.json`.
-- `prettier-plugin-tailwindcss` → TW4-compatible.
+- `prettier-plugin-tailwindcss` → TW4-compatible (config added; plugin inactive until the two Prettier configs `.prettierrc.js` / `prettier.config.js` are merged — follow-up).
 - Hunt codemod-flagged renames: `shadow-sm`→`shadow-xs`, `outline-none`→`outline-hidden`, ring width + border color default changes.
 
-**Exit criteria:** gate passes; side-by-side visual check of every page vs production.
+**Exit criteria:** gate passes; Playwright screenshot diff of every screen vs the pre-upgrade build (see the Phase 6 spec).
 
 ## Phase 7 — Prisma 5 → 6 → 7
 
@@ -254,7 +254,7 @@ Once a phase has an open PR, track that PR (`gh pr view <number>`) for live stat
 | 3 — Minor bumps | [#18](https://github.com/SlatinskyJ/cm-drozdi/pull/18) |
 | 4 — shadcn migration | [#20](https://github.com/SlatinskyJ/cm-drozdi/pull/20) |
 | 5 — React 19 / Next 16 | [#24](https://github.com/SlatinskyJ/cm-drozdi/pull/24) |
-| 6 — Tailwind 4 | not started |
+| 6 — Tailwind 4 | [#26](https://github.com/SlatinskyJ/cm-drozdi/pull/26) |
 | 7 — Prisma 7 | not started |
 | 8 — Zod 4 | not started |
 | 9 — ESLint 10 (or 9) flat config | not started |

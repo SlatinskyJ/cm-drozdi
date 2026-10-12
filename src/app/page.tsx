@@ -10,8 +10,8 @@ export default async function Home() {
 	return (
 		<HydrateClient>
 			<div className="h-full lg:overflow-hidden">
-				<div className="h-[3.25rem] sm:hidden" />
-				<div className="relative border-t-[4px] border-dark sm:border-0">
+				<div className="h-13 sm:hidden" />
+				<div className="relative border-t-4 border-dark sm:border-0">
 					<Image
 						src={mainBackgroundImg}
 						alt="background"
@@ -22,10 +22,10 @@ export default async function Home() {
 						<Image src={logo} alt="logo" className="w-full" />
 					</div>
 				</div>
-				<div className="relative z-10 flex w-full justify-center border-t-[4px] border-dark bg-background md:mb-20 lg:top-[-160px]">
+				<div className="relative z-10 flex w-full justify-center border-t-4 border-dark bg-background md:mb-20 lg:top-[-160px]">
 					<div className="relative flex min-h-[95%] w-full max-w-[1500px] flex-col pb-24 md:flex-row-reverse">
 						<div>
-							<div className="mx-6 mt-5 w-[calc(100%-3rem)] border-b-[1px] border-gray-500/30 pb-3 sm:pb-0">
+							<div className="mx-6 mt-5 w-[calc(100%-3rem)] border-b border-gray-500/30 pb-3 sm:pb-0">
 								<span className="pl-4 text-3xl">Vítejte!</span>
 							</div>
 							<div className="break-normal p-4 text-lg">
