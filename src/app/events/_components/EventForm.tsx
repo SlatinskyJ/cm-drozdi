@@ -88,7 +88,10 @@ function StartDateTimeField({
 						: 'Vyberte datum'}
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="w-auto space-y-2 p-3">
+			<PopoverContent
+				className="w-auto space-y-2 p-3"
+				aria-label="Výběr data a času"
+			>
 				<Calendar
 					mode="single"
 					required
