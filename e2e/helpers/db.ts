@@ -1,6 +1,19 @@
-import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { hashPassword } from '@better-auth/utils/password';
+import { PrismaClient } from '../../src/generated/prisma/client';
 
-const prisma = new PrismaClient();
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL is required for e2e DB helpers');
+}
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({
+    connectionString: databaseUrl,
+    connectionTimeoutMillis: 5_000,
+  }),
+});
 
 /**
  * Truncates domain tables (preserves auth tables) and ensures seed users exist.
@@ -18,11 +31,14 @@ export async function createTestEvent(overrides?: {
   email?: string;
   start?: Date;
   end?: Date;
+  isPrivate?: boolean;
+  location?: string;
 }) {
   return prisma.event.create({
     data: {
       name: overrides?.name ?? 'Test Event',
-      isPrivate: false,
+      isPrivate: overrides?.isPrivate ?? false,
+      location: overrides?.location,
       state: 0,
       email: overrides?.email ?? 'test@example.com',
       start: overrides?.start,
@@ -31,9 +47,19 @@ export async function createTestEvent(overrides?: {
   });
 }
 
-/** Reads an event straight from the DB, bypassing tRPC's dateMiddleware. */
+/** Reads an event straight from the DB (bypassing tRPC and the UI). */
 export async function getEventByName(name: string) {
   return prisma.event.findFirstOrThrow({ where: { name } });
+}
+
+/** Reads an event by id straight from the DB, or null if it doesn't exist. */
+export async function findEventById(id: string) {
+  return prisma.event.findUnique({ where: { id } });
+}
+
+/** Counts all events in the DB. */
+export async function countEvents() {
+  return prisma.event.count();
 }
 
 /**
@@ -42,4 +68,92 @@ export async function getEventByName(name: string) {
  */
 export async function cleanupTestUsers(emails: string[]) {
   await prisma.user.deleteMany({ where: { email: { in: emails } } });
+}
+
+/**
+ * Creates a user straight in the DB, optionally with a password (credential
+ * account), bypassing the admin UI. Clean up with `cleanupTestUsers`.
+ */
+export async function createTestUser(opts: {
+  email: string;
+  name: string;
+  role?: 'member' | 'admin';
+  password?: string;
+}) {
+  const user = await prisma.user.create({
+    data: {
+      email: opts.email,
+      name: opts.name,
+      role: opts.role ?? 'member',
+      emailVerified: true,
+    },
+  });
+  if (opts.password) {
+    await prisma.account.create({
+      data: {
+        providerId: 'credential',
+        accountId: user.id,
+        userId: user.id,
+        password: await hashPassword(opts.password),
+      },
+    });
+  }
+  return user;
+}
+
+/**
+ * Mints a set-password token for a user the way `generateSetPasswordUrl` does,
+ * without revoking older ones. Open it at `/reset-password?token=<token>`.
+ */
+export async function createSetPasswordToken(userId: string) {
+  const token = randomUUID();
+  await prisma.verification.create({
+    data: {
+      identifier: `set-password:${token}`,
+      value: userId,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    },
+  });
+  return token;
+}
+
+/** Number of set-password tokens (used or not) still stored for a user. */
+export async function countSetPasswordTokens(userId: string) {
+  return prisma.verification.count({
+    where: { value: userId, identifier: { startsWith: 'set-password:' } },
+  });
+}
+
+/**
+ * Marks a user deleted *without* the rest of `member.delete` (tokens,
+ * credential and sessions stay), to prove each guard holds on its own.
+ */
+export async function softDeleteUser(userId: string) {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { deletedAt: new Date() },
+  });
+}
+
+/** Reads a user's soft-delete marker. */
+export async function getDeletedAt(userId: string) {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { deletedAt: true },
+  });
+  return user.deletedAt;
+}
+
+/** The user's stored password hash, or null when they have no credential. */
+export async function getPasswordHash(userId: string) {
+  const account = await prisma.account.findFirst({
+    where: { userId, providerId: 'credential' },
+    select: { password: true },
+  });
+  return account?.password ?? null;
+}
+
+/** Number of session rows owned by a user or impersonations they started. */
+export async function countSessions(where: { userId?: string; impersonatedBy?: string }) {
+  return prisma.session.count({ where });
 }

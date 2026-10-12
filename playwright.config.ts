@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import { config } from 'dotenv';
-import { APP_TZ } from './e2e/helpers/date';
+import { BROWSER_TZ, SERVER_TZ } from './e2e/helpers/date';
 
 // Load .env for local dev. In CI, env vars are injected by the workflow.
 config();
@@ -14,10 +14,10 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'html',
   use: {
     baseURL: 'http://localhost:3000',
-    // Browser and app server (webServer.env) run in a non-UTC timezone: tRPC's
-    // dateMiddleware shifts Dates by the server's UTC offset, and with a zero
-    // offset (CI runners are UTC) bugs in undoing that shift are invisible.
-    timezoneId: APP_TZ,
+    // The app shows every date in Europe/Prague. The browser runs in a
+    // different zone than both Prague and the server (webServer.env), so specs
+    // prove the displayed times don't depend on either runtime's timezone.
+    timezoneId: BROWSER_TZ,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -29,7 +29,9 @@ export default defineConfig({
   ],
   webServer: {
     command: 'yarn start',
-    env: { TZ: APP_TZ },
+    // UTC by default, as on Vercel. Note: locally an already-running server
+    // on :3000 is reused as-is, whatever its TZ.
+    env: { TZ: SERVER_TZ },
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
   },

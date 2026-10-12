@@ -2,7 +2,7 @@ import { Skeleton } from '@components/ui/skeleton';
 
 export function MembersSkeleton() {
 	return (
-		<div className="w-full space-y-2">
+		<div className="w-full v3-space:mt-2">
 			{Array.from({ length: 3 }).map((_, i) => (
 				<div key={i} className="flex gap-4 border-t py-2">
 					<Skeleton className="h-6 w-32 rounded-full" />

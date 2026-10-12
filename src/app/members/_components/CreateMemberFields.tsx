@@ -24,7 +24,7 @@ export function CreateMemberFields({
 						type="text"
 						placeholder="Jméno"
 						required
-						className="rounded border px-3 py-2"
+						className="rounded-sm border px-3 py-2"
 					/>
 				)}
 			/>
@@ -33,7 +33,7 @@ export function CreateMemberFields({
 				name="role"
 				control={control}
 				render={({ field }) => (
-					<select {...field} className="rounded border px-3 py-2">
+					<select {...field} className="rounded-sm border px-3 py-2">
 						{ASSIGNABLE.map((r) => (
 							<option key={r.value} value={r.value}>
 								{r.label}

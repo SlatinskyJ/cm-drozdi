@@ -17,11 +17,9 @@ import {
 	getMinutes,
 	isBefore,
 	set,
-	startOfDay,
 	startOfHour,
 	startOfMinute,
 } from 'date-fns';
-import { cs } from 'date-fns/locale';
 import React from 'react';
 import { type Control, Controller } from 'react-hook-form';
 import {
@@ -29,6 +27,12 @@ import {
 	type TEventInputs,
 } from '~/app/events/_utils/useEventForm';
 import { cn } from '~/lib/utils';
+import {
+	APP_TIME_ZONE,
+	appTz,
+	formatDateTime,
+	startOfTodayInAppTz,
+} from '~/utils/date';
 
 const TIME_PATTERN = /^(\d{2}):(\d{2})/;
 
@@ -43,31 +47,33 @@ function StartDateTimeField({
 	value?: Date;
 	onChange: (date: Date) => void;
 }>) {
+	// The picked day and time are Prague wall-clock time (APP_TIME_ZONE), not
+	// the browser's; `set`/`getHours`/... run in that zone via `{ in: appTz }`.
+	// The form keeps a plain Date (the instant) so it is sent to the API as-is.
+	function setWallClock(day: Date, hours: number, minutes: number) {
+		const zoned = set(
+			day,
+			{ hours, minutes, seconds: 0, milliseconds: 0 },
+			{ in: appTz },
+		);
+		onChange(new Date(zoned.getTime()));
+	}
+
 	function handleDateSelect(date: Date | undefined) {
 		if (!date) return;
 		// Keep the chosen time; on the first pick default to the next full hour.
-		const time = value ?? startOfHour(addHours(new Date(), 1));
-		onChange(
-			set(date, {
-				hours: getHours(time),
-				minutes: getMinutes(time),
-				seconds: 0,
-				milliseconds: 0,
-			}),
+		const time = value ?? startOfHour(addHours(new Date(), 1), { in: appTz });
+		setWallClock(
+			date,
+			getHours(time, { in: appTz }),
+			getMinutes(time, { in: appTz }),
 		);
 	}
 
 	function handleTimeChange(e: React.ChangeEvent<HTMLInputElement>) {
 		const match = TIME_PATTERN.exec(e.target.value);
 		if (!value || !match) return;
-		onChange(
-			set(value, {
-				hours: Number(match[1]),
-				minutes: Number(match[2]),
-				seconds: 0,
-				milliseconds: 0,
-			}),
-		);
+		setWallClock(value, Number(match[1]), Number(match[2]));
 	}
 
 	return (
@@ -83,27 +89,26 @@ function StartDateTimeField({
 						!value && 'text-muted-foreground',
 					)}
 				>
-					{value
-						? format(value, 'd. M. yyyy HH:mm', { locale: cs })
-						: 'Vyberte datum'}
+					{value ? formatDateTime(value) : 'Vyberte datum'}
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent
-				className="w-auto space-y-2 p-3"
+				className="w-auto v3-space:mt-2 p-3"
 				aria-label="Výběr data a času"
 			>
 				<Calendar
 					mode="single"
 					required
+					timeZone={APP_TIME_ZONE}
 					selected={value}
 					defaultMonth={value}
 					onSelect={handleDateSelect}
-					disabled={{ before: startOfDay(new Date()) }}
+					disabled={{ before: startOfTodayInAppTz() }}
 				/>
 				<Input
 					type="time"
 					aria-label="Čas"
-					value={value ? format(value, 'HH:mm') : ''}
+					value={value ? format(value, 'HH:mm', { in: appTz }) : ''}
 					onChange={handleTimeChange}
 					disabled={!value}
 				/>
@@ -116,8 +121,8 @@ export function EventForm({
 	control,
 }: Readonly<{ control: Control<TEventInputs> }>) {
 	return (
-		<div className="space-y-4">
-			<div className="space-y-1">
+		<div className="v3-space:mt-4">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="name">Název události</Label>
 				<Controller
 					name="name"
@@ -142,7 +147,7 @@ export function EventForm({
 					</div>
 				)}
 			/>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label id="start-label" htmlFor="start">
 					Datum a čas
 				</Label>
@@ -173,7 +178,7 @@ export function EventForm({
 					)}
 				/>
 			</div>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="duration">Délka (HH:MM)</Label>
 				<Controller
 					name="duration"
@@ -189,7 +194,7 @@ export function EventForm({
 					)}
 				/>
 			</div>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="email">Email</Label>
 				<Controller
 					name="email"
@@ -206,7 +211,7 @@ export function EventForm({
 					)}
 				/>
 			</div>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="phone">Telefon</Label>
 				<Controller
 					name="phone"
@@ -216,7 +221,7 @@ export function EventForm({
 					)}
 				/>
 			</div>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="location">Lokace</Label>
 				<Controller
 					name="location"
@@ -226,7 +231,7 @@ export function EventForm({
 					)}
 				/>
 			</div>
-			<div className="space-y-1">
+			<div className="v3-space:mt-1">
 				<Label htmlFor="description">Popis</Label>
 				<Controller
 					name="description"
