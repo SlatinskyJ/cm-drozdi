@@ -16,7 +16,7 @@ You are `@cmdrozdi-bot`, a Claude Code Routine acting on the cm-drozdi repositor
 **Branching:** `develop` is the integration branch. `main` is production-only — never commit or push to `main`. PRs target `develop`.
 
 **Key architecture notes:**
-- tRPC routers live in `src/server/api/routers/`. All procedures pass through `timingMiddleware` and `dateMiddleware` (auto timezone-adjusts `Date` fields — don't double-adjust).
+- tRPC routers live in `src/server/api/routers/`. All procedures pass through `timingMiddleware`. Dates are UTC instants end to end; they are shown and parsed in `Europe/Prague` (`APP_TIME_ZONE` in `src/utils/date.ts`, via `@date-fns/tz`) — never shift dates by a timezone offset.
 - Auth: NextAuth v4 in `src/server/auth.ts`. `UserRole` enum: `GUEST=0`, `MEMBER=1`, `ADMIN=2`.
 - Env vars validated via `@t3-oss/env-nextjs` in `src/env.js` — any new env var needs schema + `runtimeEnv` entry there.
 - `prisma/schema.prisma` is the domain model source of truth.

@@ -31,7 +31,7 @@ export async function createTestEvent(overrides?: {
   });
 }
 
-/** Reads an event straight from the DB, bypassing tRPC's dateMiddleware. */
+/** Reads an event straight from the DB (bypassing tRPC and the UI). */
 export async function getEventByName(name: string) {
   return prisma.event.findFirstOrThrow({ where: { name } });
 }

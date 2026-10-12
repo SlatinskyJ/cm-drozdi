@@ -1,25 +1,24 @@
-import { differenceInMinutes, format } from 'date-fns';
+import { TZDate, tz } from '@date-fns/tz';
+import { differenceInMinutes, format, startOfDay } from 'date-fns';
 
 /**
- * Dates returned from tRPC procedures are shifted by `dateMiddleware`
- * (src/server/api/trpc.ts) so that their **UTC** fields hold the server's
- * local wall-clock time. This rebuilds that wall-clock time as a regular
- * local `Date`, so date-fns / react-day-picker (which read local fields) see
- * the same day and time regardless of the runtime's timezone. That keeps the
- * server-rendered and client-rendered output identical (no hydration
- * mismatch), and — when the browser shares the server's timezone — yields the
- * original instant, so it can be sent back to the server unchanged.
+ * The app's single display timezone. All users are in Czechia, so every date
+ * is shown — and every date/time picked in a form is interpreted — as Prague
+ * wall-clock time, regardless of the server's or the browser's timezone.
+ * Dates travel through the API as plain UTC instants.
+ *
+ * Because formatting never depends on the runtime's timezone, the
+ * server-rendered and client-rendered output is identical (no hydration
+ * mismatch).
  */
-export function toWallClockDate(date: Date): Date {
-	return new Date(
-		date.getUTCFullYear(),
-		date.getUTCMonth(),
-		date.getUTCDate(),
-		date.getUTCHours(),
-		date.getUTCMinutes(),
-		date.getUTCSeconds(),
-		date.getUTCMilliseconds(),
-	);
+export const APP_TIME_ZONE = 'Europe/Prague';
+
+/** date-fns `in` context: runs a date-fns function in {@link APP_TIME_ZONE}. */
+export const appTz = tz(APP_TIME_ZONE);
+
+/** Start of today in {@link APP_TIME_ZONE}. */
+export function startOfTodayInAppTz(): TZDate {
+	return startOfDay(TZDate.tz(APP_TIME_ZONE));
 }
 
 export function formatDuration(start: Date, end: Date): string {
@@ -29,12 +28,17 @@ export function formatDuration(start: Date, end: Date): string {
 	return `${hours}:${remainder}`;
 }
 
-/** Formats a tRPC-returned (middleware-shifted) date as `d. M. yyyy`. */
+/** Formats an instant as `d. M. yyyy` in {@link APP_TIME_ZONE}. */
 export function formatDate(date: Date): string {
-	return format(toWallClockDate(date), 'd. M. yyyy');
+	return format(date, 'd. M. yyyy', { in: appTz });
 }
 
-/** Formats a tRPC-returned (middleware-shifted) date as `H:mm`. */
+/** Formats an instant as `H:mm` in {@link APP_TIME_ZONE}. */
 export function formatDateToTime(date: Date): string {
-	return format(toWallClockDate(date), 'H:mm');
+	return format(date, 'H:mm', { in: appTz });
+}
+
+/** Formats an instant as `d. M. yyyy HH:mm` in {@link APP_TIME_ZONE}. */
+export function formatDateTime(date: Date): string {
+	return format(date, 'd. M. yyyy HH:mm', { in: appTz });
 }
