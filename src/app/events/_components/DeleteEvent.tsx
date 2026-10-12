@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@components/ui/Button';
+import { Button } from '@components/ui/button';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { api } from '~/trpc/react';
@@ -31,7 +31,7 @@ export default function DeleteEvent({
 	if (!isAdmin) return <></>;
 
 	return (
-		<Button onClick={handleDelete} isLoading={isPending} color="danger">
+		<Button onClick={handleDelete} isLoading={isPending} variant="destructive">
 			Smazat
 		</Button>
 	);

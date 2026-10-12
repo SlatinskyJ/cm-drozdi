@@ -1,36 +1,40 @@
-import {
-	type CalendarDateTime,
-	parseDateTime,
-	parseTime,
-	Time,
-} from '@internationalized/date';
-import { floor } from 'lodash';
-import moment from 'moment';
+import { differenceInMinutes, format } from 'date-fns';
 
-export function getTimeDiff(start: Date, end: Date): Time {
-	const startDateTime = moment(start);
-	const endDateTime = moment(end);
-
-	const minutes = endDateTime.diff(startDateTime, 'minutes');
-	return new Time(floor(minutes / 60), minutes % 60);
+/**
+ * Dates returned from tRPC procedures are shifted by `dateMiddleware`
+ * (src/server/api/trpc.ts) so that their **UTC** fields hold the server's
+ * local wall-clock time. This rebuilds that wall-clock time as a regular
+ * local `Date`, so date-fns / react-day-picker (which read local fields) see
+ * the same day and time regardless of the runtime's timezone. That keeps the
+ * server-rendered and client-rendered output identical (no hydration
+ * mismatch), and — when the browser shares the server's timezone — yields the
+ * original instant, so it can be sent back to the server unchanged.
+ */
+export function toWallClockDate(date: Date): Date {
+	return new Date(
+		date.getUTCFullYear(),
+		date.getUTCMonth(),
+		date.getUTCDate(),
+		date.getUTCHours(),
+		date.getUTCMinutes(),
+		date.getUTCSeconds(),
+		date.getUTCMilliseconds(),
+	);
 }
 
-export function parseDateJStoCalendarDateTime(date: Date): CalendarDateTime {
-	return parseDateTime(date.toISOString().slice(0, -1));
+export function formatDuration(start: Date, end: Date): string {
+	const minutes = differenceInMinutes(end, start);
+	const hours = Math.floor(minutes / 60);
+	const remainder = String(minutes % 60).padStart(2, '0');
+	return `${hours}:${remainder}`;
 }
 
-export function formatTime(time: Time): string {
-	const timeString = time.toString().slice(0, -3);
-	if (timeString.startsWith('0')) {
-		return timeString.slice(1, timeString.length);
-	}
-	return timeString;
+/** Formats a tRPC-returned (middleware-shifted) date as `d. M. yyyy`. */
+export function formatDate(date: Date): string {
+	return format(toWallClockDate(date), 'd. M. yyyy');
 }
 
+/** Formats a tRPC-returned (middleware-shifted) date as `H:mm`. */
 export function formatDateToTime(date: Date): string {
-	return formatTime(parseTime(date.toISOString().slice(11, 16)));
-}
-
-export function addMinutes(date: Date, minutes: number) {
-	return new Date(date.getTime() + minutes * 60 * 1000);
+	return format(toWallClockDate(date), 'H:mm');
 }

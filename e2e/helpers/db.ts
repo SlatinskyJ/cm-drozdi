@@ -13,15 +13,27 @@ export async function resetDb() {
 }
 
 /** Creates a test event directly via Prisma (bypasses tRPC/HTTP) for test setup. */
-export async function createTestEvent(overrides?: { name?: string; email?: string }) {
+export async function createTestEvent(overrides?: {
+  name?: string;
+  email?: string;
+  start?: Date;
+  end?: Date;
+}) {
   return prisma.event.create({
     data: {
       name: overrides?.name ?? 'Test Event',
       isPrivate: false,
       state: 0,
       email: overrides?.email ?? 'test@example.com',
+      start: overrides?.start,
+      end: overrides?.end,
     },
   });
+}
+
+/** Reads an event straight from the DB, bypassing tRPC's dateMiddleware. */
+export async function getEventByName(name: string) {
+  return prisma.event.findFirstOrThrow({ where: { name } });
 }
 
 /**

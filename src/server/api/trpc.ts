@@ -15,7 +15,7 @@ import { ZodError } from 'zod';
 import { UserRole } from '~/enums/UserRole';
 import { getServerAuthSession } from '~/server/auth';
 import { db } from '~/server/db';
-import { addMinutes } from '~/utils/date';
+import { addMinutes } from 'date-fns';
 import { mapValuesDeep } from '~/utils/object';
 
 /**
@@ -110,12 +110,13 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 const dateMiddleware = t.middleware(async ({ next }) => {
 	const result = await next();
 
-	const offset = -1 * new Date().getTimezoneOffset();
-
 	const data = result.ok
 		? mapValuesDeep(result.data, (value) => {
 				if (_.isDate(value)) {
-					return addMinutes(value, offset);
+					// Use the offset in effect at `value` itself (not at "now"), so a
+					// date on the other side of a DST switch still lands on its
+					// server-local wall-clock time.
+					return addMinutes(value, -1 * value.getTimezoneOffset());
 				}
 				return value;
 			})

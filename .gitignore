@@ -56,3 +56,4 @@ test-results/
 
 # Playwright HTML report (generated on test run)
 playwright-report/
+docs/superpowers/task-reports/

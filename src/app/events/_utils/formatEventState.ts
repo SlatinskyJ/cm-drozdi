@@ -1,9 +1,9 @@
-import { type ChipProps } from '@components/ui/Chip';
+import { type BadgeProps } from '@components/ui/badge';
 import { EventState } from '~/enums/EventState';
 
 export type TFormatEventStateReturn = {
 	label: string;
-	color: ChipProps['color'];
+	color: BadgeProps['variant'];
 	value: EventState;
 };
 
@@ -18,7 +18,7 @@ export default function formatEventState(
 		case EventState.CONFIRMED:
 			return { label: 'Potvrzeno', color: 'success', value: state };
 		case EventState.CANCELED:
-			return { label: 'Zrušeno', color: 'danger', value: state };
+			return { label: 'Zrušeno', color: 'destructive', value: state };
 		default:
 			return { label: 'Neznámý', color: 'unknown', value: state };
 	}
