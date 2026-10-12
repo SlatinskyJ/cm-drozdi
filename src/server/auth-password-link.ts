@@ -9,6 +9,16 @@ const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, passwordless user
 const RESET_TTL_MS = 60 * 60 * 1000; // 1 hour, existing credential
 
 /**
+ * Delete every set-password token issued for a user, used or not. Called before
+ * minting a new link and when a member is deleted.
+ */
+export async function revokeSetPasswordTokens(userId: string): Promise<void> {
+	await db.verification.deleteMany({
+		where: { value: userId, identifier: { startsWith: PREFIX } },
+	});
+}
+
+/**
  * Mint a one-time set/reset-password URL for a user. Auto-picks expiry by
  * credential presence: no credential → 7-day invite; has credential → 1-hour
  * reset. Returning the URL *is* the deliver seam (an email sender can later
@@ -23,9 +33,7 @@ export async function generateSetPasswordUrl(userId: string): Promise<string> {
 	const hasCredential = accounts.some((a) => a.providerId === 'credential');
 	const ttl = hasCredential ? RESET_TTL_MS : INVITE_TTL_MS;
 
-	await db.verification.deleteMany({
-		where: { value: userId, identifier: { startsWith: PREFIX } },
-	});
+	await revokeSetPasswordTokens(userId);
 
 	const token = randomUUID();
 	await ctx.internalAdapter.createVerificationValue({
@@ -40,8 +48,9 @@ export async function generateSetPasswordUrl(userId: string): Promise<string> {
 /**
  * Consume a set/reset token and set the user's password. Creates the
  * `credential` account on first use (passwordless → active), otherwise updates
- * the existing password. One-time: the verification row is deleted after a
- * successful consume (or after detecting expiry).
+ * the existing password. Rejects tokens of deleted users. One-time: the
+ * verification row is deleted after a successful consume (or after detecting
+ * expiry or a deleted user).
  */
 export async function setPasswordWithToken(
 	token: string,
@@ -57,10 +66,21 @@ export async function setPasswordWithToken(
 		throw new Error('EXPIRED_TOKEN');
 	}
 
+	const userId = record.value;
+	// A deleted (or missing) user must never get a password back, even if a
+	// stale token survived the delete.
+	const user = await db.user.findUnique({
+		where: { id: userId },
+		select: { deletedAt: true },
+	});
+	if (!user || user.deletedAt) {
+		await ctx.internalAdapter.deleteVerificationByIdentifier(PREFIX + token);
+		throw new Error('INVALID_TOKEN');
+	}
+
 	const minLength = ctx.password.config.minPasswordLength;
 	if (newPassword.length < minLength) throw new Error('PASSWORD_TOO_SHORT');
 
-	const userId = record.value;
 	const hash = await ctx.password.hash(newPassword);
 	const accounts = await ctx.internalAdapter.findAccounts(userId);
 	const hasCredential = accounts.some((a) => a.providerId === 'credential');

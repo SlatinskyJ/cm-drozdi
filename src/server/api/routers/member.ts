@@ -10,6 +10,7 @@ import {
 import { auth } from '~/server/auth';
 import {
 	generateSetPasswordUrl,
+	revokeSetPasswordTokens,
 	setPasswordWithToken,
 } from '~/server/auth-password-link';
 import { db } from '~/server/db';
@@ -143,7 +144,8 @@ export const memberRouter = createTRPCRouter({
 					message: 'Nelze smazat posledního administrátora.',
 				});
 			}
-			// Soft-delete: mark, remove password (credential), revoke sessions.
+			// Soft-delete: mark, remove password (credential) and pending
+			// set-password links, revoke sessions.
 			await ctx.db.user.update({
 				where: { id: input.userId },
 				data: { deletedAt: new Date() },
@@ -151,6 +153,7 @@ export const memberRouter = createTRPCRouter({
 			await ctx.db.account.deleteMany({
 				where: { userId: input.userId, providerId: 'credential' },
 			});
+			await revokeSetPasswordTokens(input.userId);
 			const h = headers();
 			await callAuth(() =>
 				auth.api.revokeUserSessions({
