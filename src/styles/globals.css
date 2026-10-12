@@ -1,155 +1,137 @@
-@import 'tailwindcss';
+@import 'tailwindcss' source(none);
+@import 'tw-animate-css';
 
-@plugin 'tailwindcss-animate';
+/* Scan exactly what Tailwind 3's `content` scanned: every .tsx file under src/. */
+@source '../**/*.tsx';
 
+/* Brand palette — hex values copied verbatim from the former Tailwind 3 JS config. */
 @theme {
-  --breakpoint-sm: 460px;
+	--breakpoint-sm: 460px;
 
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-foreground: hsl(var(--foreground));
+	--color-primary: #9c7243;
+	--color-secondary: #bdd086;
+	--color-accent: #85a042;
+	--color-dark: #5a3d2d;
+	--color-background: #e6dfc4;
+	--color-white: #faf8e8;
+	--color-danger: #ed5122;
+	--color-danger-foreground: #422506;
+	--color-success: #687f31;
+	--color-warning: #fade15;
+	--color-unknown: #7152ff;
+	--color-content1: #faf8e8;
+	--color-content3: #dcd2ab;
+	--color-content4: #c9b880;
 
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
+	--color-default-50: #faf8e8;
+	--color-default-100: #e6dfc4;
+	--color-default-200: #dcd2ab;
+	--color-default-300: #c9b880;
+	--color-default-400: #bda262;
+	--color-default-500: #b18c4f;
+	--color-default-600: #9c7243;
+	--color-default-700: #825a3b;
+	--color-default-800: #6c4934;
+	--color-default-900: #5a3d2d;
 
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
+	--color-green-50: #f6f8ed;
+	--color-green-100: #ebf0d7;
+	--color-green-200: #d7e3b3;
+	--color-green-300: #bdd086;
+	--color-green-400: #acc270;
+	--color-green-500: #85a042;
+	--color-green-600: #687f31;
+	--color-green-700: #4f6229;
+	--color-green-800: #424f25;
+	--color-green-900: #394423;
+	--color-green-950: #1c240f;
 
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
+	--color-orange-50: #fef4ee;
+	--color-orange-100: #fde6d7;
+	--color-orange-200: #facaae;
+	--color-orange-300: #f6a67e;
+	--color-orange-400: #f17546;
+	--color-orange-500: #ed5122;
+	--color-orange-600: #de3918;
+	--color-orange-700: #b82816;
+	--color-orange-800: #932219;
+	--color-orange-900: #761f18;
+	--color-orange-950: #400c0a;
 
-  --color-primary: #9c7243;
-  --color-primary-foreground: hsl(var(--primary-foreground));
+	--color-yellow-50: #fefee8;
+	--color-yellow-100: #fefec3;
+	--color-yellow-200: #fef98a;
+	--color-yellow-300: #fdef4e;
+	--color-yellow-400: #fade15;
+	--color-yellow-500: #eac508;
+	--color-yellow-600: #ca9a04;
+	--color-yellow-700: #a16e07;
+	--color-yellow-800: #85560e;
+	--color-yellow-900: #714712;
+	--color-yellow-950: #422506;
 
-  --color-secondary: #bdd086;
+	--color-blue-50: #f2f2ff;
+	--color-blue-100: #e9e8ff;
+	--color-blue-200: #d6d3ff;
+	--color-blue-300: #b7b0ff;
+	--color-blue-400: #9483ff;
+	--color-blue-500: #7152ff;
+	--color-blue-600: #602ef9;
+	--color-blue-700: #511ce5;
+	--color-blue-800: #4a19d2;
+	--color-blue-900: #39159d;
+	--color-blue-950: #200a6b;
 
-  --color-accent: #85a042;
-  --color-accent-foreground: hsl(var(--accent-foreground));
-
-  --color-dark: #5a3d2d;
-  --color-background: #e6dfc4;
-  --color-white: #faf8e8;
-
-  --color-danger: #ed5122;
-  --color-danger-foreground: #422506;
-
-  --color-success: #687f31;
-  --color-warning: #fade15;
-  --color-unknown: #7152ff;
-
-  --color-default-50: #faf8e8;
-  --color-default-100: #e6dfc4;
-  --color-default-200: #dcd2ab;
-  --color-default-300: #c9b880;
-  --color-default-400: #bda262;
-  --color-default-500: #b18c4f;
-  --color-default-600: #9c7243;
-  --color-default-700: #825a3b;
-  --color-default-800: #6c4934;
-  --color-default-900: #5a3d2d;
-
-  --color-green-50: #f6f8ed;
-  --color-green-100: #ebf0d7;
-  --color-green-200: #d7e3b3;
-  --color-green-300: #bdd086;
-  --color-green-400: #acc270;
-  --color-green-500: #85a042;
-  --color-green-600: #687f31;
-  --color-green-700: #4f6229;
-  --color-green-800: #424f25;
-  --color-green-900: #394423;
-  --color-green-950: #1c240f;
-
-  --color-orange-50: #fef4ee;
-  --color-orange-100: #fde6d7;
-  --color-orange-200: #facaae;
-  --color-orange-300: #f6a67e;
-  --color-orange-400: #f17546;
-  --color-orange-500: #ed5122;
-  --color-orange-600: #de3918;
-  --color-orange-700: #b82816;
-  --color-orange-800: #932219;
-  --color-orange-900: #761f18;
-  --color-orange-950: #400c0a;
-
-  --color-yellow-50: #fefee8;
-  --color-yellow-100: #fefec3;
-  --color-yellow-200: #fef98a;
-  --color-yellow-300: #fdef4e;
-  --color-yellow-400: #fade15;
-  --color-yellow-500: #eac508;
-  --color-yellow-600: #ca9a04;
-  --color-yellow-700: #a16e07;
-  --color-yellow-800: #85560e;
-  --color-yellow-900: #714712;
-  --color-yellow-950: #422506;
-
-  --color-blue-50: #f2f2ff;
-  --color-blue-100: #e9e8ff;
-  --color-blue-200: #d6d3ff;
-  --color-blue-300: #b7b0ff;
-  --color-blue-400: #9483ff;
-  --color-blue-500: #7152ff;
-  --color-blue-600: #602ef9;
-  --color-blue-700: #511ce5;
-  --color-blue-800: #4a19d2;
-  --color-blue-900: #39159d;
-  --color-blue-950: #200a6b;
-
-  --color-content1: #faf8e8;
-  --color-content3: #dcd2ab;
-  --color-content4: #c9b880;
-
-  --font-sans:
-    var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-pacifico: var(--font-pacifico);
+	/* Tailwind 3 values of the default-palette shades used in src/ (v4 re-tuned them in OKLCH). */
+	--color-gray-500: #6b7280;
+	--color-stone-400: #a8a29e;
+	--color-red-500: #ef4444;
 }
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
+/* shadcn CSS variables (Tailwind 4 layout: top-level :root, hsl() in the value). */
+:root {
+	--background: hsl(48 40% 84%);
+	--foreground: hsl(21 33% 26%);
+	--card: hsl(48 40% 84%);
+	--card-foreground: hsl(21 33% 26%);
+	--popover: hsl(48 40% 84%);
+	--popover-foreground: hsl(21 33% 26%);
+	--primary: hsl(32 40% 44%);
+	--primary-foreground: hsl(0 0% 100%);
+	--secondary: hsl(75 44% 67%);
+	--secondary-foreground: hsl(21 33% 26%);
+	--muted: hsl(38 30% 78%);
+	--muted-foreground: hsl(21 25% 40%);
+	--accent: hsl(77 42% 44%);
+	--accent-foreground: hsl(0 0% 100%);
+	--destructive: hsl(14 85% 53%);
+	--destructive-foreground: hsl(0 0% 100%);
+	/* Event-state colors with no shadcn slot (see formatEventState.ts). */
+	--success: hsl(78 44% 35%);
+	--warning: hsl(53 96% 53%);
+	--unknown: hsl(251 100% 66%);
+	--border: hsl(38 27% 70%);
+	--input: hsl(38 27% 70%);
+	--ring: hsl(32 40% 44%);
+	--radius: 0.5rem;
 }
 
-@layer base {
-	:root {
-		--background: 48 40% 84%;
-		--foreground: 21 33% 26%;
-		--card: 48 40% 84%;
-		--card-foreground: 21 33% 26%;
-		--popover: 48 40% 84%;
-		--popover-foreground: 21 33% 26%;
-		--primary: 32 40% 44%;
-		--primary-foreground: 0 0% 100%;
-		--secondary: 75 44% 67%;
-		--secondary-foreground: 21 33% 26%;
-		--muted: 38 30% 78%;
-		--muted-foreground: 21 25% 40%;
-		--accent: 77 42% 44%;
-		--accent-foreground: 0 0% 100%;
-		--destructive: 14 85% 53%;
-		--destructive-foreground: 0 0% 100%;
-		/* Event-state colors with no shadcn slot (see formatEventState.ts). */
-		--success: 78 44% 35%;
-		--warning: 53 96% 53%;
-		--unknown: 251 100% 66%;
-		--border: 38 27% 70%;
-		--input: 38 27% 70%;
-		--ring: 32 40% 44%;
-		--radius: 0.5rem;
-	}
+/* Only the keys the former Tailwind 3 JS config mapped to CSS variables (spec D3). */
+@theme inline {
+	--color-foreground: var(--foreground);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-accent-foreground: var(--accent-foreground);
+
+	--font-sans:
+		var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+		'Segoe UI Symbol', 'Noto Color Emoji';
 }
