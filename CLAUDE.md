@@ -10,7 +10,9 @@ Source code for www.cmdrozdi.cz — a T3-stack app (Next.js 14 App Router + tRPC
 
 - `develop` is the integration branch — fork new work branches from `develop`, and target `develop` with PRs.
 - `main` is production-only. Never commit or push directly to `main`; it's updated only via release merges from `develop`.
-- **PRs must always be created as drafts** (`gh pr create --draft`). Only the user marks a PR ready for review. Never create a ready-for-review PR directly.
+- **PRs are always created as drafts** (`gh pr create --draft`).
+- **Agent review gate (replaces "only the user merges", 2026-10-12):** before a PR leaves draft, an `opus` reviewer agent reviews it and posts findings as PR review comments prefixed `[review-agent] [must-fix]` / `[review-agent] [nit]`, ending with `VERDICT: CHANGES NEEDED` or `VERDICT: READY TO MERGE`. Fixer agents address every `[must-fix]` comment (push fix + reply on the thread), then the reviewer re-reviews. Once the verdict is `READY TO MERGE`, Claude may mark the PR ready (`gh pr ready`), wait for full CI (incl. e2e) to pass, and squash-merge into `develop`.
+- Claude never targets, pushes to, or merges into `main`.
 
 ## Worktrees
 
@@ -93,10 +95,8 @@ All env vars are validated via `@t3-oss/env-nextjs` in `src/env.js`. Adding a ne
 
 ## Model routing
 
-Subagent tiers: **Haiku explores, Sonnet builds, Opus orchestrates + reviews.**
+Subagent models: **`opus` or `haiku` only, never `sonnet`** (matches the user's global rule). Always set `model` explicitly on Agent / workflow `agent()` calls.
 
-- Default to `sonnet` for all implementation work.
-- Use `haiku` subagents for read-only search/exploration only; they must write findings to disk (not SendMessage — Haiku goes idle instead of returning via message-passing).
-- Escalate to `opus` only for: planning, architectural decisions, final code review.
-- Do not use `opus` for commit messages, formatting, grep/search, or trivial one-liner edits.
-- Three named agents in `~/.claude/agents/`: `explorer` (haiku), `implementor` (sonnet), `reviewer` (opus).
+- `haiku` for mechanical, well-scoped, easily verified work (read-only search/exploration, version lookups, trivial edits). Haiku subagents must write findings to disk (not SendMessage — Haiku goes idle instead of returning via message-passing).
+- `opus` for everything else: planning, architectural decisions, implementation, PR review, fixing review comments.
+- Named agents in `~/.claude/agents/`: `explorer` (haiku), `implementor` and `reviewer` — run both with `model: opus`.

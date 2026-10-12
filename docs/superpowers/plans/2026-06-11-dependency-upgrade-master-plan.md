@@ -22,11 +22,18 @@
 - **Roles:** keep `UserRole` GUEST=0 / MEMBER=1 / ADMIN=2, carried as a Better Auth custom user field.
 - **CI:** introduce **GitHub Actions** (repo has none) in Phase 2 — runs the full gate on every PR with a throwaway Postgres service.
 
+## Decisions (added 2026-10-12)
+
+- **Merge authority:** Claude may merge phase PRs into `develop` itself, gated by an agent review: an `opus` reviewer agent posts `[review-agent]` PR comments, fixer agents resolve every `[must-fix]`, and once the verdict is `READY TO MERGE` Claude marks the PR ready, waits for full CI (incl. e2e), and squash-merges. `main` is never touched. Big decisions still go to the user. See `CLAUDE.md` → Branching.
+- **Version targets refreshed** (npm, 2026-10-12) — see the version gap table. Two adjustments:
+  - **Prisma:** target latest **7.x stable** (7.10 at refresh). npm's `latest` tag points at `8.0.0-rc.*`; a release candidate is not "latest stable", so Prisma 8 is out of scope.
+  - **TypeScript:** 6.0 and 7.0 are now released. `typescript-eslint` (8.71) supports only `<6.1`, so target **TypeScript 6.0.x**, bumped in Phase 9 alongside the ESLint tooling. TS 7 is deferred until `typescript-eslint` supports it.
+
 ---
 
 ## Ground rules (apply to every phase)
 
-1. **One phase = one branch = one PR.** Fork from fresh `develop`. Merge before starting next phase.
+1. **One phase = one branch = one PR.** Fork from fresh `develop`. Merge (after the agent review gate — see Decisions 2026-10-12) before starting next phase.
 2. **Before each phase:** write a spec (brainstorming skill) saved to `docs/superpowers/specs/2026-MM-DD-phase-N-<name>.md`, then a detailed execution plan (writing-plans skill) saved to `docs/superpowers/plans/2026-MM-DD-phase-N-<name>.md`. (Specs live in `specs/`, execution plans + this master plan live in `plans/`.)
 3. **Verification gate (the gate, since there is no unit suite):**
    ```bash
@@ -54,21 +61,23 @@
 
 ## Version gap table
 
+Targets refreshed 2026-10-12 (latest stable on npm at that date; re-check at each phase's spec).
+
 | Package | Current | Target | Jump |
 |---|---|---|---|
 | next-auth + @auth/prisma-adapter | ^4.24 / ^1.6 | **removed** → better-auth | auth migration (Phase 1) |
-| next | ^14.2.4 | 16.x | 2 majors |
-| react / react-dom | ^18.3.1 | 19.2.x | 1 major |
-| prisma + @prisma/client | ^5.21 / ^5.14 | 7.x | 2 majors |
-| tailwindcss | ^3.4.3 | 4.x | 1 major (config rewrite) |
-| zod | ^3.23.3 | 4.x | 1 major |
-| eslint | ^8.57 | 10.x | 2 majors (flat config) |
+| next | ^14.2.4 | 16.x (16.4 at refresh) | 2 majors |
+| react / react-dom | ^18.3.1 | 19.x (19.3 at refresh) | 1 major |
+| prisma + @prisma/client | ^5.21 / ^5.14 | 7.x stable (7.10 at refresh; not 8.0 rc) | 2 majors |
+| tailwindcss | ^3.4.3 | 4.x (4.3 at refresh) | 1 major (config rewrite) |
+| zod | ^3.25 | 4.x (4.6 at refresh) | 1 major |
+| eslint | ^8.57 | 10.x (10.12 at refresh) | 2 majors (flat config) |
 | @trpc/* | 11.0.0-rc.446 | 11.x stable | rc → stable |
 | @tanstack/react-query | ^5.50 | 5.10x | minors |
 | framer-motion | ^11 | **removed** | dies with NextUI |
 | @nextui-org/* (13 pkgs) | 2.x | **removed** | replaced by shadcn |
 | @vercel/postgres | ^0.10.0 | keep (deprecated upstream) | migration deferred, see Phase 7 |
-| typescript | ^5.5.3 | 5.x latest | minor |
+| typescript | ^5.x | 6.0.x (not 7 — typescript-eslint caps at <6.1) | 1 major (Phase 9) |
 | @types/node | ^20 | 22.x | match runtime |
 
 **Explicit non-goals:** social/OAuth login (defer as nice-to-have), a full unit/integration suite, Yarn 1 → modern package manager. Candidate follow-ups after Phase 9.
@@ -188,7 +197,7 @@
 - New `prisma.config.ts` (replaces `package.json#prisma`/schema-folder conventions).
 - Generator `prisma-client-js` → new `prisma-client` (explicit output path, import from generated path — touches `src/server/db.ts`, possibly `postinstall`).
 - Driver adapters now default — choose `@prisma/adapter-pg` vs current; evaluate dropping deprecated `@vercel/postgres` here (only used for the connection — check `src/server/db.ts`). Fold the swap in if trivial, else defer + note.
-- **Verify Better Auth's Prisma adapter is compatible with Prisma 7 client** before committing Step B; block on it if not (check during spec).
+- **Verify Better Auth's Prisma adapter is compatible with Prisma 7 client** before committing Step B; block on it if not (check during spec). *(2026-10-12: `better-auth@1.7` peer deps list `prisma`/`@prisma/client` `^5 || ^6 || ^7` — confirm at runtime.)*
 - Run `prisma migrate dev` against a dev/test DB, never prod. Verify `db:*` scripts.
 
 **Exit criteria:** gate passes; all CRUD + auth e2e + smoke-tested against dev DB; migrate-deploy dry-run documented; Vercel build (postinstall generate) works.
@@ -198,7 +207,7 @@
 **Branch:** `chore/upgrade-phase-8-zod4`
 **Risk:** medium. **Size:** small-medium. Use `zod-4` skill.
 
-- `zod` → 4.x and `@t3-oss/env-nextjs` → zod-4-compatible major together (env.js is the tightest coupling).
+- `zod` → 4.x. *(2026-10-12: `@t3-oss/env-nextjs@0.13.11`, already installed since Phase 3, declares `zod ^3.24 || ^4` — no env-nextjs bump needed.)*
 - Hunt: `z.string().email()` → top-level `z.email()`, error-customization API (`message`→`error`, errorMap), `.default()` w/ transforms, `z.record()` two-arg requirement, coerce changes.
 - Touch points: `src/env.js`, every tRPC router input schema (`src/server/api/routers/`), `useEventForm`/form validation.
 - Confirm tRPC 11 stable + any `@hookform/resolvers` usage support zod 4 (resolvers not currently a dep — confirm during spec).
@@ -215,6 +224,7 @@
 - Preserve current rule customizations (audit full `.eslintrc.cjs` during spec — only top 30 lines reviewed so far): type-checked presets, `array-type` off, `consistent-type-definitions` off, inline type-imports, `no-unused-vars` argsIgnorePattern, etc.
 - `next lint` removed in Next 16 — switch `lint` script to `eslint .` per Next 16 docs.
 - Fix or explicitly-comment new violations; no blanket disables.
+- `typescript` → 6.0.x (see Decisions 2026-10-12): fix new TS 6 deprecation errors rather than silencing them with `ignoreDeprecations`.
 
 **Exit criteria:** `yarn lint` passes with equivalent-or-stricter ruleset; CI/Vercel build unaffected.
 
