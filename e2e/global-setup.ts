@@ -21,7 +21,7 @@ async function saveStorageState(email: string, password: string, outPath: string
   // getSetCookie() returns each Set-Cookie header separately (native in Node 22)
   const rawCookies = response.headers.getSetCookie();
 
-  const cookies = rawCookies.filter(Boolean).map((raw) => {
+  const cookies = rawCookies.map((raw) => {
     const parts = raw.split(';').map((s) => s.trim());
     const nameValue = parts[0]!;
     const eqIdx = nameValue.indexOf('=');
