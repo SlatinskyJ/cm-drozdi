@@ -70,8 +70,12 @@ export const eventRouter = createTRPCRouter({
 		});
 	}),
 
-	getForCalendar: publicProcedure.query(({ ctx }) => {
-		return ctx.db.event.findMany({
+	/**
+	 * Public calendar of busy dates. Private events are reduced to their date:
+	 * their name and location are not sent to anonymous visitors.
+	 */
+	getForCalendar: publicProcedure.query(async ({ ctx }) => {
+		const events = await ctx.db.event.findMany({
 			select: {
 				name: true,
 				start: true,
@@ -87,6 +91,11 @@ export const eventRouter = createTRPCRouter({
 				},
 			},
 		});
+		return events.map(({ name, location, ...event }) =>
+			event.isPrivate
+				? { ...event, name: null, location: null }
+				: { ...event, name, location },
+		);
 	}),
 
 	changeState: memberProcedure
