@@ -6,6 +6,7 @@ import {
   type CalendarDay,
   dayButtonName,
   displayDate,
+  monthGridName,
   todayInAppTz,
 } from '../helpers/date';
 
@@ -126,11 +127,13 @@ test.describe('Prague time, whatever the server and browser timezones', () => {
 
     await page.goto('/');
     await page.getByRole('button', { name: 'Přejít na další měsíc' }).click();
+    const month = page.getByRole('grid', { name: monthGridName(day), exact: true });
+    await expect(month).toBeVisible();
     await expect(
-      page.getByRole('button', { name: dayButtonName(day), exact: true }),
+      month.getByRole('button', { name: dayButtonName(day), exact: true }),
     ).toBeDisabled();
     await expect(
-      page.getByRole('button', { name: dayButtonName(addDays(day, -1)), exact: true }),
+      month.getByRole('button', { name: dayButtonName(addDays(day, -1)), exact: true }),
     ).toBeEnabled();
   });
 });
