@@ -254,7 +254,7 @@ Once a phase has an open PR, track that PR (`gh pr view <number>`) for live stat
 | 3 — Minor bumps | [#18](https://github.com/SlatinskyJ/cm-drozdi/pull/18) |
 | 4 — shadcn migration | [#20](https://github.com/SlatinskyJ/cm-drozdi/pull/20) |
 | 5 — React 19 / Next 16 | [#24](https://github.com/SlatinskyJ/cm-drozdi/pull/24) |
-| 6 — Tailwind 4 | in progress (`chore/upgrade-phase-6-tailwind4`) |
+| 6 — Tailwind 4 | [#26](https://github.com/SlatinskyJ/cm-drozdi/pull/26) |
 | 7 — Prisma 7 | not started |
 | 8 — Zod 4 | not started |
 | 9 — ESLint 10 (or 9) flat config | not started |
