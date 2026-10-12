@@ -1,6 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
 import { ADMIN_AUTH } from '../helpers/auth';
-import { resetDb, createTestEvent, getEventByName } from '../helpers/db';
+import {
+  resetDb,
+  countEvents,
+  createTestEvent,
+  findEventById,
+  getEventByName,
+} from '../helpers/db';
 import {
   addDays,
   type CalendarDay,
@@ -149,6 +155,28 @@ test.describe('Event CRUD', () => {
       await expect(detail.getByText('14:00', { exact: true })).toBeVisible();
     });
   }
+
+  test('edits an existing event', async ({ page }) => {
+    const year = new Date().getUTCFullYear() + 1;
+    const start = new Date(Date.UTC(year, 0, 15, 13, 0)); // 14:00 Prague
+    const end = new Date(start.getTime() + 60 * 60_000);
+    const event = await createTestEvent({ name: 'Upravit E2E', start, end });
+
+    await page.goto('/events');
+    await page.getByRole('button', { name: /Upravit E2E/ }).click();
+    const detail = page.getByRole('dialog', { name: 'Upravit E2E' });
+    await detail.getByRole('button', { name: 'Editovat' }).click();
+    await detail.getByLabel('Název události').fill('Upraveno E2E');
+    await detail.getByRole('button', { name: 'Uložit' }).click();
+    await expect(detail).not.toBeVisible();
+
+    // The same event was updated in place (no new event was created).
+    const stored = await findEventById(event.id);
+    expect(stored?.name).toBe('Upraveno E2E');
+    expect(stored?.start?.toISOString()).toBe(start.toISOString());
+    expect(await countEvents()).toBe(1);
+    await expect(page.getByRole('button', { name: /Upraveno E2E/ })).toBeVisible();
+  });
 
   test('deletes an event', async ({ page }) => {
     await createTestEvent({ name: 'Smazat Mě E2E' });

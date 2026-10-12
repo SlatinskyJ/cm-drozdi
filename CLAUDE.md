@@ -65,21 +65,21 @@ All must pass clean. CI runs lint + typecheck on every PR to `develop` and adds 
 ### tRPC layer
 
 - `src/server/api/root.ts` defines `appRouter`; sub-routers live in `src/server/api/routers/` and are re-exported through `src/server/api/routers/index.ts`.
-- `src/server/api/trpc.ts` defines `publicProcedure` / `protectedProcedure` / `adminProcedure` (asserts `UserRole.ADMIN`). Every procedure goes through `timingMiddleware` (logs execution time and adds an artificial delay in dev).
+- `src/server/api/trpc.ts` defines `publicProcedure` / `protectedProcedure` / `memberProcedure` (asserts `UserRole.MEMBER` or `UserRole.ADMIN`) / `adminProcedure` (asserts `UserRole.ADMIN`). Every procedure goes through `timingMiddleware` (logs execution time and adds an artificial delay in dev).
 - Dates are passed through unchanged: every `Date`/`DateTime` a procedure returns (or receives) is a true UTC instant, serialized by SuperJSON. Never shift dates by a timezone offset in routers or components — convert to Prague time only when formatting or parsing (see Date/calendar utilities).
 - Client setup in `src/trpc/react.tsx` (React Query + `httpBatchStreamLink` + SuperJSON transformer); server-side caller via `createCaller` in `root.ts`.
 
 ### Auth & authorization
 
 - Better Auth (`src/server/auth.ts`): email + password, sign-up disabled, Prisma adapter, `admin` plugin with access control in `src/server/auth-access.ts`. Roles are the string enum `UserRole` (`src/enums/UserRole.ts`: `guest`/`member`/`admin`). Server access via `getServerAuthSession()`; client via `authClient` (`src/lib/auth-client.ts`); route handler `src/app/api/auth/[...all]/route.ts` (`toNextJsHandler`).
-- `src/proxy.ts` (Next 16 proxy, Node runtime) redirects to `/login` when no Better Auth session cookie is present (`getSessionCookie`, presence-only, no DB). Matcher excludes `api`, `_next/static`, `_next/image`, `auth`, `login`, `reset-password`, `favicon.ico`, `images`, `sitemap.xml`, `robots.txt`, and `/`. Real checks: `events`/`members` layouts and `protectedProcedure`/`adminProcedure`.
+- `src/proxy.ts` (Next 16 proxy, Node runtime) redirects to `/login` when no Better Auth session cookie is present (`getSessionCookie`, presence-only, no DB). Matcher excludes `api`, `_next/static`, `_next/image`, `auth`, `login`, `reset-password`, `favicon.ico`, `images`, `sitemap.xml`, `robots.txt`, and `/`. Real checks: `events`/`members` layouts and `protectedProcedure`/`memberProcedure`/`adminProcedure`.
 - `src/utils/permissions.ts` (`useIsAdmin`) — client-side admin check via `authClient.useSession()`.
 
 ### Domain model (`prisma/schema.prisma`)
 
 - `Event`: core entity with `state: Int` mapped to `EventState` (`src/enums/EventState.ts`: `PROPOSED=0`, `PENDING=1`, `CONFIRMED=2`, `CANCELED=3`), plus scheduling/contact fields and `isPrivate`.
 - `UsersOnEvents` / `InstrumentsOnUsers`: explicit many-to-many join tables linking `User` ↔ `Event` and `User` ↔ `Instrument`.
-- `src/server/api/routers/event.ts`: `create` (upsert, **public**), `getUpcoming` / `changeState` / `deleteById` (**protected**), `getForCalendar` (public, limited field selection for the public calendar view).
+- `src/server/api/routers/event.ts`: `create` (**public** "request an event": takes no id, always creates as PROPOSED, returns only `{ id }`), `update` / `getUpcoming` / `changeState` (**member**: MEMBER or ADMIN), `deleteById` (**admin**), `getForCalendar` (public; private events come back with `name`/`location` nulled). `/api/trpc` is excluded from the auth proxy (`src/proxy.ts` matcher), so every procedure must enforce its own role — match the UI's gate (`memberProcedure` / `adminProcedure` in `trpc.ts`).
 - `src/server/api/routers/member.ts`: `create` / `list` / `setRole` / `delete` / `generatePasswordLink` (**admin-only**), `setPassword` (**public**, token-based).
 
 ### Env vars
