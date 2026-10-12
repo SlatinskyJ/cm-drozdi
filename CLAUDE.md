@@ -33,7 +33,7 @@ Use plain `git worktree` (not Claude's native worktree feature) to isolate phase
 - `yarn build` — production build (`next build`).
 - `yarn start` — run production build.
 - `yarn lint` — `next typegen` then ESLint 8 CLI on `src/` with legacy `.eslintrc.cjs` (`eslint-config-next` pinned to 15.5 until Phase 9).
-- `yarn typecheck` — `next typegen` then `tsc --noEmit`.
+- `yarn typecheck` — `next typegen` then `tsc --noEmit`. If it reports a missing `src/app/**/page.js` from `.next/dev/types` (stale after renaming/deleting a route while `next dev` was stopped), run `rm -rf .next/dev`.
 - `./start-database.sh` — unused locally (Postgres runs natively). Slated for removal after Phase 9.
 - `yarn db:push` — push Prisma schema to DB without a migration (used for first-time setup per README).
 - `yarn db:seed:local` — seed dev DB (loads `.env`). In CI/Vercel use `yarn db:seed` (env injected externally).
