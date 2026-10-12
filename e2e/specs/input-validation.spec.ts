@@ -80,15 +80,26 @@ test('member.create keeps the custom Czech role message', async ({ page }) => {
 });
 
 test('non-input errors carry zodError: null', async ({ page }) => {
-  // Input is valid, so the self-delete guard throws a plain TRPCError after
-  // validation. Pins the errorFormatter's `instanceof ZodError` check: a
-  // `ZodRealError` check would match any Error and break this.
+  // Valid input, so each error comes from the procedure body, after input
+  // validation, and the errorFormatter must report zodError: null.
+
+  // A TRPCError thrown directly: the self-delete guard.
   const session = await page.request.get('/api/auth/get-session');
   const { user } = (await session.json()) as { user: { id: string } };
+  const selfDelete = await trpcMutation(page.request, 'member.delete', { userId: user.id });
+  expect(selfDelete.status).toBe(400);
+  expect(selfDelete.errorCode).toBe('BAD_REQUEST');
+  expect(selfDelete.zodError).toBeNull();
 
-  const res = await trpcMutation(page.request, 'member.delete', { userId: user.id });
-
-  expect(res.status).toBe(400);
-  expect(res.errorCode).toBe('BAD_REQUEST');
-  expect(res.zodError).toBeNull();
+  // A plain Error wrapped by tRPC (Prisma: no event with this id), so the
+  // TRPCError's cause is a non-Zod Error. Pins the formatter's
+  // `instanceof ZodError` check: `instanceof ZodRealError` matches any Error
+  // and would make the formatter crash on this cause.
+  const missing = await trpcMutation(page.request, 'event.changeState', {
+    id: 'cnonexistent0000000000000',
+    state: 2,
+  });
+  expect(missing.status).toBe(500);
+  expect(missing.errorCode).toBe('INTERNAL_SERVER_ERROR');
+  expect(missing.zodError).toBeNull();
 });
