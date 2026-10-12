@@ -64,7 +64,7 @@ Fetch the triggering `bot: resolve` comment (identified by the comment URL you r
 3. Run the verification gate:
    ```bash
    SKIP_ENV_VALIDATION=1 yarn lint
-   yarn typecheck
+   SKIP_ENV_VALIDATION=1 yarn typecheck
    ```
 4. If verification fails:
    - Attempt to self-heal the failures
@@ -106,4 +106,4 @@ This reply also acts as the duplicate-detection marker — a future `bot: resolv
 - **Never push to `develop` directly** — only to the PR's feature branch
 - Skip comments that discuss future work or out-of-scope changes (reply flagging them as out of scope instead)
 - Follow existing code patterns; don't introduce abstractions beyond what the fix requires
-- The bot's verification gate is `yarn lint` + `yarn typecheck` (`next typegen` must run before `tsc`, so don't call bare `npx tsc --noEmit`). The Playwright e2e suite runs in CI on non-draft PRs.
+- The bot's verification gate is `yarn lint` + `SKIP_ENV_VALIDATION=1 yarn typecheck` (`next typegen` must run before `tsc`, so don't call bare `npx tsc --noEmit`). The Playwright e2e suite runs in CI on non-draft PRs.
