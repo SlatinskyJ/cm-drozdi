@@ -44,6 +44,7 @@
   },
   "include": [
     "eslint.config.mjs",
+    ".prettierrc.js",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",

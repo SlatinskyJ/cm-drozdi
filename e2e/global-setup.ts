@@ -6,7 +6,7 @@ import { ADMIN_AUTH, MEMBER_AUTH } from './helpers/auth';
 const DEV_PASSWORD = 'admin1234';
 
 async function saveStorageState(email: string, password: string, outPath: string) {
-  const baseUrl = process.env['BETTER_AUTH_URL'] ?? 'http://localhost:3000';
+  const baseUrl = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
   const response = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
     method: 'POST',
     // Origin must match BETTER_AUTH_URL — Better Auth rejects null/missing origins (CSRF protection)
@@ -18,9 +18,8 @@ async function saveStorageState(email: string, password: string, outPath: string
     throw new Error(`Sign-in failed for ${email}: HTTP ${response.status}`);
   }
 
-  // getSetCookie() returns each Set-Cookie header separately (Node 22 undici)
-  const rawCookies: string[] = (response.headers as any).getSetCookie?.()
-    ?? (response.headers.get('set-cookie') ? [response.headers.get('set-cookie')!] : []);
+  // getSetCookie() returns each Set-Cookie header separately (native in Node 22)
+  const rawCookies = response.headers.getSetCookie();
 
   const cookies = rawCookies.filter(Boolean).map((raw) => {
     const parts = raw.split(';').map((s) => s.trim());
@@ -50,7 +49,7 @@ export default async function globalSetup() {
   execSync('npx prisma migrate deploy', { stdio: 'inherit' });
   execSync('yarn db:seed', { stdio: 'inherit' });
 
-  const adminEmail = process.env['BOOTSTRAP_ADMIN_EMAIL'] ?? 'admin@cmdrozdi.cz';
+  const adminEmail = process.env.BOOTSTRAP_ADMIN_EMAIL ?? 'admin@cmdrozdi.cz';
 
   await saveStorageState(adminEmail, DEV_PASSWORD, ADMIN_AUTH);
   await saveStorageState('member@cmdrozdi.cz', DEV_PASSWORD, MEMBER_AUTH);

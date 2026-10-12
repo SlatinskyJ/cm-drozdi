@@ -150,7 +150,7 @@ test.describe('Deleted member', () => {
     expect((await context.request.get(listUrl, { headers: { Origin: AUTH_ORIGIN } })).status()).toBe(200);
     const before = await context.request.get('/api/auth/get-session');
     expect(before.status()).toBe(200);
-    expect((await before.json())?.user?.id).toBe(user.id);
+    expect(((await before.json()) as { user?: { id?: string } } | null)?.user?.id).toBe(user.id);
 
     // Soft-delete only — the session row stays in the DB
     await softDeleteUser(user.id);
@@ -162,7 +162,7 @@ test.describe('Deleted member', () => {
     // Better Auth's own endpoints refuse the leftover session too
     const list = await context.request.get(listUrl, { headers: { Origin: AUTH_ORIGIN } });
     expect(list.status()).toBe(403);
-    expect((await list.json()).code).toBe('USER_DELETED');
+    expect(((await list.json()) as { code?: string }).code).toBe('USER_DELETED');
     // ...and get-session reports no session and expires the cookie
     const after = await context.request.get('/api/auth/get-session');
     expect(after.status()).toBe(200);
@@ -261,7 +261,7 @@ test.describe('Deleted member', () => {
     expect((await context.request.get('/api/trpc/event.getUpcoming')).status()).toBe(401);
     const list = await context.request.get(listSessions, { headers: { Origin: AUTH_ORIGIN } });
     expect(list.status()).toBe(403);
-    expect((await list.json()).code).toBe('USER_DELETED');
+    expect(((await list.json()) as { code?: string }).code).toBe('USER_DELETED');
     const after = await context.request.get('/api/auth/get-session');
     expect(after.status()).toBe(200);
     expect(await after.json()).toBeNull();

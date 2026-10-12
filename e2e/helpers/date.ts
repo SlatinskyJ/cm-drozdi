@@ -14,8 +14,8 @@ export const APP_TZ = 'Europe/Prague';
  * logic that leaks the runtime's timezone shows up as a wrong time or day.
  * Override with E2E_SERVER_TZ / E2E_BROWSER_TZ, e.g. both `Europe/Prague`.
  */
-export const SERVER_TZ = process.env['E2E_SERVER_TZ'] ?? 'UTC';
-export const BROWSER_TZ = process.env['E2E_BROWSER_TZ'] ?? 'America/New_York';
+export const SERVER_TZ = process.env.E2E_SERVER_TZ ?? 'UTC';
+export const BROWSER_TZ = process.env.E2E_BROWSER_TZ ?? 'America/New_York';
 
 export type CalendarDay = { year: number; month: number; day: number };
 
