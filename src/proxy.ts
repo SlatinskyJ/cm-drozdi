@@ -13,7 +13,7 @@ import type { NextRequest } from 'next/server';
 const SESSION_COOKIE = 'better-auth.session_token';
 const SECURE_SESSION_COOKIE = `__Secure-${SESSION_COOKIE}`;
 
-export default function middleware(req: NextRequest) {
+export default function proxy(req: NextRequest) {
 	const sessionCookie =
 		req.cookies.get(SESSION_COOKIE) ?? req.cookies.get(SECURE_SESSION_COOKIE);
 	if (!sessionCookie) {
